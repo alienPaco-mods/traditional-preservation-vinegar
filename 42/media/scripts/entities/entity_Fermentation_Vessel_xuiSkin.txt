@@ -1,0 +1,12 @@
+module Base
+{
+    xuiSkin default
+    {
+        entity ES_FermentationVessel
+        {
+            LuaWindowClass = ISEntityWindow,
+            DisplayName = FermentationVessel,
+            Icon = Item_FermentationVessel,
+        }
+    }
+}

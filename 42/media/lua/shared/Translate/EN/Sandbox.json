@@ -1,0 +1,22 @@
+{
+  "Sandbox_TraditionalPreservationVinegar": "Traditional Preservation (Vinegar)",
+  "Sandbox_TraditionalPreservationVinegar_AlcoholicDays": "Alcoholic fermentation (days)",
+  "Sandbox_TraditionalPreservationVinegar_AlcoholicDays_tooltip": "Days a batch takes in the Fermentation Vessel at the best temperature.",
+  "Sandbox_TraditionalPreservationVinegar_AceticDays": "Acetic fermentation (days)",
+  "Sandbox_TraditionalPreservationVinegar_AceticDays_tooltip": "Days the Orléans Vinegar Cask takes to fully sour fresh fermented wort at the best temperature, without a mother.",
+  "Sandbox_TraditionalPreservationVinegar_CultureBonus": "Established-culture speed bonus (percent)",
+  "Sandbox_TraditionalPreservationVinegar_CultureBonus_tooltip": "How much faster a cask works with a mother and some sour vinegar left in it.",
+  "Sandbox_TraditionalPreservationVinegar_TemperatureSensitivity": "Temperature sensitivity",
+  "Sandbox_TraditionalPreservationVinegar_TemperatureSensitivity_tooltip": "How much the wrong temperature slows fermentation. Off makes every batch run at full speed.",
+  "Sandbox_TraditionalPreservationVinegar_TemperatureSensitivity_option1": "Off",
+  "Sandbox_TraditionalPreservationVinegar_TemperatureSensitivity_option2": "Forgiving",
+  "Sandbox_TraditionalPreservationVinegar_TemperatureSensitivity_option3": "Normal",
+  "Sandbox_TraditionalPreservationVinegar_TemperatureSensitivity_option4": "Harsh",
+  "Sandbox_TraditionalPreservationVinegar_MaltingDays": "Malting (days)",
+  "Sandbox_TraditionalPreservationVinegar_MaltingDays_tooltip": "Days grain takes to sprout on the Malting Floor at the best temperature.",
+  "Sandbox_TraditionalPreservationVinegar_BrewingEffort": "Brewing effort",
+  "Sandbox_TraditionalPreservationVinegar_BrewingEffort_tooltip": "How long the hands-on work takes: kilning the malt, heating the mash, and the steeping, mashing and straining crafts. Light is quickest, Normal takes half as long again, Hard twice as long.",
+  "Sandbox_TraditionalPreservationVinegar_BrewingEffort_option1": "Light",
+  "Sandbox_TraditionalPreservationVinegar_BrewingEffort_option2": "Normal",
+  "Sandbox_TraditionalPreservationVinegar_BrewingEffort_option3": "Hard"
+}

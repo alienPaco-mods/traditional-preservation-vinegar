@@ -1,0 +1,149 @@
+/* Written by tools/build_tileset.py. */
+module TraditionalPreservationVinegar
+{
+    imports
+    {
+        Base,
+    }
+
+    model BucketMashGround
+    {
+        mesh = WorldItems/BucketFull,
+        texture = BucketMashModel,
+        scale = 0.35,
+    }
+
+    item BucketMash
+    {
+        DisplayCategory = Food,
+        ItemType = base:food,
+        CantEat = true,
+        CantBeFrozen = true,
+        IsCookable = true,
+        MinutesToCook = 60,
+        MinutesToBurn = 1440,
+        ReplaceOnCooked = TraditionalPreservationVinegar.BucketPreparedMash,
+        FoodType = NoExplicit,
+        Weight = 11.0,
+        Icon = BucketMash,
+        WorldStaticModel = BucketMashGround,
+        Tooltip = Tooltip_TraditionalPreservationVinegar_BucketMash,
+    }
+
+    model BucketPreparedMashGround
+    {
+        mesh = WorldItems/BucketFull,
+        texture = BucketPreparedMashModel,
+        scale = 0.35,
+    }
+
+    item BucketPreparedMash
+    {
+        DisplayCategory = Material,
+        ItemType = base:normal,
+        Weight = 11.0,
+        Icon = BucketPreparedMash,
+        WorldStaticModel = BucketPreparedMashGround,
+        Tooltip = Tooltip_TraditionalPreservationVinegar_BucketPreparedMash,
+    }
+
+    model SteepedGrainGround
+    {
+        mesh = WorldItems/Poultice,
+        texture = SteepedGrainModel,
+        scale = 0.6,
+    }
+
+    item SteepedGrain
+    {
+        DisplayCategory = Material,
+        ItemType = base:normal,
+        Weight = 0.8,
+        Icon = SteepedGrain,
+        WorldStaticModel = SteepedGrainGround,
+        Tooltip = Tooltip_TraditionalPreservationVinegar_SteepedGrain,
+    }
+
+    model GreenMaltGround
+    {
+        mesh = WorldItems/Poultice,
+        texture = GreenMaltModel,
+        scale = 0.6,
+    }
+
+    item GreenMalt
+    {
+        DisplayCategory = Food,
+        ItemType = base:food,
+        CantEat = true,
+        CantBeFrozen = true,
+        IsCookable = true,
+        MinutesToCook = 120,
+        MinutesToBurn = 1440,
+        ReplaceOnCooked = TraditionalPreservationVinegar.Malt,
+        FoodType = NoExplicit,
+        Tags = base:iscompostable,
+        DaysFresh = 2,
+        DaysTotallyRotten = 5,
+        Weight = 0.7,
+        Icon = GreenMalt,
+        WorldStaticModel = GreenMaltGround,
+        Tooltip = Tooltip_TraditionalPreservationVinegar_GreenMalt,
+    }
+
+    model MaltGround
+    {
+        mesh = WorldItems/Poultice,
+        texture = MaltModel,
+        scale = 0.6,
+    }
+
+    item Malt
+    {
+        DisplayCategory = Material,
+        ItemType = base:normal,
+        Weight = 0.5,
+        Icon = Malt,
+        WorldStaticModel = MaltGround,
+        Tooltip = Tooltip_TraditionalPreservationVinegar_Malt,
+    }
+
+    model SpentGrainGround
+    {
+        mesh = WorldItems/Poultice,
+        texture = SpentGrainModel,
+        scale = 0.6,
+    }
+
+    item SpentGrain
+    {
+        DisplayCategory = Material,
+        ItemType = base:food,
+        CantEat = true,
+        Tags = base:iscompostable,
+        AnimalFeedType = AnimalFeed,
+        HungerChange = -10.0,
+        DaysFresh = 3,
+        DaysTotallyRotten = 6,
+        FoodType = NoExplicit,
+        Weight = 0.8,
+        Icon = SpentGrain,
+        WorldStaticModel = SpentGrainGround,
+        Tooltip = Tooltip_TraditionalPreservationVinegar_SpentGrain,
+    }
+
+    item MotherOfVinegar
+    {
+        DisplayCategory = Food,
+        ItemType = base:food,
+        CantEat = true,
+        FoodType = NoExplicit,
+        DaysFresh = 30,
+        DaysTotallyRotten = 40,
+        Weight = 0.6,
+        Icon = MotherOfVinegar,
+        WorldStaticModel = JarFoodBrown,
+        Tooltip = Tooltip_TraditionalPreservationVinegar_MotherOfVinegar,
+    }
+
+}

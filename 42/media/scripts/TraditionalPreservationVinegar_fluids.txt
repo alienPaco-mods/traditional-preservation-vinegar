@@ -1,0 +1,59 @@
+module Base
+{
+    /* Sweet wort from the mash. Drinkable, as real wort is, but mostly sugar. */
+    fluid MaltWort
+    {
+        ColorReference = SandyBrown,
+        DisplayName = Fluid_Name_MaltWort,
+        Categories
+        {
+            Beverage,
+        }
+        Properties
+        {
+            HungerChange = -5.0,
+            ThirstChange = -20.0,
+            Calories = 300.0,
+            Carbohydrates = 70.0,
+            Proteins = 2.0,
+        }
+        BlendWhiteList
+        {
+            whitelist = true,
+            fluids
+            {
+                MaltWort,
+            }
+        }
+    }
+
+    /* Wort after the yeast: a weak, flat, unhopped ale. The cask turns it to vinegar. */
+    fluid MaltFermentedWort
+    {
+        ColorReference = Tan,
+        DisplayName = Fluid_Name_MaltFermentedWort,
+        Categories
+        {
+            Beverage,
+            Alcoholic,
+        }
+        Properties
+        {
+            HungerChange = -5.0,
+            ThirstChange = -20.0,
+            UnhappyChange = 5.0,
+            Calories = 300.0,
+            Carbohydrates = 20.0,
+            Proteins = 2.0,
+            alcohol = 0.04,
+        }
+        BlendWhiteList
+        {
+            whitelist = true,
+            fluids
+            {
+                MaltFermentedWort,
+            }
+        }
+    }
+}

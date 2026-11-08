@@ -1,0 +1,12 @@
+module Base
+{
+    xuiSkin default
+    {
+        entity ES_MaltingFloor
+        {
+            LuaWindowClass = ISEntityWindow,
+            DisplayName = MaltingFloor,
+            Icon = Item_MaltingFloor,
+        }
+    }
+}

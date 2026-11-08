@@ -1,0 +1,49 @@
+module TraditionalPreservationVinegar
+{
+    entity Vinegar_Cask
+    {
+        /* No window: the cask is one continuous pool kept in its ModData (Orléans method). */
+        component UiConfig
+        {
+            xuiSkin = default,
+            entityStyle = ES_VinegarCask,
+            uiEnabled = false,
+        }
+        component SpriteConfig
+        {
+            isThumpable = false,
+            face S
+            {
+                layer
+                {
+                    row = traditionalpreservationvinegar_01_11,
+                }
+            }
+            face E
+            {
+                layer
+                {
+                    row = traditionalpreservationvinegar_01_10,
+                }
+            }
+        }
+        component CraftRecipe
+        {
+            timedAction = BuildWoodenStructureMedium,
+            time = 250,
+            SkillRequired = Woodwork:4,
+            xpAward = Woodwork:20,
+            category = Furniture,
+            Tags = Carpentry;Furniture,
+            Tooltip = Tooltip_craft_vinegarCaskDesc,
+            inputs
+            {
+                item 1 tags[base:hammer] mode:keep flags[Prop1;MayDegradeVeryLight],
+                item 10 [Base.Plank],
+                item 16 [Base.Nails],
+                item 6 [Base.Twine],
+                item 1 [Base.RippedSheets;Base.BurlapPiece;Base.CheeseCloth] mode:destroy,
+            }
+        }
+    }
+}

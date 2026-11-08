@@ -1,0 +1,65 @@
+module TraditionalPreservationVinegar
+{
+    entity Malting_Floor
+    {
+        component UiConfig
+        {
+            xuiSkin = default,
+            entityStyle = ES_MaltingFloor,
+            uiEnabled = true,
+        }
+        component Resources
+        {
+            group craft_inputs
+            {
+                Item@Input@4,
+            }
+            group craft_outputs
+            {
+                Item@Output@4@StackAny,
+            }
+        }
+        component CraftLogic
+        {
+            Recipes = MaltingFloor,
+            StartMode = Manual,
+            inputGroup = craft_inputs,
+            outputGroup = craft_outputs,
+            actionAnim = Untie_Mid,
+        }
+        component SpriteConfig
+        {
+            isThumpable = false,
+            face S
+            {
+                layer
+                {
+                    row = traditionalpreservationvinegar_01_25,
+                }
+            }
+            face E
+            {
+                layer
+                {
+                    row = traditionalpreservationvinegar_01_24,
+                }
+            }
+        }
+        component CraftRecipe
+        {
+            timedAction = BuildWoodenStructureMedium,
+            time = 120,
+            SkillRequired = Woodwork:2,
+            xpAward = Woodwork:10,
+            category = Furniture,
+            Tags = Carpentry;Furniture,
+            Tooltip = Tooltip_craft_maltingFloorDesc,
+            inputs
+            {
+                item 1 tags[base:hammer] mode:keep flags[Prop1;MayDegradeVeryLight],
+                item 6 [Base.Plank],
+                item 8 [Base.Nails],
+            }
+        }
+    }
+}

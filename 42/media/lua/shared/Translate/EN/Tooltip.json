@@ -1,0 +1,13 @@
+{
+  "Tooltip_TraditionalPreservationVinegar_Bottle": "Needs an empty bottle and a fully soured Orléans Vinegar Cask within two squares. Takes 1 L from the cask and gives one vanilla Vinegar.",
+  "Tooltip_craft_fermentationVesselDesc": "A sealed vessel with a water outlet for the gas. Turns 10 or 20 L of wort and a packet of yeast into fermented wort. Works best at 18 to 25 C.",
+  "Tooltip_craft_vinegarCaskDesc": "A 30 L cask under a breathable cloth, kept going by the Orleans method: pour in fermented wort, bottle the vinegar once it has fully soured, and leave some behind. Grows a Mother of Vinegar. Works best at 20 to 30 C.",
+  "Tooltip_TraditionalPreservationVinegar_SteepedGrain": "Soaked grain, ready to spread on a Malting Floor.",
+  "Tooltip_TraditionalPreservationVinegar_GreenMalt": "Sprouted grain. Heat it on a fire or in an oven within a few days to dry it into Malt. Rotten Green Malt won't kiln, but the composter takes it.",
+  "Tooltip_TraditionalPreservationVinegar_Malt": "Dried and ready to mash. It keeps.",
+  "Tooltip_TraditionalPreservationVinegar_BucketMash": "Heat this on a fire or in an oven to turn its starch into sugar.",
+  "Tooltip_craft_maltingFloorDesc": "A shallow tray for sprouting grain. Holds four lots of Steeped Grain. Works best at 12 to 20 C.",
+  "Tooltip_TraditionalPreservationVinegar_BucketPreparedMash": "Strain it through a cloth with Strain Mash to get 10 L of wort.",
+  "Tooltip_TraditionalPreservationVinegar_SpentGrain": "Left over from straining. Put it in a composter.",
+  "Tooltip_TraditionalPreservationVinegar_MotherOfVinegar": "A living vinegar culture. Add it to an Orléans Vinegar Cask that has none. It dies after about a month in the jar."
+}

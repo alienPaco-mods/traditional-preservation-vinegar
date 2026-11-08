@@ -1,0 +1,69 @@
+module TraditionalPreservationVinegar
+{
+    entity Fermentation_Vessel
+    {
+        component UiConfig
+        {
+            xuiSkin = default,
+            entityStyle = ES_FermentationVessel,
+            uiEnabled = true,
+        }
+        component Resources
+        {
+            group craft_inputs
+            {
+                Item@Input@1,
+                Fluid@Input@20,
+            }
+            group craft_outputs
+            {
+                Item@Output@1,
+                Fluid@Output@20,
+            }
+        }
+        component CraftLogic
+        {
+            Recipes = FermentationVessel,
+            StartMode = Manual,
+            inputGroup = craft_inputs,
+            outputGroup = craft_outputs,
+            actionAnim = Untie_Mid,
+        }
+        component SpriteConfig
+        {
+            isThumpable = false,
+            face S
+            {
+                layer
+                {
+                    row = traditionalpreservationvinegar_01_1,
+                }
+            }
+            face E
+            {
+                layer
+                {
+                    row = traditionalpreservationvinegar_01_0,
+                }
+            }
+        }
+        component CraftRecipe
+        {
+            timedAction = BuildWoodenStructureMedium,
+            time = 200,
+            SkillRequired = Woodwork:3,
+            xpAward = Woodwork:15,
+            category = Furniture,
+            Tags = Carpentry;Furniture,
+            Tooltip = Tooltip_craft_fermentationVesselDesc,
+            inputs
+            {
+                item 1 tags[base:hammer] mode:keep flags[Prop1;MayDegradeVeryLight],
+                item 8 [Base.Plank],
+                item 12 [Base.Nails],
+                item 4 [Base.Twine],
+                item 1 tags[base:jar] mode:destroy,
+            }
+        }
+    }
+}

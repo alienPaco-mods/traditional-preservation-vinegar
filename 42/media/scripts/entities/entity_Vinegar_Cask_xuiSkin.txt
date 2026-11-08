@@ -1,0 +1,12 @@
+module Base
+{
+    xuiSkin default
+    {
+        entity ES_VinegarCask
+        {
+            LuaWindowClass = ISEntityWindow,
+            DisplayName = VinegarCask,
+            Icon = Item_VinegarCask,
+        }
+    }
+}

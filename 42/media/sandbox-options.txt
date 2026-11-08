@@ -1,0 +1,55 @@
+VERSION = 1,
+
+option TraditionalPreservationVinegar.MaltingDays {
+    type = double,
+    min = 1.0,
+    max = 30.0,
+    default = 5.0,
+    page = TraditionalPreservationVinegar,
+    translation = TraditionalPreservationVinegar_MaltingDays,
+}
+
+option TraditionalPreservationVinegar.AlcoholicDays {
+    type = double,
+    min = 1.0,
+    max = 60.0,
+    default = 10.0,
+    page = TraditionalPreservationVinegar,
+    translation = TraditionalPreservationVinegar_AlcoholicDays,
+}
+
+option TraditionalPreservationVinegar.AceticDays {
+    type = double,
+    min = 1.0,
+    max = 120.0,
+    default = 35.0,
+    page = TraditionalPreservationVinegar,
+    translation = TraditionalPreservationVinegar_AceticDays,
+}
+
+option TraditionalPreservationVinegar.CultureBonus {
+    type = integer,
+    min = 0,
+    max = 75,
+    default = 25,
+    page = TraditionalPreservationVinegar,
+    translation = TraditionalPreservationVinegar_CultureBonus,
+}
+
+option TraditionalPreservationVinegar.TemperatureSensitivity {
+    type = enum,
+    numValues = 4,
+    default = 3,
+    page = TraditionalPreservationVinegar,
+    translation = TraditionalPreservationVinegar_TemperatureSensitivity,
+    valueTranslation = TraditionalPreservationVinegar_TemperatureSensitivity,
+}
+
+option TraditionalPreservationVinegar.BrewingEffort {
+    type = enum,
+    numValues = 3,
+    default = 2,
+    page = TraditionalPreservationVinegar,
+    translation = TraditionalPreservationVinegar_BrewingEffort,
+    valueTranslation = TraditionalPreservationVinegar_BrewingEffort,
+}

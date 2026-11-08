@@ -1,0 +1,137 @@
+module TraditionalPreservationVinegar
+{
+    imports
+    {
+        Base,
+    }
+
+    craftRecipe SteepGrain
+    {
+        timedAction = Making,
+        time = 120,
+        Tags = InHandCraft,
+        category = Cooking,
+        xpAward = Cooking:2,
+        inputs
+        {
+            item 24 [Base.BarleySeed;Base.WheatSeed;Base.RyeSeed] flags[ItemCount] mode:destroy,
+            item 1 [*],
+            -fluid 4.0 [Water],
+        }
+        outputs
+        {
+            item 1 TraditionalPreservationVinegar.SteepedGrain,
+        }
+    }
+
+    /* time is overwritten from MALTING_HOURS in TraditionalPreservationVinegar.lua */
+    craftRecipe MaltGrain
+    {
+        time = 432000,
+        Tags = MaltingFloor,
+        category = Cooking,
+        OnStart = TraditionalPreservationVinegar.onMaltStart,
+        OnUpdate = TraditionalPreservationVinegar.onMaltUpdate,
+        inputs
+        {
+            item variable[1:4] [TraditionalPreservationVinegar.SteepedGrain] flags[ItemCount] mode:destroy,
+        }
+        outputs
+        {
+            item variable[1:4] TraditionalPreservationVinegar.GreenMalt,
+        }
+    }
+
+    /* Crushing is folded in here. The mash then has to be heated, then strained. */
+    craftRecipe MashMalt
+    {
+        timedAction = Making,
+        time = 300,
+        Tags = InHandCraft,
+        category = Cooking,
+        xpAward = Cooking:3,
+        inputs
+        {
+            item 1 [TraditionalPreservationVinegar.Malt] flags[ItemCount] mode:destroy,
+            item 1 tags[base:metalbucket] mode:destroy,
+            -fluid 10.0 [Water],
+        }
+        outputs
+        {
+            item 1 TraditionalPreservationVinegar.BucketMash,
+        }
+    }
+
+    /* Lautering: the grain stays in the cloth and the bucket keeps 10 L of wort, which OnCreate pours in. */
+    craftRecipe StrainMash
+    {
+        timedAction = Making,
+        time = 200,
+        Tags = InHandCraft,
+        category = Cooking,
+        xpAward = Cooking:3,
+        OnCreate = TraditionalPreservationVinegar.onStrained,
+        inputs
+        {
+            item 1 [TraditionalPreservationVinegar.BucketPreparedMash] flags[ItemCount] mode:destroy,
+            item 1 [Base.RippedSheets;Base.CheeseCloth] mode:keep,
+        }
+        outputs
+        {
+            item 1 Base.BucketEmpty,
+            item 1 TraditionalPreservationVinegar.SpentGrain,
+        }
+    }
+
+    /* A stand-in for a finished vessel run. The world code swaps it for fermented wort in the tank. */
+    item FermentedBatch
+    {
+        DisplayCategory = Food,
+        ItemType = base:normal,
+        Weight = 0.1,
+        Icon = Yeast,
+        WorldStaticModel = Yeast,
+    }
+
+    /* time is overwritten from ALCOHOLIC_HOURS in TraditionalPreservationVinegar.lua. The engine can't
+       hold a liquid recipe to its amounts, so the world code takes 10 or 20 L of wort from the tank when
+       the run starts and puts back 95% as fermented wort when the marker comes out. A station slot takes a
+       drainable whole, so a run uses one full packet of yeast. */
+    craftRecipe FermentWort
+    {
+        time = 864000,
+        Tags = FermentationVessel,
+        category = Cooking,
+        OnStart = TraditionalPreservationVinegar.onFermentStart,
+        OnUpdate = TraditionalPreservationVinegar.onFermentUpdate,
+        inputs
+        {
+            item 1 [Base.Yeast] flags[ItemCount] mode:destroy,
+        }
+        outputs
+        {
+            item 1 TraditionalPreservationVinegar.FermentedBatch,
+        }
+    }
+
+    /* OnTest wants an empty bottle and a cask with vinegar in reach. OnCreate takes the vinegar from the cask. */
+    craftRecipe BottleVinegar
+    {
+        timedAction = Making,
+        time = 40,
+        Tags = InHandCraft,
+        category = Cooking,
+        xpAward = Cooking:1,
+        Tooltip = Tooltip_TraditionalPreservationVinegar_Bottle,
+        OnTest = TraditionalPreservationVinegar.canBottle,
+        OnCreate = TraditionalPreservationVinegar.onBottled,
+        inputs
+        {
+            item 1 [Base.BeerImported;Base.Brandy;Base.Champagne;Base.Cider;Base.CoffeeLiquer;Base.Curacao;Base.Gin;Base.Grenadine;Base.Port;Base.Rum;Base.Scotch;Base.Sherry;Base.Tequila;Base.Vermouth;Base.Vodka;Base.Whiskey;Base.Wine;Base.Wine2;Base.WineOpen;Base.Wine2Open;Base.WineAged;Base.WineScrewtop;Base.BottleCrafted;Base.WaterBottle;Base.PopBottle;Base.PopBottleRare;Base.MilkBottle] flags[ItemCount] mode:destroy,
+        }
+        outputs
+        {
+            item 1 Base.Vinegar2,
+        }
+    }
+}

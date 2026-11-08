@@ -1,0 +1,20 @@
+{
+  "ContextMenu_TraditionalPreservationVinegar_Bottle": "Bottle Vinegar",
+  "ContextMenu_TraditionalPreservationVinegar_AnyBottle": "Any Bottle",
+  "ContextMenu_TraditionalPreservationVinegar_AllBottles": "All Bottles (%1)",
+  "ContextMenu_TraditionalPreservationVinegar_EmptyCask": "Empty Cask",
+  "ContextMenu_TraditionalPreservationVinegar_PourWort": "Pour Wort",
+  "ContextMenu_TraditionalPreservationVinegar_DrawOff": "Draw Off Fermented Wort",
+  "ContextMenu_TraditionalPreservationVinegar_PourFermented": "Pour Fermented Wort",
+  "ContextMenu_TraditionalPreservationVinegar_AllContainers": "All (%1)",
+  "ContextMenu_TraditionalPreservationVinegar_TakeMother": "Take Mother",
+  "ContextMenu_TraditionalPreservationVinegar_SplitMother": "Split Mother",
+  "ContextMenu_TraditionalPreservationVinegar_AddMother": "Add Mother",
+  "ContextMenu_TraditionalPreservationVinegar_AttachHose": "Attach Hose to Cask",
+  "ContextMenu_TraditionalPreservationVinegar_DetachHose": "Detach Hose",
+  "ContextMenu_TraditionalPreservationVinegar_CaskInfo": "Cask Info",
+  "ContextMenu_TraditionalPreservationVinegar_PumpToCask": "Pump to Cask",
+  "ContextMenu_TraditionalPreservationVinegar_PumpLitres": "%1 L",
+  "ContextMenu_TraditionalPreservationVinegar_PumpAirLine": "Up to the air line (%1 L)",
+  "ContextMenu_TraditionalPreservationVinegar_PumpAll": "All that fits (%1 L)"
+}

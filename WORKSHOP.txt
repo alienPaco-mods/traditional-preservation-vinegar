@@ -1,0 +1,93 @@
+[h1]Traditional Preservation (Vinegar)[/h1]
+
+Make your own malt vinegar from the grain you grow. Malt it, mash it, ferment it with yeast, and let an Orléans cask and its living mother do the rest. It ends in the real vanilla Vinegar, so it works in every vanilla recipe, pickling included. Built for long playthroughs, when the looted vinegar is gone.
+
+[b]Build 42 only (42.20 or newer). This is an early release, so back up your save before enabling it. Singleplayer only: multiplayer is not supported.[/b]
+
+[h2]Features[/h2]
+[list]
+[*]A fully farmable chain from barley, wheat or rye
+[*]Ends in the real vanilla Vinegar, for every vanilla recipe
+[*]A full batch gives 15 bottles, enough to pickle 75 jars
+[*]A buildable Malting Floor, Fermentation Vessel and Orléans Vinegar Cask, each with two facings and its own stages
+[*]A continuous cask the Orléans way: draw vinegar off, top up with new, never empty it
+[*]A Mother of Vinegar that grows in the cask, speeds it up, and can be split to start another cask
+[*]An optional rubber hose to pump fermented wort from the vessel into the cask, in the amount you choose
+[*]Temperature matters: a cold winter nearly stops a batch, a roof helps, and a basement holds 15 C all year
+[*]Works without power, and keeps working while you are away
+[/list]
+
+[h2]The chain[/h2]
+[olist]
+[*][b]Steep Grain[/b] (crafting menu): 24 barley, wheat or rye seeds and 4 L of water give Steeped Grain.
+[*][b]Malting Floor[/b]: load up to 4 Steeped Grain and press Craft. It sprouts into Green Malt in 5 days at 12 to 20 C.
+[*][b]Kiln[/b]: put the Green Malt on a fire or in an oven for about 3 hours. Malt keeps forever. Green Malt doesn't: it's fresh for 2 days and rotten after 5, and rotten Green Malt won't kiln. Compost it.
+[*][b]Mash Malt[/b] (crafting menu): 1 Malt and a metal bucket holding 10 L of water.
+[*][b]Heat the mash[/b] on a fire or in an oven for about 1.5 hours.
+[*][b]Strain Mash[/b] (crafting menu, with a Ripped Sheet or Cheesecloth, kept): the bucket comes back holding 10 L of Wort, plus Spent Grain for the composter or your farm animals.
+[*][b]Fermentation Vessel[/b]: pour in 10 or 20 L of wort, add one full packet of Yeast and press Craft. 10 days at 18 to 25 C gives 95% back as Fermented Wort.
+[*][b]Orléans Vinegar Cask[/b]: pour the fermented wort in. The pool sours in 35 days at 20 to 30 C, 26 with a mother.
+[*][b]Bottle Vinegar[/b]: from the cask's right-click menu, 1 L and an empty bottle make one vanilla Vinegar.
+[/olist]
+
+From threshed grain, the first vinegar takes about 55 to 60 days in good weather. After that, a cask that's kept topped up gives more every week or so.
+
+[h2]The stations[/h2]
+All three are under Furniture in the Build menu and need a hammer (kept).
+[list]
+[*][b]Malting Floor[/b], Carpentry 2: 6 planks, 8 nails.
+[*][b]Fermentation Vessel[/b], Carpentry 3: 8 planks, 12 nails, 4 twine, 1 jar.
+[*][b]Orléans Vinegar Cask[/b], Carpentry 4: 10 planks, 16 nails, 6 twine, 1 cloth.
+[/list]
+
+[h2]The vessel[/h2]
+The vessel's window has a yeast slot and two tanks, Wort and Fermented. A run takes whole buckets, 10 or 20 L, and one packet of yeast either way, so two buckets is the efficient run. While it ferments the wort is held by the run, and the status line and the batch's hover show how much. Cancel gives back the wort and the yeast. When it's done, Draw Off Fermented Wort into any empty container.
+
+[h2]The Orléans cask[/h2]
+The cask is one pool of up to 30 L that you keep going for the whole game. Everything is in its right-click menu.
+[list]
+[*]New fermented wort thins the pool: 15 L at 100% topped up with 5 L becomes 20 L at 75%.
+[*]Souring loses about a fifth to the air, so 19 L of fermented wort becomes about 15.5 L of vinegar.
+[*]The culture needs air. Over 22.5 L it slows, to half speed when brimming at 30 L.
+[*]You can only bottle once the pool is 100% soured. What's left after the last whole bottle stays behind as starter.
+[*]The status line shows the litres, how soured it is and the time left. Click the cask, or pick [b]Cask Info[/b], for a small window with bars for both, the temperature, the working rate, the mother and the hose.
+[/list]
+
+[b]The mother.[/b] A cask grows its own Mother of Vinegar the first time it fully sours. It makes souring 25% quicker, but only while the pool is at least 25% soured, so follow the old rule: keep about a third as much vinegar in the cask as the fermented wort you're about to add. Keep much more than that and the cask runs short of air. The mother thickens a layer for about every 15 L of vinegar. From 2 layers you can Split Mother into an empty jar to start another cask, or Take Mother to move it. In a jar it lives about a month.
+
+[b]The hose.[/b] Attach a Rubber Hose (used up, needs pliers) from a vessel to a cask within 2 squares. Then use Pump to Cask on either station: 5 L, 10 L, up to the air line (22.5 L, the best souring speed) or all that fits. Detach gives the hose back.
+
+[h2]Temperature[/h2]
+[list]
+[*][b]Outdoors[/b]: the day's weather. A vessel in the sun above 35 C loses part of its batch.
+[*][b]Under a roof[/b]: a building evens out the weather. It follows the last 10 days' average outdoors plus 10 C, never over 28 C.
+[*][b]In a basement[/b]: 15 C all year. Malting runs at full speed, the vessel takes about 13 days and the cask about 54.
+[/list]
+Malt in a cool season or a basement, brew and sour in a warm room from spring to autumn, and keep going slowly below ground through winter. Hover a running batch for its time left and working rate.
+
+[h2]Good to know[/h2]
+[list]
+[*]Wort and Fermented Wort are real liquids that never mix with anything else. Both are drinkable.
+[*]Any empty bottle of 1 L or more works, glass or plastic. A used-up Vinegar gives its bottle back.
+[*]Threshed grain doesn't spoil, so one harvest of 48 grain per batch lasts all year.
+[*]No vanilla recipe or loot table is changed.
+[*]The tiledef number 5130 must be unique among your active mods.
+[/list]
+
+[h2]Sandbox options[/h2]
+Set the malting, fermenting and souring days, the mother's speed bonus, temperature sensitivity (Off to Harsh) and Brewing effort, which sets how long the kiln, the mash heating and the hand crafts take.
+
+[h2]A little history[/h2]
+English malt vinegar, once called alegar, began as soured ale. It was soured by the Orléans method, used in France since the Middle Ages: a barrel kept about three quarters full, with air holes above the liquid and a pale mother floating on top. Every week or two some vinegar was drawn off and the same amount of new ale poured in under the mother. The barrel was never emptied, and a thick mother could have a layer peeled off to start another barrel.
+
+[h2]Works well with[/h2]
+[b]Traditional Preservation (Yeast)[/b] makes the vanilla Yeast each vessel run needs. [b]Traditional Preservation (Salt)[/b] and [b](Fish)[/b] complete the pickling and preserving pantry. This mod needs no other mods.
+
+[h2]Known limitations[/h2]
+[list]
+[*]Multiplayer is not supported. This mod is singleplayer only for now.
+[*]Stations indoors go by the outdoor weather and the season, so heating a room doesn't speed them up.
+[*]Apples and grapes aren't used, as vanilla can't grow them.
+[/list]
+
+Bug reports are welcome in the comments. Please include any repeating errors from your console.txt.
