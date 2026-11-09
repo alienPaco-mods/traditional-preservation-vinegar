@@ -47,6 +47,7 @@ function World.floorSprite(waiting, progress, finished)
     return nil
 end
 
+-- Sediment shows from SEDIMENT_FROM through a run.
 function World.vesselSprite(waiting, progress, finished)
     if progress then
         return progress >= SEDIMENT_FROM and V.VESSEL_SEDIMENT or V.VESSEL_BUBBLING
@@ -200,6 +201,7 @@ local tracker = Station.tracker({ sprites = Tiles.STATIONS, entry = newEntry, re
 
 World.track = tracker.track
 
+-- Redraws a tracked station now, without waiting for the next tick, e.g. after a pour.
 function World.refresh(station)
     local entry = tracker.entry(station)
     if entry then refresh(station, entry) end

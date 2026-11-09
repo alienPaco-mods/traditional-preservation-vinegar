@@ -478,6 +478,7 @@ function CaskWindow:new(playerObj, cask)
     return o
 end
 
+-- One Cask Info window at a time: opening another closes the last.
 function CaskWindow.open(playerObj, cask)
     if CaskWindow.instance then CaskWindow.instance:close() end
     local window = CaskWindow:new(playerObj, cask)
@@ -517,6 +518,7 @@ local function wrapped(text, width)
     return lines
 end
 
+-- Draws a label and value line at y and returns the next line's y. bar does the same with a filled bar.
 function CaskWindow:row(y, label, value)
     self:drawText(label, CASK_WINDOW_PADDING, y, 0.7, 0.7, 0.7, 1, UIFont.Small)
     self:drawText(value, CASK_WINDOW_PADDING + CASK_LABEL_WIDTH, y, 1, 1, 1, 1, UIFont.Small)

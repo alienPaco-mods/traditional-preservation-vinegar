@@ -105,6 +105,7 @@ local function scaled(rate)
     return Weather.scaled(rate, V.SENSITIVITY, V.MIN_RATE)
 end
 
+-- Each stage's speed at a temperature, 0 to 1, after the sandbox's sensitivity.
 function V.maltingRate(celsius)
     return scaled(Weather.curve(MALTING_CURVE, celsius))
 end
@@ -131,6 +132,7 @@ local KINDS = {
     acetic = function(celsius) return V.aceticRate(celsius) end,
 }
 
+-- One total per stage and place, plus the hours too hot for fermenting.
 function V.newLedger(now)
     local ledger = Weather.newLedger(now, KINDS)
     ledger.heat = 0
@@ -145,6 +147,7 @@ function V.advance(ledger, now, temperature)
     end
 end
 
+-- Filled once on OnInitGlobalModData (fillLedger), so this is a plain lookup.
 function V.getLedger()
     return Weather.getLedger(V.MOD_DATA_KEY, V.newLedger)
 end
@@ -191,6 +194,7 @@ local function updateRun(craftRecipeData, kind, speed)
     Weather.showProgress(craftRecipeData, ledger, kind, place, speed, getGameTime():getWorldAgeHours())
 end
 
+-- OnStart and OnUpdate hooks the recipe scripts name, one pair per weather-timed stage.
 function V.onMaltStart(craftRecipeData)
     startRun(craftRecipeData, "malting")
 end
@@ -214,6 +218,7 @@ function V.batchStatus(kind, modData, recipeHours, ledger)
     return status
 end
 
+-- The share of a batch lost to hours too hot, up to MAX_HEAT_LOSS.
 function V.heatLoss(heatHours)
     return math.min(heatHours * V.HEAT_LOSS_PER_HOUR * V.SENSITIVITY, V.MAX_HEAT_LOSS)
 end
@@ -254,11 +259,13 @@ local STATION_INPUTS = {
     vessel = { "Base.Yeast", "IGUI_TraditionalPreservationVinegar_NeedsYeast" },
 }
 
+-- The translation key saying what this station takes, or nil if fullType is it.
 function V.inputRefusal(kind, fullType)
     local input = STATION_INPUTS[kind]
     return fullType ~= input[1] and input[2] or nil
 end
 
+-- The tile number of one of this mod's sprites, or nil for any other.
 function V.spriteIndex(name)
     if string.sub(name, 1, #V.SPRITE_PREFIX) ~= V.SPRITE_PREFIX then return nil end
     return tonumber(string.sub(name, #V.SPRITE_PREFIX + 1))
@@ -274,6 +281,7 @@ local function stationBase(object, base)
     return index and index >= base and index < base + V.FACE_COUNT
 end
 
+-- Each station has FACE_COUNT tiles from its base, one per facing.
 function V.isCask(object)
     return stationBase(object, V.CASK_SPRITE)
 end
@@ -338,6 +346,7 @@ function V.caskState(cask)
     return state
 end
 
+-- Millilitres the cask can still take.
 function V.caskRoom(state)
     return math.max(V.CASK_ML - state.ml, 0)
 end
@@ -351,11 +360,13 @@ function V.pourIntoCask(state, ml)
     return ml
 end
 
+-- A cask souring with air above it works best: full speed up to AIR_ML, slowing to CROWDED_RATE full.
 function V.airShare(ml)
     if ml <= V.AIR_ML then return 1 end
     return lerp(1, V.CROWDED_RATE, math.min((ml - V.AIR_ML) / (V.CASK_ML - V.AIR_ML), 1))
 end
 
+-- A mother in vinegar at least STARTER_STRENGTH makes the pool sour faster (CULTURE_BONUS).
 function V.hasStarter(state)
     return state.mother and state.strength >= V.STARTER_STRENGTH
 end
@@ -424,6 +435,7 @@ function V.emptyCask(state)
     state.ml, state.strength = 0, 0
 end
 
+-- 0 without a mother.
 function V.motherLayers(state)
     return state.mother and (state.layers or 1) or 0
 end
@@ -451,6 +463,7 @@ function V.takeMother(state)
     return true
 end
 
+-- A mother needs two layers to split: one to take, one to stay.
 function V.canSplitMother(state)
     return V.motherLayers(state) >= 2
 end
@@ -484,6 +497,7 @@ local function squareOf(station)
     return { x = square:getX(), y = square:getY(), z = square:getZ() }
 end
 
+-- Two squares ({ x, y, z }) a hose can join: same floor, HOSE_REACH apart at most each way.
 function V.inHoseReach(a, b)
     return a.z == b.z and math.abs(a.x - b.x) <= V.HOSE_REACH and math.abs(a.y - b.y) <= V.HOSE_REACH
 end
@@ -520,11 +534,14 @@ function V.caskForHose(vessel)
     return nil
 end
 
+-- Each end keeps the other's square in its modData, so the link survives either being unloaded.
 function V.connectHose(vessel, cask)
     vessel:getModData().vinegarHose = squareOf(cask)
     cask:getModData().vinegarHose = squareOf(vessel)
 end
 
+-- Clears both ends, or only this one if the other isn't loaded; that end drops its hose when it next
+-- loads and finds no station here (World's tendHose).
 function V.disconnectHose(station)
     local partner = V.hosePartner(station)
     if partner then partner:getModData().vinegarHose = nil end
@@ -573,6 +590,7 @@ function V.pumpChoices(state, availableMl)
     return choices
 end
 
+-- Attaching or detaching the hose takes pliers; a broken pair won't do.
 function V.findPliers(inventory)
     return inventory:getFirstTagEvalRecurse(ItemTag.PLIERS, function(item) return not item:isBroken() end)
 end
@@ -601,6 +619,7 @@ local function hasVinegar(object)
     return V.isCask(object) and V.bottlesLeft(V.caskState(object)) > 0
 end
 
+-- A cask in reach with at least a bottle's worth of finished vinegar.
 function V.findCaskWithVinegar(character)
     return V.findNear(character, hasVinegar)
 end
@@ -610,6 +629,7 @@ function V.isEmptyBottle(item)
     return fluid ~= nil and fluid:isEmpty()
 end
 
+-- The bottling recipe's OnTest. It scans the squares in reach, but only while a menu is built.
 function V.canBottle(item, character)
     return V.isEmptyBottle(item) and V.findCaskWithVinegar(character) ~= nil
 end
@@ -653,6 +673,7 @@ function V.onBottled(craftRecipeData, character)
     if used:size() > 0 and made:size() > 0 then V.markBottle(made:get(0), used:get(0):getFullType()) end
 end
 
+-- Reads the sandbox options into the stage times, culture bonus, sensitivity and effort.
 function V.applySandbox()
     local options = SandboxVars and SandboxVars.TraditionalPreservationVinegar
     if not options then return end
@@ -668,6 +689,8 @@ local function applyRecipeTime(name, hours)
     Weather.setRecipeHours(RECIPE_MODULE .. name, hours, "TraditionalPreservationVinegar")
 end
 
+-- Sets each recipe's script time from the sandbox, so the crafting window shows the right length.
+-- TEST_HOURS (Dev console) overrides them all.
 function V.applyRecipeTimes()
     V.applySandbox()
     if V.TEST_HOURS then

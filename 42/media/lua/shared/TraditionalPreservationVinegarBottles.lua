@@ -14,10 +14,12 @@ function V.markBottle(vinegar, bottleType)
     if vinegar then vinegar:getModData().bottleType = bottleType end
 end
 
+-- The bottle a used-up Vinegar gives back: the kind it was filled into, else a Crafted Bottle.
 function V.bottleBack(vinegar)
     return vinegar:getModData().bottleType or V.SPARE_BOTTLE
 end
 
+-- A Vinegar the craft used up and nobody has given back a bottle for yet.
 function V.needsBottleBack(item)
     return item:getFullType() == V.VINEGAR_ITEM and item:getCurrentUses() <= 0 and not item:getModData().bottleGiven
 end
@@ -41,6 +43,8 @@ function V.returnBottles(character, usedItems, sparesGiven)
     end
 end
 
+-- Vanilla gives every used-up Vinegar back as a Crafted Bottle. Wraps ISHandcraftAction.performRecipe:
+-- compare with vanilla after a game update. Salt wraps it too (for shakers); each passes through to the other.
 local performRecipe = ISHandcraftAction.performRecipe
 function ISHandcraftAction:performRecipe()
     local inventory = self.character:getInventory()

@@ -1,5 +1,9 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.5
+- Internal: comments on the public functions that lacked one, and an updated copy of the shared core
+  (comments only). No change in play.
+
 ## 0.2.4
 - Internal: the stations' slot rules (adding, green border, refused-drop message) run on the shared core's
   `UI.slotRules`. Same rules, same messages.
