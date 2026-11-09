@@ -6,6 +6,7 @@ Events = { OnInitGlobalModData = { Add = function() end } }
 dofile((os.getenv("TPCORE") or "../_tpcore") .. "/tests/harness.lua").useModPaths()
 dofile("42/media/lua/shared/TraditionalPreservationVinegar.lua")
 local V = TraditionalPreservationVinegar
+local Weather = require "TraditionalPreservationVinegar/Core/Weather"
 
 local MONTHS = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" }
 
@@ -33,8 +34,8 @@ local function daysToFinish(days, first, target, rate, sheltered)
     for index = first, #days do
         for hour = 0, 23 do
             local temperature = hourly(days[index], hour)
-            season = season + (temperature - season) / V.SEASON_HOURS
-            done = done + rate(sheltered and V.shelterTemperature(season) or temperature)
+            season = season + (temperature - season) / Weather.SEASON_HOURS
+            done = done + rate(sheltered and Weather.shelterTemperature(season) or temperature)
             if done >= target then return index - first + hour / 24 end
         end
     end

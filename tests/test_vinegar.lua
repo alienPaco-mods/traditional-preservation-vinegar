@@ -49,8 +49,9 @@ check("sensitivity off runs at full speed", V.alcoholicRate(-20) == 1 and V.acet
 V.SENSITIVITY = 1.5
 check("harsh never stops a batch", V.aceticRate(-20) >= V.MIN_RATE)
 V.SENSITIVITY = 1
-check("a cellar is warmer than a cold month", V.shelterTemperature(0) == 10)
-check("and thick walls cap a hot one", V.shelterTemperature(30) == V.SHELTER_MAX)
+local Weather = require "TraditionalPreservationVinegar/Core/Weather"
+check("a cellar is warmer than a cold month", Weather.shelterTemperature(0) == 10)
+check("and thick walls cap a hot one", Weather.shelterTemperature(30) == Weather.SHELTER_MAX)
 
 check("malting: best at 12 to 20 C", V.maltingRate(12) == 1 and V.maltingRate(20) == 1)
 check("malting: stalls in frost", V.maltingRate(0) < 0.051)

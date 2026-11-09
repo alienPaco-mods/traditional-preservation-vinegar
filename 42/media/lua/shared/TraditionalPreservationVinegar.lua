@@ -116,12 +116,10 @@ end
 
 -- Places and their temperatures are shared with the other Traditional Preservation mods: outdoors, under
 -- a roof (the cellar, which follows the season), or below ground in a basement, at one temperature all year.
+-- These three are the mod's public names, used by the actions, the Dev console and the tools.
 V.PLACES = Weather.PLACES
 V.placeOf = Weather.placeOf
 V.placeTemperature = Weather.placeTemperature
-V.shelterTemperature = Weather.shelterTemperature
-V.SEASON_HOURS = Weather.SEASON_HOURS
-V.SHELTER_MAX = Weather.SHELTER_MAX
 
 -- Ledger keys are kind .. place ("aceticBasement"), as in every save so far.
 local KINDS = {
