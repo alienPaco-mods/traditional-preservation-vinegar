@@ -3,6 +3,8 @@
 -- how much work they have done, including while their chunk was unloaded.
 TraditionalPreservationVinegar = TraditionalPreservationVinegar or {}
 local V = TraditionalPreservationVinegar
+local Weather = require "TraditionalPreservationVinegar/Core/Weather"
+local Station = require "TraditionalPreservationVinegar/Core/Station"
 
 V.MOD_DATA_KEY = "TraditionalPreservationVinegar"
 V.SPRITE_PREFIX = "traditionalpreservationvinegar_01_"
@@ -63,14 +65,6 @@ V.MOTHER_ITEM = "TraditionalPreservationVinegar.MotherOfVinegar"
 -- Long gaps are worked through in steps this big, as the speed changes on the way.
 local SOUR_STEP = 0.02
 
--- A cellar follows the season, not the day: the running mean of the last ten days or so, a bit
--- warmer, and never hotter than thick walls allow.
-V.SEASON_HOURS = 240
-V.SHELTER_WARMTH = 10
-V.SHELTER_MAX = 28
--- Below ground the earth holds a station near the year's average, whatever the season.
-V.BASEMENT_TEMPERATURE = 15
-
 -- Each hour hotter than this costs an open vessel some of its yield, up to the most it can lose.
 V.HEAT_HARM_ABOVE = 35
 V.HEAT_LOSS_PER_HOUR = 0.01
@@ -96,18 +90,6 @@ local function lerp(from, to, amount)
     return from + (to - from) * amount
 end
 
--- A run of straight lines through { temperature, rate } points, flat past both ends.
-local function curve(points, celsius)
-    if celsius <= points[1][1] then return points[1][2] end
-    for index = 2, #points do
-        local low, high = points[index - 1], points[index]
-        if celsius <= high[1] then
-            return lerp(low[2], high[2], (celsius - low[1]) / (high[1] - low[1]))
-        end
-    end
-    return points[#points][2]
-end
-
 -- Below 10 C barely works, slower to 18, best to 25, active to 30, then falling away.
 local ALCOHOLIC_CURVE = { { 9.9, 0.05 }, { 10, 0.35 }, { 18, 1 }, { 25, 1 }, { 30, 0.85 }, { 35, 0.4 }, { 40, 0.1 } }
 -- Below 10 C barely works, slower to 20, best to 30, then falling away.
@@ -117,78 +99,54 @@ local ACETIC_CURVE = { { 9.9, 0.05 }, { 10, 0.3 }, { 20, 1 }, { 30, 1 }, { 35, 0
 local MALTING_CURVE = { { 4.9, 0.05 }, { 5, 0.3 }, { 12, 1 }, { 20, 1 }, { 28, 0.35 }, { 33, 0.05 } }
 
 local function scaled(rate)
-    return math.max(1 - (1 - rate) * V.SENSITIVITY, V.MIN_RATE)
+    return Weather.scaled(rate, V.SENSITIVITY, V.MIN_RATE)
 end
 
 function V.maltingRate(celsius)
-    return scaled(curve(MALTING_CURVE, celsius))
+    return scaled(Weather.curve(MALTING_CURVE, celsius))
 end
 
 function V.alcoholicRate(celsius)
-    return scaled(curve(ALCOHOLIC_CURVE, celsius))
+    return scaled(Weather.curve(ALCOHOLIC_CURVE, celsius))
 end
 
 function V.aceticRate(celsius)
-    return scaled(curve(ACETIC_CURVE, celsius))
+    return scaled(Weather.curve(ACETIC_CURVE, celsius))
 end
 
-function V.shelterTemperature(seasonTemperature)
-    return math.min(seasonTemperature + V.SHELTER_WARMTH, V.SHELTER_MAX)
-end
+-- Places and their temperatures are shared with the other Traditional Preservation mods: outdoors, under
+-- a roof (the cellar, which follows the season), or below ground in a basement, at one temperature all year.
+V.PLACES = Weather.PLACES
+V.placeOf = Weather.placeOf
+V.placeTemperature = Weather.placeTemperature
+V.shelterTemperature = Weather.shelterTemperature
+V.SEASON_HOURS = Weather.SEASON_HOURS
+V.SHELTER_MAX = Weather.SHELTER_MAX
 
--- Where a station stands decides its temperature: outdoors, under a roof (the cellar), or below
--- ground in a basement, which stays at one temperature all year.
-V.PLACES = { "Open", "Sheltered", "Basement" }
-local KINDS = { malting = V.maltingRate, alcoholic = V.alcoholicRate, acetic = V.aceticRate }
+-- Ledger keys are kind .. place ("aceticBasement"), as in every save so far.
+local KINDS = {
+    malting = function(celsius) return V.maltingRate(celsius) end,
+    alcoholic = function(celsius) return V.alcoholicRate(celsius) end,
+    acetic = function(celsius) return V.aceticRate(celsius) end,
+}
 
 function V.newLedger(now)
-    local ledger = { lastHour = now, heat = 0 }
-    for kind in pairs(KINDS) do
-        for _, place in ipairs(V.PLACES) do ledger[kind .. place] = 0 end
-    end
+    local ledger = Weather.newLedger(now, KINDS)
+    ledger.heat = 0
     return ledger
 end
 
-function V.placeOf(object)
-    local square = object and object:getSquare()
-    if square and square:getZ() < 0 then return "Basement" end
-    if object and not object:isOutside() then return "Sheltered" end
-    return "Open"
-end
-
--- Adds one stretch of weather to the totals.
+-- Adds one stretch of weather to the totals, and counts the hours too hot for an open vessel.
 function V.advance(ledger, now, temperature)
-    local hours = now - ledger.lastHour
-    if hours <= 0 then return end
-    ledger.lastHour = now
-
-    local share = math.min(hours / V.SEASON_HOURS, 1)
-    ledger.seasonTemperature = (ledger.seasonTemperature or temperature) * (1 - share) + temperature * share
-    ledger.temperature = temperature
-    for kind, rateAt in pairs(KINDS) do
-        for _, place in ipairs(V.PLACES) do
-            local rate = rateAt(V.placeTemperature(ledger, place))
-            ledger[kind .. place .. "Rate"] = rate
-            ledger[kind .. place] = (ledger[kind .. place] or 0) + rate * hours
-        end
-    end
-    if temperature > V.HEAT_HARM_ABOVE then
+    local hours = Weather.advance(ledger, now, temperature, KINDS)
+    if hours and temperature > V.HEAT_HARM_ABOVE then
         ledger.heat = ledger.heat + hours
     end
 end
 
+-- A save from before malting or basements has no totals for them.
 function V.getLedger()
-    local data = ModData.getOrCreate(V.MOD_DATA_KEY)
-    if not data.ledger then
-        data.ledger = V.newLedger(getGameTime():getWorldAgeHours())
-    end
-    -- A save from before malting or basements has no totals for them.
-    for kind in pairs(KINDS) do
-        for _, place in ipairs(V.PLACES) do
-            data.ledger[kind .. place] = data.ledger[kind .. place] or 0
-        end
-    end
-    return data.ledger
+    return Weather.fillLedger(Weather.getLedger(V.MOD_DATA_KEY, V.newLedger), KINDS)
 end
 
 -- A run's place, from a run saved before basements too.
@@ -200,12 +158,9 @@ end
 local function startRun(craftRecipeData, kind)
     local ledger = V.getLedger()
     local modData = craftRecipeData:getModData()
-    modData.done = 0
-    modData.last = {}
-    for _, place in ipairs(V.PLACES) do modData.last[place] = ledger[kind .. place] end
+    Weather.startRun(modData, ledger, kind)
     modData.lastHeat = ledger.heat
     modData.heat = 0
-    modData.place = nil
     modData.sheltered = nil
     modData.mother = nil
 end
@@ -220,19 +175,12 @@ local function updateRun(craftRecipeData, kind, speed)
     modData.last = modData.last or { Open = modData.lastOpen, Sheltered = modData.lastSheltered }
 
     local place = runPlace(modData)
-    modData.done = modData.done + ledger[kind .. place] - (modData.last[place] or ledger[kind .. place])
+    modData.done = modData.done + Weather.catchUp(modData.last, ledger, kind, place)
     if place == "Open" then
         modData.heat = modData.heat + ledger.heat - modData.lastHeat
     end
-    for _, each in ipairs(V.PLACES) do modData.last[each] = ledger[kind .. each] end
     modData.lastHeat = ledger.heat
-
-    -- Weather is only recorded every ten minutes, so the bar carries on at the last rate between
-    -- records. That part is only shown, and the next record replaces it.
-    local rate = ledger[kind .. place .. "Rate"] or 0
-    local sinceRecord = math.max(getGameTime():getWorldAgeHours() - ledger.lastHour, 0)
-    local elapsed = (modData.done + sinceRecord * rate) * speed * SECONDS_PER_HOUR
-    craftRecipeData:setElapsedTime(math.min(elapsed, craftRecipeData:getRecipe():getTime()))
+    Weather.showProgress(craftRecipeData, ledger, kind, place, speed, getGameTime():getWorldAgeHours())
 end
 
 function V.onMaltStart(craftRecipeData)
@@ -251,29 +199,11 @@ function V.onFermentUpdate(craftRecipeData)
     updateRun(craftRecipeData, "alcoholic", 1)
 end
 
-function V.placeTemperature(ledger, place)
-    if place == "Basement" then return V.BASEMENT_TEMPERATURE end
-    local temperature = ledger.temperature or 0
-    if place == "Sheltered" then
-        temperature = V.shelterTemperature(ledger.seasonTemperature or temperature)
-    end
-    return temperature
-end
-
 -- How a running batch is doing right now, for its popup. hoursLeft assumes the temperature holds.
 function V.batchStatus(kind, modData, recipeHours, ledger)
-    local place = runPlace(modData)
-    local temperature = V.placeTemperature(ledger, place)
-    local rate = (kind == "malting" and V.maltingRate or V.alcoholicRate)(temperature)
-    local done = modData.done or 0
-    return {
-        progress = math.min(done / recipeHours, 1),
-        hoursLeft = math.max(recipeHours - done, 0) / rate,
-        temperature = temperature,
-        place = place,
-        rate = rate,
-        heatLoss = kind == "alcoholic" and V.heatLoss(modData.heat or 0) or 0,
-    }
+    local status = Weather.batchStatus(modData.done or 0, recipeHours, ledger, runPlace(modData), KINDS[kind])
+    status.heatLoss = kind == "alcoholic" and V.heatLoss(modData.heat or 0) or 0
+    return status
 end
 
 function V.heatLoss(heatHours)
@@ -390,9 +320,7 @@ end
 -- station is picked up and back when it is placed, so the pool and the mother move with the cask,
 -- and there is only ever one of each.
 function V.caskState(cask)
-    local modData = cask:getModData()
-    modData.movableData = modData.movableData or {}
-    local state = modData.movableData
+    local state = Station.movableData(cask)
     -- A cask from before the continuous pool held only finished vinegar.
     if state.vinegarMl then
         state.ml, state.strength, state.vinegarMl = state.vinegarMl, state.vinegarMl > 0 and 1 or 0, nil
@@ -451,16 +379,16 @@ function V.updateCask(state, ledger, place)
     -- A cask from before basements kept its last totals in two fields.
     if state.lastOpen and not state.last then state.last = { Open = state.lastOpen, Sheltered = state.lastSheltered } end
     if state.last then
-        V.sour(state, ledger["acetic" .. place] - (state.last[place] or ledger["acetic" .. place]))
+        V.sour(state, Weather.catchUp(state.last, ledger, "acetic", place))
+    else
+        state.last = Weather.mark({}, ledger, "acetic")
     end
-    state.last = {}
-    for _, each in ipairs(V.PLACES) do state.last[each] = ledger["acetic" .. each] end
     state.lastOpen, state.lastSheltered = nil, nil
 end
 
 -- For the menus. hoursLeft is to fully soured and assumes the temperature holds.
 function V.caskStatus(state, ledger, place)
-    local temperature = V.placeTemperature(ledger, place)
+    local temperature = Weather.placeTemperature(ledger, place)
     local rate = V.aceticRate(temperature)
     return {
         temperature = temperature,

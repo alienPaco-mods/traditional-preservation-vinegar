@@ -8,6 +8,7 @@ function getGameTime() return { getWorldAgeHours = function() return hour end } 
 local store = {}
 ModData = { getOrCreate = function() return store end }
 Events = { OnInitGlobalModData = { Add = function() end } }
+dofile((os.getenv("TPCORE") or "../_tpcore") .. "/tests/harness.lua").useModPaths()
 dofile("42/media/lua/shared/TraditionalPreservationVinegar.lua")
 local V = TraditionalPreservationVinegar
 

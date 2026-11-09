@@ -1,5 +1,6 @@
 -- Checks which sprite each station shows. Run from the mod folder: luajit tests/test_world.lua
 local H = dofile((os.getenv("TPCORE") or "../_tpcore") .. "/tests/harness.lua")
+H.useModPaths()
 function isClient() return false end
 local function noop() end
 Events = { OnInitGlobalModData = { Add = noop }, OnTick = { Add = noop }, EveryTenMinutes = { Add = noop } }

@@ -3,6 +3,7 @@
 -- Each line of the file: world month offset tempMin tempMean tempMax humMin humMean humMax rainy snowy
 ModData = { getOrCreate = function() return {} end }
 Events = { OnInitGlobalModData = { Add = function() end } }
+dofile((os.getenv("TPCORE") or "../_tpcore") .. "/tests/harness.lua").useModPaths()
 dofile("42/media/lua/shared/TraditionalPreservationVinegar.lua")
 local V = TraditionalPreservationVinegar
 

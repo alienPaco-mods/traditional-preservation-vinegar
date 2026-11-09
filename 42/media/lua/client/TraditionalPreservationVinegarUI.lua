@@ -15,6 +15,8 @@ require "TimedActions/ISPourVinegarFluid"
 require "TimedActions/ISVinegarHose"
 require "TimedActions/ISPumpVinegarWort"
 require "ISUI/ISCollapsableWindow"
+local UI = require "TraditionalPreservationVinegar/Core/UI"
+local Station = require "TraditionalPreservationVinegar/Core/Station"
 
 local V = TraditionalPreservationVinegar
 local vanillaItemSlotAddItems = ISCraftLogicPanel.ItemSlotAddItems
@@ -23,14 +25,10 @@ local vanillaVerifyItem = ISItemSlot.defaultVerifyItem
 local vanillaMouseUp = ISItemSlot.onMouseUp
 local vanillaCanPickUp = ISMoveableSpriteProps.canPickUpMoveable
 local vanillaInfoFlags = ISMoveableSpriteProps.getInfoPanelFlagsPerTile
-local vanillaProgressItems = ISWidgetCraftLogicOutputProgress.updateProgressItems
 local vanillaStartCraft = ISWidgetCraftLogicControl.startCraft
 local vanillaOutputTeaser = ISWidgetCraftLogicInputControl.updateOutputItems
 
 local BATCH_RECIPES = { MaltGrain = "malting", FermentWort = "alcoholic" }
-local TOOLTIP_PADDING = 5
-local TOOLTIP_MIN_WIDTH = 150
-local SLOW_RATE = 0.5
 local VINEGAR_ICON = "Item_Vinegar"
 local HOSE_ICON = "Item_RubberHose"
 local WORT_ICON = "media/textures/Item_BucketWort.png"
@@ -41,15 +39,7 @@ local STATION_ICONS = {
     cask = "media/textures/Item_VinegarCask.png",
 }
 
--- The game's translator reads a finished line again as a format pattern, so a percentage followed by
--- a word ("40% soured") makes it throw, and so does a line with %1 given no values. So it is given
--- plain tokens, and the values go in here.
-local function say(key, ...)
-    local values = { ... }
-    local tokens = {}
-    for index = 1, select("#", ...) do tokens[index] = "@" .. index .. "@" end
-    return (string.gsub(getText(key, unpack(tokens)), "@(%d)@", function(index) return tostring(values[tonumber(index)]) end))
-end
+local say, percent = UI.say, UI.percent
 
 local PLACE_TEXT = {
     Open = "IGUI_TraditionalPreservationVinegar_TemperatureOpen",
@@ -61,23 +51,13 @@ local function isStation(entity)
     return V.stationKind(entity) ~= nil
 end
 
-local function shortName(recipe)
-    return string.gsub(recipe:getName(), "^.*%.", "")
-end
-
-local function percent(share)
-    return string.format("%.0f%%", share * 100)
-end
-
 local function litresText(litres)
     return string.format("%.1f", litres)
 end
 
 -- A basement holds one temperature all year, so its time left needs no caveat.
 local function timeText(hours, place)
-    local whole = math.ceil(hours)
-    local key = place == "Basement" and "IGUI_TraditionalPreservationVinegar_TimeSteady" or "IGUI_TraditionalPreservationVinegar_Time"
-    return say(key, string.format("%.0f", math.floor(whole / 24)), string.format("%.0f", whole % 24))
+    return UI.timeText(hours, place == "Basement" and "IGUI_TraditionalPreservationVinegar_TimeSteady" or "IGUI_TraditionalPreservationVinegar_Time")
 end
 
 local function tooltipFor(option, text)
@@ -242,57 +222,26 @@ function ISWidgetCraftLogicControl:startCraft()
     return vanillaStartCraft(self)
 end
 
-local function addLine(layout, label, value, r, g, b)
-    local item = layout:addItem()
-    item:setLabel(getText(label) .. ":", 1, 1, 0.8, 1)
-    item:setValue(value, r or 1, g or 1, b or 1, 1)
-end
-
--- Vanilla's popup goes by the recipe's time alone, so a running batch gets this instead. It runs
--- twice, once to measure and once to draw.
-local function drawBatchTooltip(slot, tooltip, kind, station)
+-- Vanilla's popup goes by the recipe's time alone, so a running batch gets this instead.
+local function drawBatchTooltip(slot, tooltip, name, station)
+    local kind = BATCH_RECIPES[name]
     local data = slot.craftRecipeData
-    -- A batch that has just finished hands its data back to the engine's pool before the slot goes.
-    local recipe = data and data:getRecipe()
-    if not recipe then return end
-    local status = V.batchStatus(kind, data:getModData(), recipe:getTime() / 3600, V.getLedger())
-    local title = getText("EC_CraftLogic_Progress")
-    tooltip:DrawText(tooltip:getFont(), title, TOOLTIP_PADDING, TOOLTIP_PADDING, 1, 1, 0.8, 1)
-    tooltip:adjustWidth(TOOLTIP_PADDING, title)
-
-    local layout = tooltip:beginLayout()
-    addLine(layout, "IGUI_TraditionalPreservationVinegar_Progress", percent(status.progress))
-    -- The run holds its wort, so the vessel's Wort tank reads empty while it ferments.
-    local run = kind == "alcoholic" and station and station:getModData().vinegarRun
-    if run then addLine(layout, "IGUI_TraditionalPreservationVinegar_InRun", say("IGUI_TraditionalPreservationVinegar_Litres", litresText(run.ml / 1000))) end
-    addLine(layout, "IGUI_TraditionalPreservationVinegar_TimeLeft", timeText(status.hoursLeft, status.place))
-    local place = PLACE_TEXT[status.place]
-    addLine(layout, "IGUI_TraditionalPreservationVinegar_Temperature", say(place, string.format("%.0f", status.temperature)))
-    if status.rate < SLOW_RATE then
-        addLine(layout, "IGUI_TraditionalPreservationVinegar_RateLabel", percent(status.rate), 1, 0.7, 0.4)
-    else
-        addLine(layout, "IGUI_TraditionalPreservationVinegar_RateLabel", percent(status.rate))
-    end
-    if status.heatLoss > 0 then
-        addLine(layout, "IGUI_TraditionalPreservationVinegar_Heat", say("IGUI_TraditionalPreservationVinegar_HeatLoss", percent(status.heatLoss)), 1, 0.35, 0.3)
-    end
-    local bottom = layout:render(TOOLTIP_PADDING, TOOLTIP_PADDING + tooltip:getLineSpacing(), tooltip)
-    tooltip:endLayout(layout)
-    tooltip:setHeight(bottom + TOOLTIP_PADDING)
-    tooltip:setWidth(math.max(tooltip:getWidth(), TOOLTIP_MIN_WIDTH))
-end
-
-function ISWidgetCraftLogicOutputProgress:updateProgressItems()
-    vanillaProgressItems(self)
-    for _, slot in ipairs(self.progressItems:getItemSlots()) do
-        local recipe = slot.craftRecipeData and slot.craftRecipeData:getRecipe()
-        local kind = recipe and BATCH_RECIPES[shortName(recipe)]
-        if kind then
-            local station = self.entity
-            slot.drawTooltip = function(itemSlot, tooltip) drawBatchTooltip(itemSlot, tooltip, kind, station) end
+    local status = V.batchStatus(kind, data:getModData(), data:getRecipe():getTime() / 3600, V.getLedger())
+    UI.drawTooltip(tooltip, function(layout)
+        UI.addLine(layout, "IGUI_TraditionalPreservationVinegar_Progress", percent(status.progress))
+        -- The run holds its wort, so the vessel's Wort tank reads empty while it ferments.
+        local run = kind == "alcoholic" and station and station:getModData().vinegarRun
+        if run then UI.addLine(layout, "IGUI_TraditionalPreservationVinegar_InRun", say("IGUI_TraditionalPreservationVinegar_Litres", litresText(run.ml / 1000))) end
+        UI.addLine(layout, "IGUI_TraditionalPreservationVinegar_TimeLeft", timeText(status.hoursLeft, status.place))
+        UI.addLine(layout, "IGUI_TraditionalPreservationVinegar_Temperature", say(PLACE_TEXT[status.place], string.format("%.0f", status.temperature)))
+        UI.addRateLine(layout, "IGUI_TraditionalPreservationVinegar_RateLabel", status.rate)
+        if status.heatLoss > 0 then
+            UI.addLine(layout, "IGUI_TraditionalPreservationVinegar_Heat", say("IGUI_TraditionalPreservationVinegar_HeatLoss", percent(status.heatLoss)), UI.WARNING_COLOUR)
         end
-    end
+    end)
 end
+
+UI.progressTooltips({ MaltGrain = drawBatchTooltip, FermentWort = drawBatchTooltip })
 
 -- Every item on the player or in containers in reach that passes test.
 local function findItems(playerObj, test)
@@ -606,7 +555,7 @@ end
 function CaskWindow:update()
     ISCollapsableWindow.update(self)
     local square, player = self.cask:getSquare(), self.playerObj
-    if not square or self.cask:getObjectIndex() < 0 or player:isDead() or player:getZ() ~= square:getZ()
+    if not Station.isLoaded(self.cask) or player:isDead() or player:getZ() ~= square:getZ()
             or IsoUtils.DistanceTo(player:getX(), player:getY(), square:getX() + 0.5, square:getY() + 0.5) > CASK_WINDOW_REACH then
         self:close()
     end

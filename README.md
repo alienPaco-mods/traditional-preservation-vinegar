@@ -1,4 +1,4 @@
-# Traditional Preservation (Vinegar) — Build 42 prototype (v0.2.0)
+# Traditional Preservation (Vinegar) — Build 42 prototype (v0.2.1)
 
 **Status: experimental.** The whole chain, from steeped grain to bottled vinegar, has been played in the game with test timers. Temperature effects have only been checked offline so far (see the test plan). Back up your save before enabling.
 
@@ -307,7 +307,7 @@ Steeping water stays 4 L at every level.
 
 Times, volumes, yields, temperature curves, the cask and mother rules, XP and the effort multipliers are at the top of `42/media/lua/shared/TraditionalPreservationVinegar.lua`. Grain and water amounts are in `42/media/scripts/TraditionalPreservationVinegar.txt`, and the liquids in `42/media/scripts/TraditionalPreservationVinegar_fluids.txt`.
 
-`tools/build_tileset.py` repaints the stations and overlays, writes the item icons and textures from vanilla art, and writes `42/media/scripts/TraditionalPreservationVinegar_items.txt` (needs Pillow and the game files). `luajit tests/test_vinegar.lua` checks the rules, `luajit tests/test_world.lua` the sprites, `luajit tests/test_scripts.lua` the scripts against the game's (every grain steeps, every item named exists), `luajit tools/season_report.lua` prints the season table, and `luajit tools/simulate.lua` plays two full batches hour by hour with real timers and the game's weather, from the malting floor to bottling, starting in January, April, July and October outdoors, under a roof and in a basement, and checks the litres in against the litres out (40 L of wort gives about 31 L of vinegar).
+`tools/build_tileset.py` repaints the stations and overlays, writes the item icons and textures from vanilla art, and writes `42/media/scripts/TraditionalPreservationVinegar_items.txt` (needs Pillow and the game files). `luajit tests/test_vinegar.lua` checks the rules, `luajit tests/test_world.lua` the sprites, `luajit tests/test_stations.lua` the world file and the batch popup on stand-ins for the engine, `luajit tests/test_scripts.lua` the scripts against the game's (every grain steeps, every item named exists), `luajit tools/season_report.lua` prints the season table, and `luajit tools/simulate.lua` plays two full batches hour by hour with real timers and the game's weather, from the malting floor to bottling, starting in January, April, July and October outdoors, under a roof and in a basement, and checks the litres in against the litres out (40 L of wort gives about 31 L of vinegar).
 
 In debug mode, right-clicking any liquid container in your inventory offers **[Debug] Fill with Wort** and **[Debug] Fill with Fermented Wort**, since liquids can't be spawned from the item list.
 
@@ -351,6 +351,7 @@ The real-world claims the design rests on, and the simplifications made for play
 - The cask's pool, souring, mother and layers live in the cask's `movableData`, which vanilla copies onto the item when a station is picked up and back when it's placed. So the mother moves with the cask and can't be duplicated.
 - Weather is kept as running totals in global ModData, per stage and place, so stations catch up exactly when their area loads again.
 - Station sprites are layered by the mod rather than with `SpriteOverlayConfig`, which can only show one overlay for a first batch.
+- The `TraditionalPreservationVinegar/Core/` folders under `42/media/lua/shared` and `42/media/lua/client` are the shared Traditional Preservation core (weather, places, station tracking, popups), copied in from `~/MODS/_tpcore` by `tp sync`. Edit them there, not here. The rate curves, heat damage, the cask, the hose and the old-save migrations stay in this mod's own files.
 
 ## Debug commands
 

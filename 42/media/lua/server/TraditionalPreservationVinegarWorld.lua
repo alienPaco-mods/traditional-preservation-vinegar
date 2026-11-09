@@ -6,25 +6,14 @@ if isClient() then return end
 TraditionalPreservationVinegarWorld = TraditionalPreservationVinegarWorld or {}
 local V = TraditionalPreservationVinegar
 local World = TraditionalPreservationVinegarWorld
+local Station = require "TraditionalPreservationVinegar/Core/Station"
+local Weather = require "TraditionalPreservationVinegar/Core/Weather"
 
-local TICKS_PER_REFRESH = 30
-local MAP_PRIORITY = 5
 -- Bubbling gives way to settling lees for the last part of a run.
 local SEDIMENT_FROM = 0.7
 local ROOTLETS_FROM = 0.5
 
-local tracked = {}
-local ticksSinceRefresh = 0
-
-local function countItems(resources, group, io)
-    local count = 0
-    local items = resources:getResourcesFromGroup(group, ArrayList.new(), io, ResourceType.Item)
-    for i = 0, items:size() - 1 do
-        count = count + items:get(i):storedSize()
-    end
-    return count
-end
-
+local countItems = Station.countItems
 local litres = V.litres
 
 -- Each tank takes only its own liquid, whatever vanilla's transfer window offers.
@@ -39,12 +28,9 @@ end
 
 -- A progress of 0 to 1, or nil with nothing running. Tells the run where it stands.
 local function readRun(station, logic, entry, place)
-    if not entry.uiLogic or entry.uiLogic:getCraftLogic() ~= logic then
-        local player = getPlayer()
-        if not player then return nil end
-        entry.uiLogic = CraftLogicUILogic.new(player, station, logic)
-    end
-    local craftData = V.runningBatch(station, logic, entry.uiLogic)
+    local uiLogic = Station.uiLogic(station, entry, logic)
+    if not uiLogic then return nil end
+    local craftData = V.runningBatch(station, logic, uiLogic)
     if not craftData then return nil end
     craftData:getModData().place = place
     return logic:getProgress(craftData), craftData
@@ -91,7 +77,7 @@ local MARKER = "TraditionalPreservationVinegar.FermentedBatch"
 -- Takes the finished-run marker out of the vessel's output slot. True if there was one.
 local function takeMarker(resources, logic)
     local found = false
-    local slots = resources:getResourcesFromGroup(logic:getOutputsGroupName(), ArrayList.new(), ResourceIO.Output, ResourceType.Item)
+    local slots = Station.itemSlots(resources, logic:getOutputsGroupName(), ResourceIO.Output)
     for i = 0, slots:size() - 1 do
         local slot = slots:get(i)
         local stored = slot:getStoredItems()
@@ -191,49 +177,39 @@ end
 
 local HOSE_SPRITES = { [V.VESSEL_SPRITE] = V.VESSEL_HOSE, [V.CASK_SPRITE] = V.CASK_HOSE }
 
-function World.refresh(station)
-    local entry = tracked[station]
-    if not entry then return end
+local function refresh(station, entry)
     local sprite = stationSprite(station, entry)
     local hosed = HOSE_SPRITES[entry.base] ~= nil and tendHose(station)
-    if sprite == entry.sprite and hosed == entry.hosed then return end
-    entry.sprite, entry.hosed = sprite, hosed
-    station:clearAttachedAnimSprite()
-    if sprite then station:addAttachedAnimSpriteByName(V.spriteName(sprite + entry.faceIndex)) end
-    if hosed then station:addAttachedAnimSpriteByName(V.spriteName(HOSE_SPRITES[entry.base] + entry.faceIndex)) end
+    entry.sprite = sprite
+    local names = {}
+    if sprite then table.insert(names, V.spriteName(sprite + entry.faceIndex)) end
+    if hosed then table.insert(names, V.spriteName(HOSE_SPRITES[entry.base] + entry.faceIndex)) end
+    Station.showSprites(station, entry, tostring(sprite) .. ":" .. tostring(hosed), names)
 end
 
-function World.track(station)
-    if tracked[station] then return end
+-- Only this mod's stations: the base sprite and which way it faces.
+local function newEntry(station)
     local sprite = station:getSprite()
     local index = sprite and V.spriteIndex(sprite:getName())
-    if not index then return end
-    tracked[station] = { base = index - index % V.FACE_COUNT, faceIndex = index % V.FACE_COUNT }
+    if not index then return nil end
+    return { base = index - index % V.FACE_COUNT, faceIndex = index % V.FACE_COUNT }
 end
 
-local function onTick()
-    ticksSinceRefresh = ticksSinceRefresh + 1
-    if ticksSinceRefresh < TICKS_PER_REFRESH then return end
-    ticksSinceRefresh = 0
-
-    for station in pairs(tracked) do
-        if station:getSquare() and station:getObjectIndex() >= 0 then
-            World.refresh(station)
-        else
-            tracked[station] = nil
-        end
-    end
-end
-
-local function recordWeather()
-    V.advance(V.getLedger(), getGameTime():getWorldAgeHours(), getClimateManager():getTemperature())
-end
-
-Events.OnTick.Add(onTick)
-Events.EveryTenMinutes.Add(recordWeather)
-
+local sprites = {}
 for _, base in ipairs({ V.VESSEL_SPRITE, V.CASK_SPRITE, V.FLOOR_SPRITE }) do
-    for faceIndex = 0, V.FACE_COUNT - 1 do
-        MapObjects.OnLoadWithSprite(V.spriteName(base + faceIndex), World.track, MAP_PRIORITY)
-    end
+    for faceIndex = 0, V.FACE_COUNT - 1 do table.insert(sprites, V.spriteName(base + faceIndex)) end
 end
+local tracker = Station.tracker({ sprites = sprites, entry = newEntry, refresh = refresh })
+
+World.track = tracker.track
+
+function World.refresh(station)
+    local entry = tracker.entry(station)
+    if entry then refresh(station, entry) end
+end
+
+Weather.record(function(now, climate)
+    V.advance(V.getLedger(), now, climate:getTemperature())
+end)
+
+tracker.start()
