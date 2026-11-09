@@ -536,6 +536,8 @@ def vessel_overlay(state, east, seed):
 DIAMOND_HALF_W, DIAMOND_HALF_H = 62, 31
 TRAY_LONG, TRAY_SHORT = 0.44, 0.31  # tiles from the middle to each side
 TRAY_HEIGHT, TRAY_FOOT = 18, 4
+BATTENS = (-0.72, 0.72)  # where the two battens cross under the tray, as a fraction of its long half
+BATTEN_W = 0.035  # half a batten's width, in tiles
 BED_DROP = 5  # how far the grain lies below the rim
 SHOVEL = (112, 82, 54)
 
@@ -576,6 +578,19 @@ def paint_floor(east):
     hx, hy = tray_size(east)
     back, right, front, left = (-hx, -hy), (hx, -hy), (hx, hy), (-hx, hy)
     poly(draw, [project(back[0] - 0.03, back[1] - 0.03), project(right[0] + 0.05, right[1] - 0.03), project(front[0] + 0.05, front[1] + 0.05), project(left[0] - 0.03, left[1] + 0.05)], SHADOW)
+    # The battens it stands on, across the short way near each end, so it sits on the floor and doesn't hover.
+    for t in BATTENS:
+        if east:
+            near, far = (hx * t - BATTEN_W, hy), (hx * t + BATTEN_W, hy)
+            run = [(hx * t + BATTEN_W, -hy), (hx * t + BATTEN_W, hy)]
+        else:
+            near, far = (hx, hy * t + BATTEN_W), (hx, hy * t - BATTEN_W)
+            run = [(-hx, hy * t + BATTEN_W), (hx, hy * t + BATTEN_W)]
+        # The long face first (it shows under the tray), then the end at the tray's edge. As on the sides, a face
+        # looking down-left (+y) is lit and one looking down-right (+x) is not; both sit in the tray's shade.
+        lit, dark = 1.06 * 0.7, 0.84 * 0.7
+        poly(draw, [project(*run[0], 0), project(*run[1], 0), project(*run[1], TRAY_FOOT), project(*run[0], TRAY_FOOT)], shade(STAVE, dark if east else lit))
+        poly(draw, [project(*near, 0), project(*far, 0), project(*far, TRAY_FOOT), project(*near, TRAY_FOOT)], shade(STAVE, lit if east else dark))
     # Inside, seen over the near rim: the bottom boards, then the two far walls in lit wood like vanilla's
     # composter, the one facing the light brighter, each with seams between its boards.
     inset, floor_z = 0.86, TRAY_FOOT + 3

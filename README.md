@@ -1,4 +1,4 @@
-# Traditional Preservation (Vinegar) — Build 42 prototype (v0.2.5)
+# Traditional Preservation (Vinegar) — Build 42 prototype (v0.2.6)
 
 **Status: experimental.** The whole chain, from steeped grain to bottled vinegar, has been played in the game with test timers. Temperature effects have only been checked offline so far (see the test plan). Back up your save before enabling.
 

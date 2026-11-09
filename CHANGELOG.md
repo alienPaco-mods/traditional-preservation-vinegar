@@ -1,5 +1,8 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.6
+- Art: the Malting Floor stands on two low battens, so it no longer seems to hover above the floor.
+
 ## 0.2.5
 - Internal: comments on the public functions that lacked one, and an updated copy of the shared core
   (comments only). No change in play.
