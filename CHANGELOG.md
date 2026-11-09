@@ -1,5 +1,9 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.4
+- Internal: the stations' slot rules (adding, green border, refused-drop message) run on the shared core's
+  `UI.slotRules`. Same rules, same messages.
+
 ## 0.2.3
 - Performance: the weather ledger is checked for missing totals once when the save loads, not every time a batch,
   cask or popup reads it.

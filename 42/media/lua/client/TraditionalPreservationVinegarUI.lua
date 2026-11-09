@@ -19,10 +19,7 @@ local UI = require "TraditionalPreservationVinegar/Core/UI"
 local Station = require "TraditionalPreservationVinegar/Core/Station"
 
 local V = TraditionalPreservationVinegar
-local vanillaItemSlotAddItems = ISCraftLogicPanel.ItemSlotAddItems
 local vanillaCreateChildren = ISCraftLogicPanel.createChildren
-local vanillaVerifyItem = ISItemSlot.defaultVerifyItem
-local vanillaMouseUp = ISItemSlot.onMouseUp
 local vanillaCanPickUp = ISMoveableSpriteProps.canPickUpMoveable
 local vanillaInfoFlags = ISMoveableSpriteProps.getInfoPanelFlagsPerTile
 local vanillaStartCraft = ISWidgetCraftLogicControl.startCraft
@@ -66,84 +63,27 @@ local function tooltipFor(option, text)
     option.toolTip = tooltip
 end
 
--- queued is how many items are already on their way in.
-local function refusal(entity, component, resource, item, queued)
-    local kind = V.stationKind(entity)
+-- queued lists the items already on their way in.
+local function refusal(slot, item, queued)
+    local kind = V.stationKind(slot.entity)
     local wrongItem = V.inputRefusal(kind, item:getFullType())
     if wrongItem then return wrongItem end
     -- The run uses the whole packet, so it has to be a whole packet.
     if kind == "vessel" and item:getCurrentUsesFloat() < 1 then return "IGUI_TraditionalPreservationVinegar_FullYeast" end
-    if component:isRunning() then return "IGUI_TraditionalPreservationVinegar_InUse" end
-    if resource:getFreeItemCapacity() <= queued then return "IGUI_TraditionalPreservationVinegar_Full" end
+    if slot.component:isRunning() then return "IGUI_TraditionalPreservationVinegar_InUse" end
+    if slot.resource:getFreeItemCapacity() <= #queued then return "IGUI_TraditionalPreservationVinegar_Full" end
     return nil
 end
 
-local function canAdd(action)
-    return not refusal(action.entity, action.component, action.resource, action.item, 0)
-end
-
--- Vanilla's ItemSlotAddItems with canAdd in place of its limit, because each queued action
--- has to re-check it when it runs. Compare this with vanilla after a game update.
-function ISCraftLogicPanel.ItemSlotAddItems(player, entity, itemSlot, itemList, component)
-    if not isStation(entity) then
-        return vanillaItemSlotAddItems(player, entity, itemSlot, itemList, component)
-    end
-    if TraditionalPreservationVinegarWorld then TraditionalPreservationVinegarWorld.track(entity) end
-
-    for index, item in ipairs(itemList) do
-        local reason = refusal(entity, component, itemSlot.resource, item, index - 1)
-        if reason then
-            HaloTextHelper.addBadText(player, getText(reason))
-            return
-        end
-        if index == 1 and not ISEntityUI.WalkToEntity(player, entity) then return end
-
-        local action = ISItemSlotAddAction:new(player, entity, item, itemSlot.resource, itemSlot)
-        action.component = component
-        action.canAddItem = canAdd
-        ISTimedActionQueue.add(action)
-    end
-end
-
--- The station an input slot belongs to, or nil for any other slot.
-local function slotStation(itemSlot)
-    local resource = itemSlot and itemSlot.resource
-    if not resource or resource:getIO() ~= ResourceIO.Input then return nil end
-    local entity = resource:getGameEntity()
-    if not isStation(entity) then return nil end
-    local component = entity:getComponent(ComponentType.CraftLogic)
-    if not component then return nil end
-    return entity, component
-end
-
-function ISItemSlot:defaultVerifyItem(itemSlot, item)
-    if not vanillaVerifyItem(self, itemSlot, item) then return false end
-    local entity, component = slotStation(itemSlot)
-    if not entity then return true end
-    return not refusal(entity, component, itemSlot.resource, item, 0)
-end
-
--- The reason to show when nothing being dragged can go in this slot.
-local function dropRefusal(itemSlot)
-    if not ISMouseDrag.dragging or ISMouseDrag.draggingFocus == itemSlot then return nil end
-    local entity, component = slotStation(itemSlot)
-    if not entity then return nil end
-
-    local reason
-    for _, item in ipairs(ISInventoryPane.getActualItems(ISMouseDrag.dragging)) do
-        local itemReason = refusal(entity, component, itemSlot.resource, item, 0)
-        if not itemReason then return nil end
-        reason = reason or itemReason
-    end
-    return reason
-end
-
--- A refused drop does nothing in vanilla, so this says why.
-function ISItemSlot:onMouseUp(x, y)
-    local reason = dropRefusal(self)
-    if reason then HaloTextHelper.addBadText(getPlayer(), getText(reason)) end
-    return vanillaMouseUp(self, x, y)
-end
+UI.slotRules{
+    station = function(entity)
+        return isStation(entity) and entity:getComponent(ComponentType.CraftLogic) or nil
+    end,
+    refusal = refusal,
+    added = function(entity)
+        if TraditionalPreservationVinegarWorld then TraditionalPreservationVinegarWorld.track(entity) end
+    end,
+}
 
 -- A cask's pool, a vessel's tanks and a running batch don't go with a station into a backpack.
 local function holdsLiquid(object)
