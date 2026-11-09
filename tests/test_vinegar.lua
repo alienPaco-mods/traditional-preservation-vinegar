@@ -1,4 +1,5 @@
 -- Checks the vinegar rules outside the game. Run from the mod folder: luajit tests/test_vinegar.lua
+local H = dofile((os.getenv("TPCORE") or "../_tpcore") .. "/tests/harness.lua")
 local hours = 100
 function getGameTime() return { getWorldAgeHours = function() return hours end } end
 function getText(key, a, b) return (a or key) .. " (" .. tostring(b) .. " L)" end
@@ -18,14 +19,9 @@ end
 dofile("42/media/lua/shared/TraditionalPreservationVinegar.lua")
 local V = TraditionalPreservationVinegar
 
-local function check(name, condition)
-    print((condition and "ok   " or "FAIL ") .. name)
-    if not condition then os.exit(1) end
-end
+local check = H.check
 
-local function list(items)
-    return { size = function() return #items end, get = function(_, i) return items[i + 1] end }
-end
+local list = H.list
 
 local function recipeData(time)
     local data = { modData = {}, elapsed = 0 }
@@ -479,4 +475,4 @@ check("test timers set every recipe to an hour", loaded["TraditionalPreservation
 check("and the cask to an hour", V.ACETIC_HOURS == 1)
 check("and ignore the weather", V.aceticRate(-20) == 1)
 
-print("all passed")
+H.done()

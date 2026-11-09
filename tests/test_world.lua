@@ -1,4 +1,5 @@
 -- Checks which sprite each station shows. Run from the mod folder: luajit tests/test_world.lua
+local H = dofile((os.getenv("TPCORE") or "../_tpcore") .. "/tests/harness.lua")
 function isClient() return false end
 local function noop() end
 Events = { OnInitGlobalModData = { Add = noop }, OnTick = { Add = noop }, EveryTenMinutes = { Add = noop } }
@@ -7,10 +8,7 @@ dofile("42/media/lua/shared/TraditionalPreservationVinegar.lua")
 dofile("42/media/lua/server/TraditionalPreservationVinegarWorld.lua")
 local V, World = TraditionalPreservationVinegar, TraditionalPreservationVinegarWorld
 
-local function check(name, condition)
-    print((condition and "ok   " or "FAIL ") .. name)
-    if not condition then os.exit(1) end
-end
+local check = H.check
 
 check("an empty floor shows nothing", World.floorSprite(0, nil, 0) == nil)
 check("steeped grain", World.floorSprite(2, nil, 0) == V.FLOOR_STEEPED)
@@ -32,4 +30,4 @@ check("a mother is a whole skin at once", World.caskSprite({ ml = 19000, strengt
 check("full strength shows as finished", World.caskSprite({ ml = 15000, strength = 1, mother = true }) == V.CASK_FINISHED)
 check("an emptied cask shows its mother", World.caskSprite({ ml = 0, strength = 0, mother = true }) == V.CASK_MOTHER)
 
-print("all passed")
+H.done()

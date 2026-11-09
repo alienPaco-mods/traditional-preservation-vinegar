@@ -1,14 +1,12 @@
 -- Checks the mod's scripts against the game's. Run from the mod folder: luajit tests/test_scripts.lua [game folder]
 -- Needs the game files for the vanilla checks, and skips them with a note if they aren't there.
+local H = dofile((os.getenv("TPCORE") or "../_tpcore") .. "/tests/harness.lua")
 local GAME = arg[1] or (os.getenv("HOME") .. "/.local/share/Steam/steamapps/common/ProjectZomboid/projectzomboid")
 local GENERATED = GAME .. "/media/scripts/generated"
 local MOD = "42/media/scripts"
 local GRAINS = { "Base.BarleySeed", "Base.WheatSeed", "Base.RyeSeed" }
 
-local function check(name, condition)
-    print((condition and "ok   " or "FAIL ") .. name)
-    if not condition then os.exit(1) end
-end
+local check = H.check
 
 local function read(path)
     local file = io.open(path, "r")
@@ -72,7 +70,7 @@ check("with 4 L of water from a kept container", steep:find("%-fluid 4%.0 %[Wate
 local vanillaFiles = listFiles(GENERATED)
 if #vanillaFiles == 0 then
     print("skip vanilla checks: no game files at " .. GAME)
-    print("all passed")
+    H.done()
     return
 end
 local vanillaText = ""
@@ -120,4 +118,4 @@ for name in modText:gmatch("item%s+%d+%s+([%w_]+%.[%w_]+)%s*,") do
 end
 check("every item the recipes name exists (" .. table.concat(missing, ", ") .. ")", #missing == 0)
 
-print("all passed")
+H.done()
