@@ -8,11 +8,9 @@ TraditionalPreservationVinegarWorld.lua, so a state only paints what it adds. Wo
 Usage: python3 tools/build_tileset.py [path/to/ProjectZomboid/projectzomboid]
 Needs Pillow. Rerun after editing the colours or sizes below.
 """
-import io
 import math
 import os
 import random
-import struct
 import sys
 from pathlib import Path
 
@@ -20,17 +18,14 @@ from PIL import Image, ImageChops, ImageDraw
 
 sys.path.insert(0, str(Path(os.environ.get("TPCORE", Path(__file__).resolve().parents[2] / "_tpcore")) / "tools"))
 import pzart  # noqa: E402
+from pzart import TILE_W, TILE_H, light_at, shrink  # noqa: E402
+from pzart import tint as shade  # noqa: E402
 
 NAME = "traditionalpreservationvinegar"
 TILESET = NAME + "_01"
 COLUMNS, ROWS = 8, 5
 PAGE_SIZE = 1024
-TILE_W, TILE_H = 128, 256
 SS = 4  # supersampling
-# The mod list icon, in the Fish mod's style.
-MOD_ICON_SIZE, MOD_ICON_MARGIN, MOD_ICON_CORNER, MOD_ICON_BADGE = 128, 8, 16, 52
-MOD_ICON_SKY = (176, 196, 204, 255)
-BUILD_ICON_SIZE = 64
 FOOT_X, FOOT_Y = 64, 226
 
 VESSEL, CASK, FLOOR = 0, 10, 24
@@ -125,55 +120,13 @@ for base, custom, group in ((VESSEL, "Vessel", "Fermentation"), (CASK, "Cask", "
 
 
 def new_layer():
-    return Image.new("RGBA", (TILE_W * SS, TILE_H * SS), (0, 0, 0, 0))
-
-
-def shrink(layer):
-    return layer.resize((TILE_W, TILE_H), Image.LANCZOS)
-
-
-def shade(colour, amount):
-    return tuple(max(0, min(255, int(c * amount))) for c in colour[:3]) + (255,)
-
-
-def light_at(angle):
-    """A curved front lit from the left and falling away hard on the right, like vanilla's barrels."""
-    return 0.72 + 0.3 * max(0.0, math.cos(angle - 2.2)) ** 1.4
-
-
-def darken_down(layer, top_y, bottom_y, lowest):
-    """Fades a layer towards lowest brightness between two heights, so it sinks into the ground."""
-    ramp = Image.new("L", layer.size, 255)
-    top, bottom = int(top_y * SS), int(bottom_y * SS)
-    fade = Image.linear_gradient("L").resize((layer.width, bottom - top)).point(lambda v: 255 - int(v * (1 - lowest)))
-    ramp.paste(fade, (0, top))
-    ramp.paste(int(255 * lowest), (0, bottom, layer.width, layer.height))
-    rgb = ImageChops.multiply(layer.convert("RGB"), Image.merge("RGB", (ramp, ramp, ramp)))
-    rgb.putalpha(layer.getchannel("A"))
-    return rgb
-
-
-def soft_noise(rng, size, cell_w, cell_h):
-    """Smooth random greys, with blobs about cell_w by cell_h pixels."""
-    small = Image.new("L", (max(2, size[0] // cell_w + 2), max(2, size[1] // cell_h + 2)))
-    small.putdata([rng.randrange(256) for _ in range(small.width * small.height)])
-    return small.resize(size, Image.BICUBIC)
+    return pzart.new_layer(SS)
 
 
 def weather(tile, seed, depth, streaks=False):
     """Mottles a finished tile with dirt and grain, and water stains running down it when streaks is set.
     Vanilla art is hand painted and never flat, so everything goes through this."""
-    rng = random.Random(seed * 31 + 7)
-    dirt = Image.blend(soft_noise(rng, tile.size, 13, 13), soft_noise(rng, tile.size, 3, 3), 0.5)
-    dirt = Image.blend(dirt, soft_noise(rng, tile.size, 1, 1), 0.35)
-    if streaks:
-        dirt = ImageChops.multiply(dirt, soft_noise(rng, tile.size, 3, 44).point(lambda v: 150 + v * 105 // 255))
-        dirt = dirt.point(lambda v: min(255, v * 3 // 2))
-    grime = dirt.point(lambda v: max(0, min(255, int(255 * (1 - depth * (1 - v / 150))))))
-    rgb = ImageChops.multiply(tile.convert("RGB"), Image.merge("RGB", (grime, grime, grime)))
-    rgb = pixel_finish(rgb, rng)
-    rgb.putalpha(tile.getchannel("A"))
-    return rgb
+    return pzart.weather(tile, random.Random(seed * 31 + 7), depth, streaks, pixel_finish)
 
 
 def pixel_finish(rgb, rng):
@@ -216,10 +169,7 @@ def paint_staves(layer, rng, height, radius, belly, wood):
     vanilla's barrels, which are smooth with only faint stave lines."""
     draw = ImageDraw.Draw(layer)
     levels = [i / 14 for i in range(15)]
-    edges = [0.0]
-    while edges[-1] < math.pi:
-        edges.append(edges[-1] + math.pi / STAVES * rng.uniform(0.75, 1.25))
-    edges[-1] = math.pi
+    edges = pzart.stave_edges(rng, STAVES, 0.75, 1.25)
     for first, second in zip(edges, edges[1:]):
         tone = light_at((first + second) / 2) * rng.uniform(0.96, 1.04)
         left = [barrel_point(height, radius, belly, level, first) for level in levels]
@@ -236,15 +186,7 @@ def paint_staves(layer, rng, height, radius, belly, wood):
 
 def paint_hoop(draw, rng, height, radius, belly, level, half_height):
     """A flat iron band round the front, patched with rust."""
-    steps = 40
-    rust_left = 0
-    for i in range(steps):
-        first, second = math.pi * i / steps, math.pi * (i + 1) / steps
-        if rust_left == 0 and rng.random() < RUST_CHANCE:
-            rust_left = rng.randint(1, 5)
-        colour = tuple(int(a + (b - a) * rng.uniform(0.25, 0.6)) for a, b in zip(IRON, RUST)) if rust_left else IRON
-        rust_left = max(0, rust_left - 1)
-        tone = light_at((first + second) / 2) * rng.uniform(0.9, 1.08)
+    for first, second, colour, tone in pzart.hoop_bands(rng, RUST_CHANCE, IRON, RUST):
         low = height * level - half_height
         high = height * level + half_height
         points = []
@@ -262,7 +204,7 @@ def paint_barrel_body(rng, height, radius, belly, hoops, wood=STAVE):
     draw = ImageDraw.Draw(layer)
     draw.ellipse(box(FOOT_X + 1, FOOT_Y + 1, radius + 2, (radius + 2) * SQUASH), fill=SHADOW)
     paint_staves(layer, rng, height, radius, belly, wood)
-    layer = darken_down(layer, FOOT_Y - height, FOOT_Y, FOOT_SHADE)
+    layer = pzart.darken_down(layer, FOOT_Y - height, FOOT_Y, FOOT_SHADE, SS)
     draw = ImageDraw.Draw(layer)
     for level, half_height in hoops:
         paint_hoop(draw, rng, height, radius, belly, level, half_height)
@@ -287,20 +229,17 @@ def paint_inside(rng, rim_y, rx):
     draw = ImageDraw.Draw(layer)
     floor_y, floor_rx = rim_y + INSIDE_DEPTH, rx * 0.8
     draw.ellipse(box(FOOT_X, rim_y, rx, rx * SQUASH), fill=shade(INSIDE_WOOD, 0.6))
-    edges = [math.pi]
-    while edges[-1] < math.tau:
-        edges.append(edges[-1] + math.pi / INSIDE_STAVES * rng.uniform(0.8, 1.2))
-    edges[-1] = math.tau
+    edges = pzart.stave_edges(rng, INSIDE_STAVES, 0.8, 1.2, start=math.pi)
 
     def ring(cy, radius, angle):
         return (FOOT_X + radius * math.cos(angle), cy + radius * SQUASH * math.sin(angle))
 
     for first, second in zip(edges, edges[1:]):
-        tone = (0.72 + 0.34 * max(0.0, math.cos((first + second) / 2))) * rng.uniform(0.95, 1.05)
+        tone = pzart.inside_light((first + second) / 2) * rng.uniform(0.95, 1.05)
         poly(draw, [ring(rim_y, rx, first), ring(rim_y, rx, second), ring(floor_y, floor_rx, second), ring(floor_y, floor_rx, first)], shade(INSIDE_WOOD, tone))
         line(draw, ring(rim_y, rx, second), ring(floor_y, floor_rx, second), SEAM + (255,), 0.7)
     draw.ellipse(box(FOOT_X, floor_y, floor_rx, floor_rx * SQUASH), fill=shade(INSIDE_WOOD, 0.4))
-    return darken_down(layer, rim_y - rx * SQUASH, floor_y + floor_rx * SQUASH, INSIDE_SHADE)
+    return pzart.darken_down(layer, rim_y - rx * SQUASH, floor_y + floor_rx * SQUASH, INSIDE_SHADE, SS)
 
 
 CASK_HEIGHT, CASK_RADIUS, CASK_BELLY = 65, 26.5, 5.3
@@ -661,7 +600,7 @@ def paint_floor(east):
     # The rim, lit along the top.
     for first, second, tone in ((back, right, 0.9), (right, front, 0.8), (front, left, 1.12), (left, back, 1.0)):
         line(draw, project(*first, TRAY_HEIGHT), project(*second, TRAY_HEIGHT), shade(STAVE, tone), 2.4)
-    layer = darken_down(layer, FOOT_Y - TRAY_HEIGHT, FOOT_Y + 26, 0.85)
+    layer = pzart.darken_down(layer, FOOT_Y - TRAY_HEIGHT, FOOT_Y + 26, 0.85, SS)
     return weather(shrink(layer), 14 + east, WOOD_WEATHER, streaks=True)
 
 
@@ -696,108 +635,14 @@ def floor_overlay(state, east, seed):
     return weather(shrink(layer), seed, OVERLAY_WEATHER)
 
 
-def write_string(out, value):
-    data = value.encode("utf8")
-    out.write(struct.pack("<I", len(data)))
-    out.write(data)
-
-
-def write_pack(path, tiles):
-    page = Image.new("RGBA", (PAGE_SIZE, PAGE_SIZE), (0, 0, 0, 0))
-    entries = []
-    x = y = shelf = 0
-    for index, tile in sorted(tiles.items()):
-        ox, oy, right, bottom = tile.getbbox()
-        image = tile.crop((ox, oy, right, bottom))
-        if x + image.width > PAGE_SIZE:
-            x, y, shelf = 0, y + shelf, 0
-        if y + image.height > PAGE_SIZE:
-            raise SystemExit("tiles do not fit on the page")
-        page.paste(image, (x, y))
-        entries.append((f"{TILESET}_{index}", (x, y, image.width, image.height, ox, oy, tile.width, tile.height)))
-        x += image.width
-        shelf = max(shelf, image.height)
-
-    png = io.BytesIO()
-    page.save(png, "PNG")
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "wb") as out:
-        out.write(b"PZPK")
-        out.write(struct.pack("<II", 1, 1))
-        write_string(out, NAME + "0")
-        out.write(struct.pack("<II", len(entries), 1))
-        for name, values in entries:
-            write_string(out, name)
-            out.write(struct.pack("<8I", *values))
-        out.write(struct.pack("<I", len(png.getvalue())))
-        out.write(png.getvalue())
-
-
-def write_tiles(path):
-    with open(path, "wb") as out:
-        out.write(b"tdef")
-        out.write(struct.pack("<II", 1, 1))
-        out.write(f"{TILESET}\n{TILESET}.png\n".encode("utf8"))
-        out.write(struct.pack("<IIII", COLUMNS, ROWS, 1, COLUMNS * ROWS))
-        for index in range(COLUMNS * ROWS):
-            props = TILE_PROPS.get(index, [])
-            out.write(struct.pack("<I", len(props)))
-            for key, value in props:
-                out.write(f"{key}\n{value}\n".encode("utf8"))
-
-
-def read_string(f):
-    (length,) = struct.unpack("<I", f.read(4))
-    return f.read(length).decode("utf8", "replace")
-
-
-def extract_sprites(pack_path, wanted):
-    """Returns {sprite name: full-size RGBA image} from a vanilla pack."""
-    found = {}
-    with open(pack_path, "rb") as f:
-        if f.read(4) != b"PZPK":
-            raise SystemExit(f"{pack_path}: not a PZPK pack")
-        _version, pages = struct.unpack("<II", f.read(8))
-        for _ in range(pages):
-            read_string(f)
-            count, _alpha = struct.unpack("<II", f.read(8))
-            entries = []
-            for _ in range(count):
-                name = read_string(f)
-                entries.append((name, struct.unpack("<8I", f.read(32))))
-            (size,) = struct.unpack("<I", f.read(4))
-            hits = [entry for entry in entries if entry[0] in wanted]
-            if not hits:
-                f.seek(size, 1)
-                continue
-            page = Image.open(io.BytesIO(f.read(size))).convert("RGBA")
-            for name, (x, y, w, h, ox, oy, full_w, full_h) in hits:
-                tile = Image.new("RGBA", (full_w, full_h), (0, 0, 0, 0))
-                tile.paste(page.crop((x, y, x + w, y + h)), (ox, oy))
-                found[name] = tile
-    missing = wanted - found.keys()
-    if missing:
-        raise SystemExit(f"sprites not found in {pack_path}: {sorted(missing)}")
-    return found
-
-
 def recolour(image, is_fluid, colour, solid):
     """Repaints the fluid pixels in colour, keeping their light and dark unless the contents are solid."""
-    rng = random.Random(1842)
-    result = image.copy()
-    pixels = result.load()
-    fluid = [(x, y) for y in range(image.height) for x in range(image.width) if is_fluid(x, y)]
-    brightness = [sum(pixels[point][:3]) / 3 for point in fluid]
-    average = sum(brightness) / len(brightness)
-    for point, value in zip(fluid, brightness):
-        amount = rng.uniform(*SOLID_SPECKS) if solid else 0.9 + 0.1 * value / average
-        pixels[point] = shade(colour, amount)[:3] + (pixels[point][3],)
-    return result
+    return pzart.recolour(image, is_fluid, colour, solid, random.Random(1842), SOLID_SPECKS)
 
 
 def write_textures(folder, game):
     folder.mkdir(parents=True, exist_ok=True)
-    icons = extract_sprites(game / "media/texturepacks/UI2.pack", {"Item_MetalBucket", "Item_MetalBucket_Water"})
+    icons = pzart.extract_sprites(game / "media/texturepacks/UI2.pack", {"Item_MetalBucket", "Item_MetalBucket_Water"})
     empty, water = icons["Item_MetalBucket"], icons["Item_MetalBucket_Water"]
     models = game / "media/textures/WorldItems"
     texture = Image.open(models / "BucketFullWater_New.png").convert("RGBA")
@@ -810,7 +655,7 @@ def write_textures(folder, game):
     for name, _label, _weight, colour, sprouted in GRAINS:
         paint_grain_icon(colour, sprouted).save(folder / f"Item_{name}.png")
         paint_grain_texture(colour).save(folder / f"{name}Model.png")
-    jars = extract_sprites(game / "media/texturepacks/UI2.pack", {"Item_GlassJar", "Item_GlassJar_Mask"})
+    jars = pzart.extract_sprites(game / "media/texturepacks/UI2.pack", {"Item_GlassJar", "Item_GlassJar_Mask"})
     paint_mother_icon(jars["Item_GlassJar"], jars["Item_GlassJar_Mask"]).save(folder / f"Item_{MOTHER[0]}.png")
 
 
@@ -855,16 +700,6 @@ def paint_grain_texture(colour):
     return texture
 
 
-def write_build_icon(tile, path):
-    """Crops a sprite to its art and centres it in a square, for the build menu."""
-    art = tile.crop(tile.getbbox())
-    scale = BUILD_ICON_SIZE / max(art.size)
-    art = art.resize((max(1, round(art.width * scale)), max(1, round(art.height * scale))), Image.LANCZOS)
-    icon = Image.new("RGBA", (BUILD_ICON_SIZE, BUILD_ICON_SIZE), (0, 0, 0, 0))
-    icon.alpha_composite(art, ((BUILD_ICON_SIZE - art.width) // 2, (BUILD_ICON_SIZE - art.height) // 2))
-    icon.save(path)
-
-
 def item_lines(name, weight):
     """Anything heated has to be food, as only food cooks, but nobody can eat it."""
     lines = [f"    item {name}", "    {"]
@@ -901,24 +736,6 @@ def write_bucket_script(path):
     path.write_text("\n".join(lines) + "\n")
 
 
-def write_mod_icon(art, path, badge=None):
-    """The station on the Fish mod's pale sky with rounded corners, so the series matches in the mod list."""
-    art = art.crop(art.getbbox())
-    scale = (MOD_ICON_SIZE - MOD_ICON_MARGIN) / max(art.size)
-    art = art.resize((max(1, round(art.width * scale)), max(1, round(art.height * scale))), Image.LANCZOS)
-    icon = Image.new("RGBA", (MOD_ICON_SIZE, MOD_ICON_SIZE), MOD_ICON_SKY)
-    icon.alpha_composite(art, ((MOD_ICON_SIZE - art.width) // 2, MOD_ICON_SIZE - art.height - MOD_ICON_MARGIN // 2))
-    if badge is not None:
-        badge = badge.crop(badge.getbbox())
-        badge = badge.resize((MOD_ICON_BADGE * badge.width // max(badge.size), MOD_ICON_BADGE * badge.height // max(badge.size)), Image.NEAREST)
-        icon.alpha_composite(badge, (MOD_ICON_SIZE - badge.width - MOD_ICON_MARGIN // 2, MOD_ICON_SIZE - badge.height - MOD_ICON_MARGIN // 2))
-    mask = Image.new("L", (MOD_ICON_SIZE * 4, MOD_ICON_SIZE * 4), 0)
-    ImageDraw.Draw(mask).rounded_rectangle((0, 0, mask.width - 1, mask.height - 1), MOD_ICON_CORNER * 4, fill=255)
-    icon.putalpha(mask.resize(icon.size, Image.LANCZOS))
-    path.parent.mkdir(parents=True, exist_ok=True)
-    icon.save(path)
-
-
 def lua_tiles():
     prefix = TILESET + "_"
     stations = {"vessel": VESSEL, "cask": CASK, "floor": FLOOR}
@@ -952,15 +769,15 @@ def main():
             tiles[index + offset] = cask_overlay(state, index)
         for kind, index in HOSE_OVERLAYS.items():
             tiles[index + offset] = hose_overlay(kind, east, index)
-    write_pack(media / "texturepacks" / f"{NAME}.pack", tiles)
-    write_tiles(media / f"{NAME}.tiles")
-    write_build_icon(tiles[VESSEL + 1], media / "textures" / "Item_FermentationVessel.png")
-    write_build_icon(tiles[CASK + 1], media / "textures" / "Item_VinegarCask.png")
-    write_build_icon(tiles[FLOOR + 1], media / "textures" / "Item_MaltingFloor.png")
+    pzart.write_pack(media / "texturepacks" / f"{NAME}.pack", tiles, NAME, TILESET, PAGE_SIZE)
+    pzart.write_tiles(media / f"{NAME}.tiles", [(TILESET, COLUMNS, ROWS)], TILE_PROPS)
+    pzart.write_build_icon(tiles[VESSEL + 1], media / "textures" / "Item_FermentationVessel.png")
+    pzart.write_build_icon(tiles[CASK + 1], media / "textures" / "Item_VinegarCask.png")
+    pzart.write_build_icon(tiles[FLOOR + 1], media / "textures" / "Item_MaltingFloor.png")
     # The mod list shows a cask ready to bottle, with the mother's skin and bottles at its foot.
     ready = tiles[CASK + 1].copy()
     ready.alpha_composite(tiles[OVERLAYS["cask"]["finished"] + 1])
-    write_mod_icon(ready, media.parent / "icon.png")
+    pzart.write_mod_icon(ready, media.parent / "icon.png")
     write_bucket_script(media / "scripts" / "TraditionalPreservationVinegar_items.txt")
 
     # A contact sheet for checking the art by eye, kept out of the mod.
