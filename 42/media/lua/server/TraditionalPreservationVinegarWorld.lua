@@ -8,6 +8,7 @@ local V = TraditionalPreservationVinegar
 local World = TraditionalPreservationVinegarWorld
 local Station = require "TraditionalPreservationVinegar/Core/Station"
 local Weather = require "TraditionalPreservationVinegar/Core/Weather"
+local Tiles = require "TraditionalPreservationVinegar/Tiles"
 
 -- Bubbling gives way to settling lees for the last part of a run.
 local SEDIMENT_FROM = 0.7
@@ -195,11 +196,7 @@ local function newEntry(station)
     return { base = index - index % V.FACE_COUNT, faceIndex = index % V.FACE_COUNT }
 end
 
-local sprites = {}
-for _, base in ipairs({ V.VESSEL_SPRITE, V.CASK_SPRITE, V.FLOOR_SPRITE }) do
-    for faceIndex = 0, V.FACE_COUNT - 1 do table.insert(sprites, V.spriteName(base + faceIndex)) end
-end
-local tracker = Station.tracker({ sprites = sprites, entry = newEntry, refresh = refresh })
+local tracker = Station.tracker({ sprites = Tiles.STATIONS, entry = newEntry, refresh = refresh })
 
 World.track = tracker.track
 

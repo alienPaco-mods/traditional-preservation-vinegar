@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Builds the Traditional Preservation (Vinegar) art: the tileset, the bucket icons and model textures, and the bucket item script.
 
-Each station is a pair of tiles, east facing then south facing. The pair numbers are in STATIONS and OVERLAYS, and
-42/media/lua/shared/TraditionalPreservationVinegar.lua must use the same ones. Overlays are layered over the base tile by
+Each station is a pair of tiles, east facing then south facing. The pair numbers are in VESSEL, CASK, FLOOR, OVERLAYS
+and HOSE_OVERLAYS, and the Lua reads them from the generated 42/media/lua/shared/TraditionalPreservationVinegar/Tiles.lua. Overlays are layered over the base tile by
 TraditionalPreservationVinegarWorld.lua, so a state only paints what it adds. Workstations need their own sprite: the game refuses to load a world if two entities share one.
 
 Usage: python3 tools/build_tileset.py [path/to/ProjectZomboid/projectzomboid]
@@ -10,12 +10,16 @@ Needs Pillow. Rerun after editing the colours or sizes below.
 """
 import io
 import math
+import os
 import random
 import struct
 import sys
 from pathlib import Path
 
 from PIL import Image, ImageChops, ImageDraw
+
+sys.path.insert(0, str(Path(os.environ.get("TPCORE", Path(__file__).resolve().parents[2] / "_tpcore")) / "tools"))
+import pzart  # noqa: E402
 
 NAME = "traditionalpreservationvinegar"
 TILESET = NAME + "_01"
@@ -915,7 +919,22 @@ def write_mod_icon(art, path, badge=None):
     icon.save(path)
 
 
+def lua_tiles():
+    prefix = TILESET + "_"
+    stations = {"vessel": VESSEL, "cask": CASK, "floor": FLOOR}
+    return {
+        "PREFIX": prefix,
+        "SHEETS": [{"prefix": prefix, "tiles": COLUMNS * ROWS}],
+        "FACE_COUNT": 2,
+        "STATIONS": [prefix + str(base + face) for base in stations.values() for face in range(2)],
+        **{name.upper(): base for name, base in stations.items()},
+        "OVERLAYS": OVERLAYS,
+        "HOSE": HOSE_OVERLAYS,
+    }
+
+
 def main():
+    pzart.write_lua_tiles(Path(__file__).resolve().parent.parent / "42/media", "TraditionalPreservationVinegar", lua_tiles(), "tools/build_tileset.py")
     default_game = Path.home() / ".local/share/Steam/steamapps/common/ProjectZomboid/projectzomboid"
     game = Path(sys.argv[1]) if len(sys.argv) > 1 else default_game
     media = Path(__file__).resolve().parent.parent / "42/media"

@@ -5,20 +5,24 @@ TraditionalPreservationVinegar = TraditionalPreservationVinegar or {}
 local V = TraditionalPreservationVinegar
 local Weather = require "TraditionalPreservationVinegar/Core/Weather"
 local Station = require "TraditionalPreservationVinegar/Core/Station"
+local Tiles = require "TraditionalPreservationVinegar/Tiles"
 
 V.MOD_DATA_KEY = "TraditionalPreservationVinegar"
-V.SPRITE_PREFIX = "traditionalpreservationvinegar_01_"
+V.SPRITE_PREFIX = Tiles.PREFIX
 
--- Keep in step with the tile numbers in tools/build_tileset.py. Each sprite is the east facing, and
--- the next one is the south facing.
-V.VESSEL_SPRITE, V.CASK_SPRITE, V.FLOOR_SPRITE = 0, 10, 24
-V.VESSEL_FILLED, V.VESSEL_BUBBLING, V.VESSEL_SEDIMENT, V.VESSEL_FINISHED = 2, 4, 6, 8
-V.CASK_FILLED, V.CASK_FILM = 12, { 14, 16, 18 }
-V.CASK_FINISHED, V.CASK_MOTHER = 20, 22
-V.FLOOR_STEEPED, V.FLOOR_SPROUTING, V.FLOOR_ROOTLETS, V.FLOOR_FINISHED = 26, 28, 30, 32
+-- Tile numbers, from the Tiles.lua that tools/build_tileset.py writes. Each sprite is the east facing,
+-- and the next one is the south facing.
+local OVERLAYS = Tiles.OVERLAYS
+V.VESSEL_SPRITE, V.CASK_SPRITE, V.FLOOR_SPRITE = Tiles.VESSEL, Tiles.CASK, Tiles.FLOOR
+V.VESSEL_FILLED, V.VESSEL_BUBBLING = OVERLAYS.vessel.filled, OVERLAYS.vessel.bubbling
+V.VESSEL_SEDIMENT, V.VESSEL_FINISHED = OVERLAYS.vessel.sediment, OVERLAYS.vessel.finished
+V.CASK_FILLED, V.CASK_FILM = OVERLAYS.cask.filled, { OVERLAYS.cask.film1, OVERLAYS.cask.film2, OVERLAYS.cask.film3 }
+V.CASK_FINISHED, V.CASK_MOTHER = OVERLAYS.cask.finished, OVERLAYS.cask.mother
+V.FLOOR_STEEPED, V.FLOOR_SPROUTING = OVERLAYS.floor.steeped, OVERLAYS.floor.sprouting
+V.FLOOR_ROOTLETS, V.FLOOR_FINISHED = OVERLAYS.floor.rootlets, OVERLAYS.floor.finished
 -- Drawn over either station while a hose joins them.
-V.VESSEL_HOSE, V.CASK_HOSE = 34, 36
-V.FACE_COUNT = 2
+V.VESSEL_HOSE, V.CASK_HOSE = Tiles.HOSE.vessel, Tiles.HOSE.cask
+V.FACE_COUNT = Tiles.FACE_COUNT
 
 -- Hours at a rate of 1. These set the recipes' times, and the sandbox can replace them.
 V.MALTING_HOURS = 120
