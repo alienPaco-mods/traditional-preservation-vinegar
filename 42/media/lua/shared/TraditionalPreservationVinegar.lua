@@ -87,7 +87,6 @@ V.HOSE_REACH = 2
 -- How many squares away a cask can be for bottling, pouring or moving its mother.
 V.REACH = 2
 
-local SECONDS_PER_HOUR = 3600
 local RECIPE_MODULE = "TraditionalPreservationVinegar."
 
 local function lerp(from, to, amount)
@@ -146,10 +145,17 @@ function V.advance(ledger, now, temperature)
     end
 end
 
--- A save from before malting or basements has no totals for them.
 function V.getLedger()
-    return Weather.fillLedger(Weather.getLedger(V.MOD_DATA_KEY, V.newLedger), KINDS)
+    return Weather.getLedger(V.MOD_DATA_KEY, V.newLedger)
 end
+
+-- A save from before malting or basements has no totals for them. Filled once as the save loads,
+-- not on every getLedger: running batches, casks and popups ask for it many times a second.
+function V.fillLedger()
+    Weather.fillLedger(V.getLedger(), KINDS)
+end
+
+Events.OnInitGlobalModData.Add(V.fillLedger)
 
 -- A run's place, from a run saved before basements too.
 local function runPlace(modData)
@@ -659,13 +665,7 @@ function V.applySandbox()
 end
 
 local function applyRecipeTime(name, hours)
-    local fullName = RECIPE_MODULE .. name
-    local recipe = ScriptManager.instance:getCraftRecipe(fullName)
-    if not recipe then
-        print("[TraditionalPreservationVinegar] Could not find " .. fullName)
-        return
-    end
-    recipe:Load(fullName, "{ time = " .. tostring(math.floor(hours * SECONDS_PER_HOUR)) .. ", }")
+    Weather.setRecipeHours(RECIPE_MODULE .. name, hours, "TraditionalPreservationVinegar")
 end
 
 function V.applyRecipeTimes()

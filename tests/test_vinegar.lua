@@ -86,6 +86,7 @@ runHours(16, 60, malt, V.onMaltUpdate)
 check("60 hours at the best temperature is half of a 5 day malting", math.abs(malt.elapsed - 60 * 3600) < 1)
 local oldLedger = { lastHour = hours, alcoholicOpen = 0, alcoholicSheltered = 0, aceticOpen = 0, aceticSheltered = 0, heat = 0 }
 store.ledger, oldLedger = oldLedger, store.ledger
+V.fillLedger()
 check("a save from before malting gets its totals", V.getLedger().maltingOpen == 0)
 store.ledger = oldLedger
 
