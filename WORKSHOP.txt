@@ -38,8 +38,8 @@ From threshed grain, the first vinegar takes about 55 to 60 days in good weather
 All three are under Furniture in the Build menu and need a hammer (kept).
 [list]
 [*][b]Malting Floor[/b], Carpentry 2: 6 planks, 8 nails.
-[*][b]Fermentation Vessel[/b], Carpentry 3: 8 planks, 12 nails, 4 twine, 1 jar.
-[*][b]Orléans Vinegar Cask[/b], Carpentry 4: 10 planks, 16 nails, 6 twine, 1 cloth.
+[*][b]Fermentation Vessel[/b], Carpentry 3: 8 planks, 12 nails, 4 twine, 1 jar; saw kept.
+[*][b]Orléans Vinegar Cask[/b], Carpentry 4: 10 planks, 16 nails, 6 twine, 1 cloth; saw kept.
 [/list]
 
 [h2]The vessel[/h2]

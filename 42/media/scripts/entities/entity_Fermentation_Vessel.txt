@@ -59,6 +59,7 @@ module TraditionalPreservationVinegar
             inputs
             {
                 item 1 tags[base:hammer] mode:keep flags[Prop1;MayDegradeVeryLight],
+                item 1 tags[base:saw;base:smallsaw;base:crudesaw] mode:keep flags[MayDegradeLight],
                 item 8 [Base.Plank],
                 item 12 [Base.Nails],
                 item 4 [Base.Twine],

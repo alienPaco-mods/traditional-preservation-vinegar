@@ -61,8 +61,8 @@ All three are under Furniture in the Build menu, need a hammer (kept) and have t
 | Station | Skill | Materials |
 |---|---|---|
 | **Malting Floor** | Carpentry 2 | 6 planks, 8 nails |
-| **Fermentation Vessel** | Carpentry 3 | 8 planks, 12 nails, 4 twine, 1 jar (the clear airlock on its side) |
-| **Orléans Vinegar Cask** | Carpentry 4 | 10 planks, 16 nails, 6 twine, 1 cloth (Ripped Sheet, Burlap Piece or Cheesecloth) |
+| **Fermentation Vessel** | Carpentry 3 | 8 planks, 12 nails, 4 twine, 1 jar (the clear airlock on its side); a saw (kept) |
+| **Orléans Vinegar Cask** | Carpentry 4 | 10 planks, 16 nails, 6 twine, 1 cloth (Ripped Sheet, Burlap Piece or Cheesecloth); a saw (kept) |
 
 Twine is renewable in vanilla: twist it from Dogbane, scutched hemp, flax tow or sinew.
 
@@ -272,7 +272,7 @@ These are the days a run takes by the month it starts, on the game's forecasts f
 
 | Step | XP |
 |---|---|
-| Steep Grain | Cooking 2 |
+| Steep Grain | Cooking 3 |
 | Mash Malt | Cooking 3 |
 | Strain Mash | Cooking 3 |
 | A finished vessel run | Cooking 10 |

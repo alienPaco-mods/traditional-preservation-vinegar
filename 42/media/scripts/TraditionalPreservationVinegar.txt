@@ -11,7 +11,7 @@ module TraditionalPreservationVinegar
         time = 120,
         Tags = InHandCraft,
         category = Cooking,
-        xpAward = Cooking:2,
+        xpAward = Cooking:3,
         inputs
         {
             item 24 [Base.BarleySeed;Base.WheatSeed;Base.RyeSeed] flags[ItemCount] mode:destroy,

@@ -128,8 +128,8 @@ Join the vessel to a cask with a **Rubber Hose**, and pump fermented wort across
 | Station | Skill | Materials (hammer kept) |
 |---|---|---|
 | **Malting Floor** | Carpentry 2 | 6 planks, 8 nails |
-| **Fermentation Vessel** | Carpentry 3 | 8 planks, 12 nails, 4 twine, 1 jar |
-| **Orléans Vinegar Cask** | Carpentry 4 | 10 planks, 16 nails, 6 twine, 1 cloth |
+| **Fermentation Vessel** | Carpentry 3 | 8 planks, 12 nails, 4 twine, 1 jar; saw kept |
+| **Orléans Vinegar Cask** | Carpentry 4 | 10 planks, 16 nails, 6 twine, 1 cloth; saw kept |
 
 Everything is renewable: **twine** twists from Dogbane, hemp, flax or sinew.
 
