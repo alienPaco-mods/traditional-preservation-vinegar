@@ -1,4 +1,4 @@
--- Copied from ~/MODS/TraditionalPreservationCore/lua/shared/Core/Weather.lua by `tp sync`. Edit it there, not here.
+-- Copied from ~/MODS/TraditionalPreservationCore/42/media/lua/shared/TraditionalPreservationCore/Weather.lua by `tp sync`. Edit it there, not here.
 -- Traditional Preservation core: where a station stands decides its temperature, and running totals of the
 -- weather in global ModData say how much work each place has done, even while a station was unloaded.
 -- Rate curves stay in each mod. A ledger keeps one total and one last rate per kind of work and place,

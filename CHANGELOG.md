@@ -1,6 +1,7 @@
 # Changelog: Traditional Preservation (Vinegar)
 
 ## Unreleased
+- Internal: the synced core copies name the core's new source path (TP Core is now a mod). Comment line only.
 - Internal: the shared core's folder is now `TraditionalPreservationCore` (was `_tpcore`): comments and test
   paths only. No change in play.
 

@@ -1,4 +1,4 @@
--- Copied from ~/MODS/TraditionalPreservationCore/lua/shared/Core/Station.lua by `tp sync`. Edit it there, not here.
+-- Copied from ~/MODS/TraditionalPreservationCore/42/media/lua/shared/TraditionalPreservationCore/Station.lua by `tp sync`. Edit it there, not here.
 -- Traditional Preservation core: keeps a table of a mod's stations, found by the map loader or added when a
 -- player uses one, and refreshes each every half second or so while it is loaded. SpriteOverlayConfig can
 -- only show one sprite, so stations layer their own with attached sprites.

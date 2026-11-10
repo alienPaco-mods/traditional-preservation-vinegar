@@ -1,4 +1,4 @@
--- Copied from ~/MODS/TraditionalPreservationCore/lua/client/Core/UI.lua by `tp sync`. Edit it there, not here.
+-- Copied from ~/MODS/TraditionalPreservationCore/42/media/lua/client/TraditionalPreservationCore/UI.lua by `tp sync`. Edit it there, not here.
 -- Traditional Preservation core: text and popups for the station windows.
 require "Entity/ISUI/Components/Crafting/ISWidgetCraftLogicOutputProgress"
 require "Entity/ISUI/Components/Crafting/ISCraftLogicPanel"
