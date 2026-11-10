@@ -50,6 +50,7 @@ module TraditionalPreservationVinegar
         Tags = InHandCraft,
         category = Cooking,
         xpAward = Cooking:3,
+        OnCreate = TraditionalPreservationVinegar.onMashed,
         inputs
         {
             item 1 [TraditionalPreservationVinegar.Malt] flags[ItemCount] mode:destroy,

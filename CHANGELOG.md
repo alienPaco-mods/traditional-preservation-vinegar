@@ -1,5 +1,31 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.8
+- New: with more than one cask in hose reach, Attach Hose to Cask opens a list of them, nearest first, each with
+  its status line (litres, how far soured, mother), and you pick one. With one cask it works as before.
+  `V.casksForHose` replaces `V.caskForHose`.
+- Changed: pouring fermented wort into a cask by hand brings the cask up to date first, as pumping does, so the new
+  wort doesn't count souring time from before it arrived.
+- Changed: clicking a cask built this session starts tracking it, as its menu does. Cask Info is TP Core's info
+  window now: one info window at a time across the series, refreshed twice a second instead of every frame.
+- Changed: every timed action honours the debug cheat for instant actions (only the hose did).
+- Internal (core consolidation, review group C): the menu helpers, the pick-up block, the click handler, the
+  station lookup (`V.stationKind` is the core's `Station.kinds`), pouring times, the sensitivity scale and the
+  season mean are TP Core's; console lines go through the core's `Log` (debug mode only). Timed actions are named
+  `TP...` (were `IS...`), file and class. Removed `V.spriteIndex`, `V.inHoseReach`, `V.SENSITIVITY_SCALES`.
+- Fixed: a Forged Bucket used for Mash Malt came back from Strain Mash as a plain Metal Bucket. The bucket's kind
+  is now noted on the mash (TP Core's `Container`, new hook `onMashed`) and Strain Mash gives back the bucket that
+  went in, with the wort in it. Mash made before this gives a plain bucket, as before.
+- Fixed: Farming XP for a finished malting was usually lost when the run ended while you were away. Whether a
+  floor is running is now kept on the floor itself (`vinegarMaltBefore` in its modData), not in the tracker's
+  entry, which is forgotten when the area unloads.
+- Fixed: Pump to Cask ran from wherever you right-clicked. You now walk to the vessel first, and a pump queued
+  behind a Detach Hose no longer pumps (`ISPumpVinegarWort:isValid` checks the hose on both ends).
+- Fixed: the cask's and vessel's menus answer vanilla's controller probe (`ISWorldObjectContextMenu.setTest()`), so
+  a controller gets the interact prompt on them; the probe no longer brings the station up to date.
+- Internal: `V.sour` stops if a step gains nothing, so rounding can never leave it looping.
+- Docs: README and Workshop text say the mod needs TP Core (they said "no other mods").
+
 ## 0.2.7
 - **Requires TP Core** (`TraditionalPreservationCore`), the shared Traditional Preservation mod: subscribe to it
   too. Vinegar no longer carries its own copy of the shared core (weather, places, station tracking, popups and

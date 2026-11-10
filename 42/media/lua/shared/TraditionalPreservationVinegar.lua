@@ -5,6 +5,7 @@ TraditionalPreservationVinegar = TraditionalPreservationVinegar or {}
 local V = TraditionalPreservationVinegar
 local Weather = require "TraditionalPreservationCore/Weather"
 local Station = require "TraditionalPreservationCore/Station"
+local Container = require "TraditionalPreservationCore/Container"
 local Tiles = require "TraditionalPreservationVinegar/Tiles"
 
 V.MOD_DATA_KEY = "TraditionalPreservationVinegar"
@@ -38,8 +39,6 @@ V.EFFORT_SCALES = { 1, 1.5, 2 }
 V.EFFORT = 1.5
 local COOK_MINUTES = { ["TraditionalPreservationVinegar.GreenMalt"] = 120, ["TraditionalPreservationVinegar.BucketMash"] = 60 }
 local CRAFT_TIMES = { SteepGrain = 120, MashMalt = 300, StrainMash = 200 }
--- Off, Forgiving, Normal, Harsh: how much of a temperature's slowdown applies.
-V.SENSITIVITY_SCALES = { 0, 0.5, 1, 1.5 }
 V.SENSITIVITY = 1
 V.MIN_RATE = 0.02
 
@@ -223,16 +222,19 @@ function V.heatLoss(heatHours)
     return math.min(heatHours * V.HEAT_LOSS_PER_HOUR * V.SENSITIVITY, V.MAX_HEAT_LOSS)
 end
 
--- Strain Mash gives back the bucket, and this pours the wort into it.
-function V.onStrained(craftRecipeData)
-    local created = craftRecipeData:getAllCreatedItems()
-    for i = 0, created:size() - 1 do
-        local container = created:get(i):getFluidContainer()
-        if container then
-            container:Empty()
-            container:addFluid(V.WORT, math.min(10, container:getCapacity()))
-            return
-        end
+-- The bucket becomes the mash. Its kind (plain or forged) is noted on it, and heating carries the note over
+-- (see the core's Container).
+function V.onMashed(craftRecipeData)
+    Container.note(craftRecipeData, "TraditionalPreservationVinegar.BucketMash")
+end
+
+-- Strain Mash gives back the bucket that went in, and this pours the wort into it.
+function V.onStrained(craftRecipeData, character)
+    local bucket = Container.giveBack(craftRecipeData, character, "Base.BucketEmpty")
+    local container = bucket and bucket:getFluidContainer()
+    if container then
+        container:Empty()
+        container:addFluid(V.WORT, math.min(10, container:getCapacity()))
     end
 end
 
@@ -248,9 +250,7 @@ end
 
 -- True when a container holds only the named fluid.
 function V.holdsOnly(container, name)
-    if not container or container:isEmpty() then return false end
-    local fluid = container:getPrimaryFluid()
-    return fluid ~= nil and fluid:getFluidTypeString() == name and container:getPrimaryFluidAmount() >= container:getAmount() - 0.001
+    return Container.fluidIn(container) == name
 end
 
 -- Slots take anything unless told otherwise, and a wrong item leaves the recipe with no output.
@@ -265,41 +265,26 @@ function V.inputRefusal(kind, fullType)
     return fullType ~= input[1] and input[2] or nil
 end
 
--- The tile number of one of this mod's sprites, or nil for any other.
-function V.spriteIndex(name)
-    if string.sub(name, 1, #V.SPRITE_PREFIX) ~= V.SPRITE_PREFIX then return nil end
-    return tonumber(string.sub(name, #V.SPRITE_PREFIX + 1))
-end
-
 function V.spriteName(index)
     return V.SPRITE_PREFIX .. index
 end
 
-local function stationBase(object, base)
-    local sprite = object and object:getSprite()
-    local index = sprite and sprite:getName() and V.spriteIndex(sprite:getName())
-    return index and index >= base and index < base + V.FACE_COUNT
-end
-
 -- Each station has FACE_COUNT tiles from its base, one per facing.
+V.STATION_SPRITES = { cask = V.CASK_SPRITE, vessel = V.VESSEL_SPRITE, floor = V.FLOOR_SPRITE }
+
+-- Which station this is ("cask", "vessel" or "floor") and which way it faces, or nil for anything else.
+V.stationKind = Station.kinds(V.SPRITE_PREFIX, V.FACE_COUNT, V.STATION_SPRITES)
+
 function V.isCask(object)
-    return stationBase(object, V.CASK_SPRITE)
+    return V.stationKind(object) == "cask"
 end
 
 function V.isVessel(object)
-    return stationBase(object, V.VESSEL_SPRITE)
+    return V.stationKind(object) == "vessel"
 end
 
 function V.isFloor(object)
-    return stationBase(object, V.FLOOR_SPRITE)
-end
-
--- Which station this is, or nil for anything else.
-function V.stationKind(object)
-    if V.isCask(object) then return "cask" end
-    if V.isVessel(object) then return "vessel" end
-    if V.isFloor(object) then return "floor" end
-    return nil
+    return V.stationKind(object) == "floor"
 end
 
 -- The vessel's tank on one side, or nil.
@@ -382,6 +367,7 @@ function V.sour(state, rateHours)
     while rateHours > 0 and state.ml > 0 and state.strength < 1 do
         local perHour = V.caskSpeed(state) / V.ACETIC_HOURS
         local gain = math.min(rateHours * perHour, SOUR_STEP, 1 - state.strength)
+        if gain <= 0 then break end
         rateHours = rateHours - gain / perHour
         state.strength = state.strength + gain
         if state.mother then V.growMother(state, state.ml * gain) end
@@ -497,11 +483,6 @@ local function squareOf(station)
     return { x = square:getX(), y = square:getY(), z = square:getZ() }
 end
 
--- Two squares ({ x, y, z }) a hose can join: same floor, HOSE_REACH apart at most each way.
-function V.inHoseReach(a, b)
-    return a.z == b.z and math.abs(a.x - b.x) <= V.HOSE_REACH and math.abs(a.y - b.y) <= V.HOSE_REACH
-end
-
 -- The station at the other end, and whether its square is loaded at all. A loaded square with no
 -- station on it means the other end was destroyed.
 function V.hosePartner(station)
@@ -518,20 +499,30 @@ function V.hosePartner(station)
     return nil, true
 end
 
--- A cask the vessel can reach with a hose, without one of its own.
-function V.caskForHose(vessel)
+-- Every cask the vessel can reach with a hose (same floor, HOSE_REACH apart at most each way) that has none
+-- of its own, nearest first. The menu offers the choice when there are several.
+function V.casksForHose(vessel)
     local here = squareOf(vessel)
+    local found = {}
     for x = here.x - V.HOSE_REACH, here.x + V.HOSE_REACH do
         for y = here.y - V.HOSE_REACH, here.y + V.HOSE_REACH do
             local square = getCell():getGridSquare(x, y, here.z)
             local objects = square and square:getObjects()
             for i = 0, objects and objects:size() - 1 or -1 do
                 local object = objects:get(i)
-                if V.isCask(object) and not V.hoseLink(object) then return object end
+                if V.isCask(object) and not V.hoseLink(object) then
+                    table.insert(found, { cask = object, far = (x - here.x) ^ 2 + (y - here.y) ^ 2, order = #found })
+                end
             end
         end
     end
-    return nil
+    table.sort(found, function(a, b)
+        if a.far ~= b.far then return a.far < b.far end
+        return a.order < b.order
+    end)
+    local casks = {}
+    for index, entry in ipairs(found) do casks[index] = entry.cask end
+    return casks
 end
 
 -- Each end keeps the other's square in its modData, so the link survives either being unloaded.
@@ -681,7 +672,7 @@ function V.applySandbox()
     if options.AlcoholicDays then V.ALCOHOLIC_HOURS = options.AlcoholicDays * 24 end
     if options.AceticDays then V.ACETIC_HOURS = options.AceticDays * 24 end
     if options.CultureBonus then V.CULTURE_BONUS = options.CultureBonus / 100 end
-    if options.TemperatureSensitivity then V.SENSITIVITY = V.SENSITIVITY_SCALES[options.TemperatureSensitivity] or 1 end
+    if options.TemperatureSensitivity then V.SENSITIVITY = Weather.sensitivity(options.TemperatureSensitivity) end
     if options.BrewingEffort then V.EFFORT = V.EFFORT_SCALES[options.BrewingEffort] or V.EFFORT end
 end
 

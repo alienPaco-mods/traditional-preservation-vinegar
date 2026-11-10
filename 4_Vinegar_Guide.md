@@ -34,6 +34,8 @@ Vanilla vinegar is loot-only, and without it there's no pickling. This mod lets 
 
 ## 2. Quick Start
 
+> **Requires TP Core** (Traditional Preservation Core), the series' shared mod. Enable it alongside this one; it loads first.
+
 **Autumn:** grow barley, wheat or rye → **Steep** → **Malting Floor** → **kiln** on a fire. Malt keeps forever.
 **Spring to autumn:** **Mash** → heat → **Strain** → **Fermentation Vessel** (with a packet of yeast) → **Orléans Vinegar Cask** → **Bottle**.
 

@@ -3,32 +3,33 @@
 require "TimedActions/ISBaseTimedAction"
 require "TraditionalPreservationVinegar"
 
-ISPumpVinegarWort = ISBaseTimedAction:derive("ISPumpVinegarWort")
+TPPumpVinegarWort = ISBaseTimedAction:derive("TPPumpVinegarWort")
 
 local V = TraditionalPreservationVinegar
-local BASE_DURATION = 40
-local DURATION_PER_LITRE = 12
+local Action = require "TraditionalPreservationCore/Action"
+local log = require "TraditionalPreservationCore/Log"
 
-function ISPumpVinegarWort:isValid()
+function TPPumpVinegarWort:isValid()
     if not self.vessel:getSquare() or not self.cask:getSquare() then return false end
+    if not V.hoseLink(self.vessel) or not V.hoseLink(self.cask) then return false end
     local tank = V.vesselTank(self.vessel, ResourceIO.Output)
     return tank ~= nil and not tank:isEmpty() and V.caskRoom(V.caskState(self.cask)) >= V.HOSE_MIN_ML
 end
 
-function ISPumpVinegarWort:waitToStart()
+function TPPumpVinegarWort:waitToStart()
     self.character:faceThisObject(self.vessel)
     return self.character:shouldBeTurning()
 end
 
-function ISPumpVinegarWort:update()
+function TPPumpVinegarWort:update()
     self.character:setMetabolicTarget(Metabolics.LightWork)
 end
 
-function ISPumpVinegarWort:start()
+function TPPumpVinegarWort:start()
     self:setActionAnim("Loot")
 end
 
-function ISPumpVinegarWort:complete()
+function TPPumpVinegarWort:complete()
     if TraditionalPreservationVinegarWorld then
         TraditionalPreservationVinegarWorld.track(self.vessel)
         TraditionalPreservationVinegarWorld.track(self.cask)
@@ -37,19 +38,19 @@ function ISPumpVinegarWort:complete()
     local state = V.caskState(self.cask)
     V.updateCask(state, V.getLedger(), V.placeOf(self.cask))
     local moved = V.pumpToCask(state, V.vesselTank(self.vessel, ResourceIO.Output):getFluidContainer(), self.ml)
-    print(string.format("[TPV] hose pumped %.2f L of fermented wort into the cask", moved / 1000))
+    log("TPV", "hose pumped %.2f L of fermented wort into the cask", moved / 1000)
     return true
 end
 
-function ISPumpVinegarWort:perform()
+function TPPumpVinegarWort:perform()
     ISBaseTimedAction.perform(self)
 end
 
-function ISPumpVinegarWort:getDuration()
-    return BASE_DURATION + math.floor(math.min(self.ml / 1000, 20) * DURATION_PER_LITRE)
+function TPPumpVinegarWort:getDuration()
+    return Action.pourDuration(self.character, self.ml / 1000, 20)
 end
 
-function ISPumpVinegarWort:new(character, vessel, cask, ml)
+function TPPumpVinegarWort:new(character, vessel, cask, ml)
     local o = ISBaseTimedAction.new(self, character)
     o.vessel = vessel
     o.cask = cask

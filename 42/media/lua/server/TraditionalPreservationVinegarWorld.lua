@@ -9,6 +9,7 @@ local World = TraditionalPreservationVinegarWorld
 local Station = require "TraditionalPreservationCore/Station"
 local Weather = require "TraditionalPreservationCore/Weather"
 local Tiles = require "TraditionalPreservationVinegar/Tiles"
+local log = require "TraditionalPreservationCore/Log"
 
 -- Bubbling gives way to settling lees for the last part of a run.
 local SEDIMENT_FROM = 0.7
@@ -106,7 +107,7 @@ local function settleRun(vessel, resources, logic, craftData, input, output)
             input:getFluidContainer():removeFluid(ml / 1000)
             run = { ml = ml, heat = 0 }
             modData.vinegarRun = run
-            print(string.format("[TPV] vessel run took %.1f L of wort", ml / 1000))
+            log("TPV", "vessel run took %.1f L of wort", ml / 1000)
         end
         run.heat = craftData:getModData().heat or 0
         return
@@ -115,11 +116,11 @@ local function settleRun(vessel, resources, logic, craftData, input, output)
         local ml = run and V.fermentedMl(run.ml, run.heat) or 0
         if ml > 0 then output:getFluidContainer():addFluid(V.FERMENTED, ml / 1000) end
         award(Perks.Cooking, V.FERMENT_XP)
-        print(string.format("[TPV] vessel run finished with %.2f L of fermented wort", ml / 1000))
+        log("TPV", "vessel run finished with %.2f L of fermented wort", ml / 1000)
         modData.vinegarRun = nil
     elseif run and not logic:isRunning() then
         input:getFluidContainer():addFluid(V.WORT, run.ml / 1000)
-        print(string.format("[TPV] vessel run cancelled, %.1f L of wort back in the tank", run.ml / 1000))
+        log("TPV", "vessel run cancelled, %.1f L of wort back in the tank", run.ml / 1000)
         modData.vinegarRun = nil
     end
 end
@@ -130,7 +131,7 @@ local function stationSprite(station, entry)
         local before = state.strength
         V.updateCask(state, V.getLedger(), V.placeOf(station))
         if before < 1 and state.strength >= 1 then
-            print(string.format("[TPV] cask fully soured: %.2f L, mother layers %d", state.ml / 1000, V.motherLayers(state)))
+            log("TPV", "cask fully soured: %.2f L, mother layers %d", state.ml / 1000, V.motherLayers(state))
         end
         return World.caskSprite(state)
     end
@@ -144,10 +145,15 @@ local function stationSprite(station, entry)
         local waiting = countItems(resources, logic:getInputsGroupName(), ResourceIO.Input)
         local finished = countItems(resources, logic:getOutputsGroupName(), ResourceIO.Output)
         -- A run that ended with more malt to collect than it started with finished; a cancelled one didn't.
+        -- The count is kept on the floor itself: a run usually ends while its area is unloaded.
         local running = logic:isRunning()
-        if running and not entry.malting then entry.maltBefore = finished end
-        if entry.malting and not running and finished > (entry.maltBefore or 0) then award(Perks.Farming, V.MALTING_XP) end
-        entry.malting = running
+        local modData = station:getModData()
+        if running and not modData.vinegarMaltBefore then
+            modData.vinegarMaltBefore = finished
+        elseif not running and modData.vinegarMaltBefore then
+            if finished > modData.vinegarMaltBefore then award(Perks.Farming, V.MALTING_XP) end
+            modData.vinegarMaltBefore = nil
+        end
         return World.floorSprite(waiting, progress, finished)
     end
 
@@ -170,7 +176,7 @@ local function tendHose(station)
         if not loaded then return true end
         station:getModData().vinegarHose = nil
         station:getSquare():AddWorldInventoryItem(V.HOSE_ITEM, 0.5, 0.5, 0)
-        print("[TPV] hose dropped: the station at its other end is gone")
+        log("TPV", "hose dropped: the station at its other end is gone")
         return false
     end
     World.track(partner)
@@ -191,10 +197,9 @@ end
 
 -- Only this mod's stations: the base sprite and which way it faces.
 local function newEntry(station)
-    local sprite = station:getSprite()
-    local index = sprite and V.spriteIndex(sprite:getName())
-    if not index then return nil end
-    return { base = index - index % V.FACE_COUNT, faceIndex = index % V.FACE_COUNT }
+    local kind, face = V.stationKind(station)
+    if not kind then return nil end
+    return { base = V.STATION_SPRITES[kind], faceIndex = face }
 end
 
 local tracker = Station.tracker({ sprites = Tiles.STATIONS, entry = newEntry, refresh = refresh })

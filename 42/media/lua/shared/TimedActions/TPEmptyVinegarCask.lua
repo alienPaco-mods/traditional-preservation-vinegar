@@ -2,38 +2,39 @@
 require "TimedActions/ISBaseTimedAction"
 require "TraditionalPreservationVinegar"
 
-ISEmptyVinegarCask = ISBaseTimedAction:derive("ISEmptyVinegarCask")
+TPEmptyVinegarCask = ISBaseTimedAction:derive("TPEmptyVinegarCask")
 
 local V = TraditionalPreservationVinegar
+local Action = require "TraditionalPreservationCore/Action"
 local DURATION = 150
 
-function ISEmptyVinegarCask:isValid()
+function TPEmptyVinegarCask:isValid()
     return self.cask:getSquare() ~= nil and V.caskState(self.cask).ml > 0
 end
 
-function ISEmptyVinegarCask:waitToStart()
+function TPEmptyVinegarCask:waitToStart()
     self.character:faceThisObject(self.cask)
     return self.character:shouldBeTurning()
 end
 
-function ISEmptyVinegarCask:start()
+function TPEmptyVinegarCask:start()
     self:setActionAnim("Loot")
 end
 
-function ISEmptyVinegarCask:complete()
+function TPEmptyVinegarCask:complete()
     V.emptyCask(V.caskState(self.cask))
     return true
 end
 
-function ISEmptyVinegarCask:perform()
+function TPEmptyVinegarCask:perform()
     ISBaseTimedAction.perform(self)
 end
 
-function ISEmptyVinegarCask:getDuration()
-    return DURATION
+function TPEmptyVinegarCask:getDuration()
+    return Action.duration(self.character, DURATION)
 end
 
-function ISEmptyVinegarCask:new(character, cask)
+function TPEmptyVinegarCask:new(character, cask)
     local o = ISBaseTimedAction.new(self, character)
     o.cask = cask
     o.maxTime = o:getDuration()

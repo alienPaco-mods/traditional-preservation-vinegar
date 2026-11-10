@@ -4,29 +4,31 @@ require "TimedActions/ISBaseTimedAction"
 require "TraditionalPreservationVinegar"
 require "TraditionalPreservationVinegarBottles"
 
-ISBottleVinegar = ISBaseTimedAction:derive("ISBottleVinegar")
+TPBottleVinegar = ISBaseTimedAction:derive("TPBottleVinegar")
 
 local V = TraditionalPreservationVinegar
+local Action = require "TraditionalPreservationCore/Action"
+local log = require "TraditionalPreservationCore/Log"
 local DURATION = 40
 
-function ISBottleVinegar:isValid()
+function TPBottleVinegar:isValid()
     if not self.cask:getSquare() or not self.character:getInventory():containsRecursive(self.bottle) then return false end
     return V.isEmptyBottle(self.bottle) and V.bottlesLeft(V.caskState(self.cask)) > 0
 end
 
-function ISBottleVinegar:waitToStart()
+function TPBottleVinegar:waitToStart()
     self.character:faceThisObject(self.cask)
     return self.character:shouldBeTurning()
 end
 
-function ISBottleVinegar:start()
+function TPBottleVinegar:start()
     self:setActionAnim("Loot")
 end
 
-function ISBottleVinegar:complete()
+function TPBottleVinegar:complete()
     local state = V.caskState(self.cask)
     if V.takeBottle(state) then
-        print(string.format("[TPV] bottled 1 L, %.2f L left in the cask", state.ml / 1000))
+        log("TPV", "bottled 1 L, %.2f L left in the cask", state.ml / 1000)
         self.character:removeFromHands(self.bottle)
         self.bottle:getContainer():Remove(self.bottle)
         V.markBottle(self.character:getInventory():AddItem("Base.Vinegar2"), self.bottle:getFullType())
@@ -35,15 +37,15 @@ function ISBottleVinegar:complete()
     return true
 end
 
-function ISBottleVinegar:perform()
+function TPBottleVinegar:perform()
     ISBaseTimedAction.perform(self)
 end
 
-function ISBottleVinegar:getDuration()
-    return DURATION
+function TPBottleVinegar:getDuration()
+    return Action.duration(self.character, DURATION)
 end
 
-function ISBottleVinegar:new(character, cask, bottle)
+function TPBottleVinegar:new(character, cask, bottle)
     local o = ISBaseTimedAction.new(self, character)
     o.cask = cask
     o.bottle = bottle

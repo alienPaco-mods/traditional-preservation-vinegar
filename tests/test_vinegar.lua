@@ -32,6 +32,7 @@ local function recipeData(time)
     function data:getRecipe() return { getTime = function() return time end } end
     function data:getAllInputItemsWithFlag() return list(self.inputs) end
     function data:getAllCreatedItems() return list(self.created) end
+    function data:getAllConsumedItems() return list(self.used or {}) end
     return data
 end
 
@@ -157,12 +158,35 @@ check("a mixture doesn't", not V.holdsOnly(container(V.WORT, 8, 10, 2), V.WORT))
 check("nor an empty bucket", not V.holdsOnly(container(nil, 0), V.WORT))
 check("nor another liquid", not V.holdsOnly(container(V.FERMENTED, 10), V.WORT))
 
-local bucketOut = { getFluidContainer = function(self) self.fluid = self.fluid or container(nil, 0); return self.fluid end }
-local grain = { getFluidContainer = function() return nil end }
+local function bucketItem(fullType)
+    local item = { modData = {} }
+    function item:getFullType() return fullType end
+    function item:getModData() return self.modData end
+    function item:getFluidContainer() self.fluid = self.fluid or container(nil, 0); return self.fluid end
+    function item:getContainer() return { DoRemoveItem = function() item.removed = true end } end
+    return item
+end
+local bucketOut = bucketItem("Base.BucketEmpty")
+local grain = { getFluidContainer = function() return nil end, getFullType = function() return "TraditionalPreservationVinegar.SpentGrain" end }
 local strain = recipeData(200)
 strain.created = { grain, bucketOut }
-V.onStrained(strain)
+V.onStrained(strain, "player")
 check("straining leaves 10 L of wort in the bucket", V.holdsOnly(bucketOut.fluid, V.WORT) and bucketOut.fluid.amount == 10)
+
+-- A Forged Bucket goes in at Mash Malt and comes back at Strain Mash
+local forgedIn, mash = bucketItem("Base.BucketForged"), bucketItem("TraditionalPreservationVinegar.BucketMash")
+local mashing = recipeData(300)
+mashing.used, mashing.created = { { getFluidContainer = function() return nil end }, forgedIn }, { mash }
+V.onMashed(mashing)
+local forgedOut
+instanceItem = function(fullType) forgedOut = bucketItem(fullType); return forgedOut end
+Actions = { addOrDropItem = function() end }
+local plainOut = bucketItem("Base.BucketEmpty")
+local strainForged = recipeData(200)
+strainForged.used, strainForged.created = { mash }, { plainOut, grain }
+V.onStrained(strainForged, "player")
+check("a forged bucket comes back forged, with the wort in it", forgedOut and forgedOut:getFullType() == "Base.BucketForged"
+    and V.holdsOnly(forgedOut.fluid, V.WORT) and forgedOut.fluid.amount == 10 and plainOut.removed)
 check("a run takes one bucket of wort", V.batchMl(10000) == 10000 and V.batchMl(15000) == 10000)
 check("or two, and never more", V.batchMl(20000) == 20000 and V.batchMl(25000) == 20000)
 check("and nothing short of a bucket", V.batchMl(9000) == 0)
@@ -301,9 +325,6 @@ V.growMother(young, V.MOTHER_LAYER_ML - 6000)
 check("then it can be split", V.canSplitMother(young) and V.nextLayerMl(young) == V.MOTHER_LAYER_ML)
 
 -- The hose
-check("a hose reaches 2 squares", V.inHoseReach({ x = 0, y = 0, z = 0 }, { x = 2, y = -2, z = 0 }))
-check("but not 3", not V.inHoseReach({ x = 0, y = 0, z = 0 }, { x = 3, y = 0, z = 0 }))
-check("nor up a floor", not V.inHoseReach({ x = 0, y = 0, z = 0 }, { x = 1, y = 0, z = 1 }))
 local function tank(litres)
     local t = { litres = litres }
     function t:getAmount() return self.litres end
@@ -346,7 +367,8 @@ local function station(x, y, z, kindIndex)
     return object
 end
 local vesselObject, caskNear, caskFar = station(10, 10, 0, V.VESSEL_SPRITE), station(11, 12, 0, V.CASK_SPRITE), station(14, 10, 0, V.CASK_SPRITE)
-local world = { ["10,10,0"] = { vesselObject }, ["11,12,0"] = { caskNear }, ["14,10,0"] = { caskFar } }
+local caskNext, caskCorner, caskAbove = station(10, 11, 0, V.CASK_SPRITE), station(12, 8, 0, V.CASK_SPRITE), station(10, 11, 1, V.CASK_SPRITE)
+local world = { ["10,10,0"] = { vesselObject }, ["11,12,0"] = { caskNear }, ["14,10,0"] = { caskFar }, ["10,11,1"] = { caskAbove } }
 local savedGetCell = getCell
 function getCell()
     return { getGridSquare = function(_, x, y, z)
@@ -355,11 +377,17 @@ function getCell()
         return here and { getObjects = function() return list(here) end } or nil
     end }
 end
-check("a vessel finds a cask in hose reach", V.caskForHose(vesselObject) == caskNear)
+local inReach = V.casksForHose(vesselObject)
+check("a vessel finds a cask in hose reach, not one 4 squares off or up a floor", #inReach == 1 and inReach[1] == caskNear)
+world["10,11,0"], world["12,8,0"] = { caskNext }, { caskCorner }
+inReach = V.casksForHose(vesselObject)
+check("with several in reach it lists them all, nearest first", #inReach == 3 and inReach[1] == caskNext
+    and inReach[2] == caskNear and inReach[3] == caskCorner)
+world["10,11,0"], world["12,8,0"] = nil, nil
 V.connectHose(vesselObject, caskNear)
 check("joining marks both ends", V.hoseLink(vesselObject).x == 11 and V.hoseLink(caskNear).x == 10)
 check("each end finds the other", V.hosePartner(vesselObject) == caskNear and V.hosePartner(caskNear) == vesselObject)
-check("a joined cask isn't offered for another hose", V.caskForHose(vesselObject) == nil)
+check("a joined cask isn't offered for another hose", #V.casksForHose(vesselObject) == 0)
 world["11,12,0"] = false
 local gone, goneLoaded = V.hosePartner(vesselObject)
 check("a destroyed cask is noticed when its square is loaded", gone == nil and goneLoaded)

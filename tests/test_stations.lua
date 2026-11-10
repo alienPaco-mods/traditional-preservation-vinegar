@@ -26,7 +26,9 @@ ArrayList = { new = function() return list({}) end }
 Fluid = { Get = function() return nil end }
 function getPlayer() return {} end
 local temperature = 25
-function getClimateManager() return { getTemperature = function() return temperature end } end
+function getClimateManager()
+    return { getTemperature = function() return temperature end, getHumidity = function() return 50 end }
+end
 local loaders = {}
 MapObjects = { OnLoadWithSprite = function(name, handler) loaders[name] = handler end }
 local cellSquares = {}
@@ -147,7 +149,11 @@ ISWidgetCraftLogicInputControl = { updateOutputItems = noop }
 ISItemSlot = { defaultVerifyItem = noop, onMouseUp = noop }
 ISMoveableSpriteProps = { canPickUpMoveable = noop, getInfoPanelFlagsPerTile = noop }
 ISWidgetCraftLogicOutputProgress = { updateProgressItems = function(self) self.vanillaRan = true end }
-ISCollapsableWindow = { derive = function() return {} end }
+-- Cask Info derives TP Core's InfoWindow, which derives this.
+local function class()
+    return { derive = function() return class() end }
+end
+ISCollapsableWindow = class()
 ISWorldMenuElements = { ContextEntity = noop }
 dofile("42/media/lua/client/TraditionalPreservationVinegarUI.lua")
 

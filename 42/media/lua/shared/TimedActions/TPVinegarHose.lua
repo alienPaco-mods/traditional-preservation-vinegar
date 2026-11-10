@@ -4,12 +4,13 @@
 require "TimedActions/ISBaseTimedAction"
 require "TraditionalPreservationVinegar"
 
-ISVinegarHose = ISBaseTimedAction:derive("ISVinegarHose")
+TPVinegarHose = ISBaseTimedAction:derive("TPVinegarHose")
 
 local V = TraditionalPreservationVinegar
+local Action = require "TraditionalPreservationCore/Action"
 local DURATION = 150
 
-function ISVinegarHose:isValid()
+function TPVinegarHose:isValid()
     if not self.station:getSquare() then return false end
     if not self.pliers:isInPlayerInventory() or self.pliers:isBroken() then return false end
     if not self.cask then return V.hoseLink(self.station) ~= nil end
@@ -17,22 +18,22 @@ function ISVinegarHose:isValid()
         and not V.hoseLink(self.station) and not V.hoseLink(self.cask)
 end
 
-function ISVinegarHose:waitToStart()
+function TPVinegarHose:waitToStart()
     self.character:faceThisObject(self.station)
     return self.character:shouldBeTurning()
 end
 
-function ISVinegarHose:update()
+function TPVinegarHose:update()
     self.character:faceThisObject(self.station)
     self.character:setMetabolicTarget(Metabolics.LightWork)
 end
 
-function ISVinegarHose:start()
+function TPVinegarHose:start()
     self:setActionAnim("Loot")
     self.character:SetVariable("LootPosition", "Low")
 end
 
-function ISVinegarHose:complete()
+function TPVinegarHose:complete()
     local inventory = self.character:getInventory()
     if self.cask then
         V.connectHose(self.station, self.cask)
@@ -48,16 +49,15 @@ function ISVinegarHose:complete()
     return true
 end
 
-function ISVinegarHose:perform()
+function TPVinegarHose:perform()
     ISBaseTimedAction.perform(self)
 end
 
-function ISVinegarHose:getDuration()
-    if self.character:isTimedActionInstant() then return 1 end
-    return DURATION
+function TPVinegarHose:getDuration()
+    return Action.duration(self.character, DURATION)
 end
 
-function ISVinegarHose:new(character, station, pliers, cask, hose)
+function TPVinegarHose:new(character, station, pliers, cask, hose)
     local o = ISBaseTimedAction.new(self, character)
     o.station = station
     o.pliers = pliers

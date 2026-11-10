@@ -6,22 +6,18 @@ require "Entity/ISUI/Components/Crafting/ISWidgetCraftLogicInputControl"
 require "Entity/ISUI/Controls/ISItemSlot"
 require "Entity/ISUI/Controls/ISFluidSlotPanel"
 require "Entity/ISUI/Components/Crafting/ISWidgetCraftLogicOutputProgress"
-require "Moveables/ISMoveableSpriteProps"
 require "Context/World/ISContextEntity"
-require "TimedActions/ISVinegarMother"
-require "TimedActions/ISBottleVinegar"
-require "TimedActions/ISEmptyVinegarCask"
-require "TimedActions/ISPourVinegarFluid"
-require "TimedActions/ISVinegarHose"
-require "TimedActions/ISPumpVinegarWort"
-require "ISUI/ISCollapsableWindow"
+require "TimedActions/TPVinegarMother"
+require "TimedActions/TPBottleVinegar"
+require "TimedActions/TPEmptyVinegarCask"
+require "TimedActions/TPPourVinegarFluid"
+require "TimedActions/TPVinegarHose"
+require "TimedActions/TPPumpVinegarWort"
 local UI = require "TraditionalPreservationCore/UI"
-local Station = require "TraditionalPreservationCore/Station"
+local InfoWindow = require "TraditionalPreservationCore/InfoWindow"
 
 local V = TraditionalPreservationVinegar
 local vanillaCreateChildren = ISCraftLogicPanel.createChildren
-local vanillaCanPickUp = ISMoveableSpriteProps.canPickUpMoveable
-local vanillaInfoFlags = ISMoveableSpriteProps.getInfoPanelFlagsPerTile
 local vanillaStartCraft = ISWidgetCraftLogicControl.startCraft
 local vanillaOutputTeaser = ISWidgetCraftLogicInputControl.updateOutputItems
 
@@ -37,6 +33,7 @@ local STATION_ICONS = {
 }
 
 local say, percent = UI.say, UI.percent
+local tooltipFor, findItems = UI.tooltip, UI.findItems
 
 local PLACE_TEXT = {
     Open = "IGUI_TraditionalPreservationVinegar_TemperatureOpen",
@@ -49,18 +46,12 @@ local function isStation(entity)
 end
 
 local function litresText(litres)
-    return string.format("%.1f", litres)
+    return UI.litres(litres * 1000)
 end
 
 -- A basement holds one temperature all year, so its time left needs no caveat.
 local function timeText(hours, place)
     return UI.timeText(hours, place == "Basement" and "IGUI_TraditionalPreservationVinegar_TimeSteady" or "IGUI_TraditionalPreservationVinegar_Time")
-end
-
-local function tooltipFor(option, text)
-    local tooltip = ISWorldObjectContextMenu.addToolTip()
-    tooltip.description = text
-    option.toolTip = tooltip
 end
 
 -- queued lists the items already on their way in.
@@ -99,16 +90,7 @@ local function holdsLiquid(object)
 end
 
 -- Picking up can break a station, and a broken one would lose what it holds.
-function ISMoveableSpriteProps:canPickUpMoveable(character, square, object)
-    if holdsLiquid(object) then return false end
-    return vanillaCanPickUp(self, character, square, object)
-end
-
--- And the pick-up cursor says why, with vanilla's own line for a full container.
-function ISMoveableSpriteProps:getInfoPanelFlagsPerTile(square, object, player, mode)
-    vanillaInfoFlags(self, square, object, player, mode)
-    if mode == "pickup" and holdsLiquid(object) then InfoPanelFlags.hasItems = true end
-end
+UI.keepInPlace(holdsLiquid)
 
 local TANK_TITLES = { [ResourceIO.Input] = "IGUI_TraditionalPreservationVinegar_TankWort", [ResourceIO.Output] = "IGUI_TraditionalPreservationVinegar_TankFermented" }
 
@@ -183,25 +165,11 @@ end
 
 UI.progressTooltips({ MaltGrain = drawBatchTooltip, FermentWort = drawBatchTooltip })
 
--- Every item on the player or in containers in reach that passes test.
-local function findItems(playerObj, test)
-    local found = {}
-    local containers = ISInventoryPaneContextMenu.getContainers(playerObj)
-    for i = 0, containers:size() - 1 do
-        local items = containers:get(i):getItems()
-        for j = 0, items:size() - 1 do
-            local item = items:get(j)
-            if not item:isFavorite() and test(item) then table.insert(found, item) end
-        end
-    end
-    return found
-end
-
 local function onPour(playerObj, station, items, mode)
     if not ISEntityUI.WalkToEntity(playerObj, station) then return end
     for _, item in ipairs(items) do
         ISInventoryPaneContextMenu.transferIfNeeded(playerObj, item)
-        ISTimedActionQueue.add(ISPourVinegarFluid:new(playerObj, station, item, mode))
+        ISTimedActionQueue.add(TPPourVinegarFluid:new(playerObj, station, item, mode))
     end
 end
 
@@ -233,16 +201,16 @@ local function onHose(playerObj, station, pliers, cask, hose)
     if not ISEntityUI.WalkToEntity(playerObj, station) then return end
     ISInventoryPaneContextMenu.transferIfNeeded(playerObj, pliers)
     if hose then ISInventoryPaneContextMenu.transferIfNeeded(playerObj, hose) end
-    ISTimedActionQueue.add(ISVinegarHose:new(playerObj, station, pliers, cask, hose))
+    ISTimedActionQueue.add(TPVinegarHose:new(playerObj, station, pliers, cask, hose))
 end
 
 local function disableWith(option, key)
-    option.isDisabled = true
-    tooltipFor(option, getText(key))
+    UI.disable(option, getText(key))
 end
 
 local function onPump(playerObj, vessel, cask, ml)
-    ISTimedActionQueue.add(ISPumpVinegarWort:new(playerObj, vessel, cask, ml))
+    if not ISEntityUI.WalkToEntity(playerObj, vessel) then return end
+    ISTimedActionQueue.add(TPPumpVinegarWort:new(playerObj, vessel, cask, ml))
 end
 
 -- Pump to Cask, on either station while joined: fixed amounts, up to the air line and all that fits,
@@ -270,8 +238,11 @@ local function addPumpMenu(menu, playerObj, station, partner)
     end
 end
 
+local caskStatus -- below, with the cask's own menu
+
 -- The hose options on either station: a grey line naming the other end, Pump to Cask and Detach Hose
--- when joined, and on a vessel, Attach Hose to Cask when not.
+-- when joined, and on a vessel, Attach Hose to Cask when not. With more than one cask in reach, Attach
+-- Hose opens a list of them, nearest first, each with its status line, so the player picks one.
 local function addHoseMenu(menu, playerObj, station)
     local pliers = V.findPliers(playerObj:getInventory())
     if V.hoseLink(station) then
@@ -286,11 +257,13 @@ local function addHoseMenu(menu, playerObj, station)
         return
     end
     if not V.isVessel(station) then return end
-    local cask = V.caskForHose(station)
+    local casks = V.casksForHose(station)
     local hose = findItems(playerObj, function(item) return item:getFullType() == V.HOSE_ITEM end)[1]
-    local attach = menu:addOption(getText("ContextMenu_TraditionalPreservationVinegar_AttachHose"), playerObj, onHose, station, pliers, cask, hose)
+    local label = getText("ContextMenu_TraditionalPreservationVinegar_AttachHose")
+    local several = #casks > 1 and hose and pliers
+    local attach = several and menu:addOption(label) or menu:addOption(label, playerObj, onHose, station, pliers, casks[1], hose)
     attach.iconTexture = getTexture(HOSE_ICON)
-    if not cask then
+    if #casks == 0 then
         disableWith(attach, "IGUI_TraditionalPreservationVinegar_NoCaskInReach")
     elseif not hose then
         disableWith(attach, "IGUI_TraditionalPreservationVinegar_NeedHose")
@@ -298,6 +271,13 @@ local function addHoseMenu(menu, playerObj, station)
         disableWith(attach, "IGUI_TraditionalPreservationVinegar_NeedPliers")
     else
         tooltipFor(attach, getText("IGUI_TraditionalPreservationVinegar_HoseHelp"))
+    end
+    if not several then return end
+    local choice = menu:getNew(menu)
+    menu:addSubMenu(attach, choice)
+    for _, cask in ipairs(casks) do
+        local entry = choice:addOption(caskStatus(cask, V.caskState(cask)), playerObj, onHose, station, pliers, cask, hose)
+        entry.iconTexture = getTexture(STATION_ICONS.cask)
     end
 end
 
@@ -342,7 +322,7 @@ local function onBottle(playerObj, cask, bottles, count)
     if not ISEntityUI.WalkToEntity(playerObj, cask) then return end
     for index = 1, math.min(count, #bottles) do
         ISInventoryPaneContextMenu.transferIfNeeded(playerObj, bottles[index])
-        ISTimedActionQueue.add(ISBottleVinegar:new(playerObj, cask, bottles[index]))
+        ISTimedActionQueue.add(TPBottleVinegar:new(playerObj, cask, bottles[index]))
     end
 end
 
@@ -378,7 +358,7 @@ end
 local function onMother(playerObj, cask, item, mode)
     if not ISEntityUI.WalkToEntity(playerObj, cask) then return end
     ISInventoryPaneContextMenu.transferIfNeeded(playerObj, item)
-    ISTimedActionQueue.add(ISVinegarMother:new(playerObj, cask, item, mode))
+    ISTimedActionQueue.add(TPVinegarMother:new(playerObj, cask, item, mode))
 end
 
 -- One option for the mother, greyed with the reason when it can't be done.
@@ -422,7 +402,7 @@ end
 
 local function onEmptyCask(playerObj, cask)
     if ISEntityUI.WalkToEntity(playerObj, cask) then
-        ISTimedActionQueue.add(ISEmptyVinegarCask:new(playerObj, cask))
+        ISTimedActionQueue.add(TPEmptyVinegarCask:new(playerObj, cask))
     end
 end
 
@@ -433,7 +413,7 @@ local function leftText(hours)
     return say("IGUI_TraditionalPreservationVinegar_HoursLeft", tostring(math.ceil(hours)))
 end
 
-local function caskStatus(cask, state)
+function caskStatus(cask, state)
     local mother = getText(state.mother and "IGUI_TraditionalPreservationVinegar_MotherYes" or "IGUI_TraditionalPreservationVinegar_MotherNo")
     if state.ml <= 0 then return say("IGUI_TraditionalPreservationVinegar_CaskEmpty", mother) end
     if state.strength >= 1 then return say("IGUI_TraditionalPreservationVinegar_CaskReady", litresText(state.ml / 1000), mother) end
@@ -458,110 +438,50 @@ local function caskDetail(cask, state)
     return table.concat(lines, " <LINE> ")
 end
 
--- Cask Info: the same facts as the status line and its hover, with bars, kept up to date while
--- open. It closes when the player walks off or the cask is gone.
-local CASK_WINDOW_WIDTH = 360
-local CASK_WINDOW_REACH = 6
-local CASK_WINDOW_PADDING = 10
-local CASK_LABEL_WIDTH = 110
-local CASK_BAR_HEIGHT = 12
+-- Cask Info (TP Core's InfoWindow): the same facts as the status line and its hover, with bars, kept up
+-- to date while open.
 local CASK_BAR_COLOURS = { contents = { 0.62, 0.42, 0.18 }, souring = { 0.55, 0.6, 0.25 } }
 
-local CaskWindow = ISCollapsableWindow:derive("TraditionalPreservationVinegarCaskWindow")
+local CaskWindow = InfoWindow:derive("TraditionalPreservationVinegarCaskWindow")
 
 function CaskWindow:new(playerObj, cask)
-    local x = getCore():getScreenWidth() / 2 - CASK_WINDOW_WIDTH / 2
-    local o = ISCollapsableWindow.new(self, x, getCore():getScreenHeight() / 3, CASK_WINDOW_WIDTH, 200)
-    o.playerObj, o.cask = playerObj, cask
+    local o = InfoWindow.new(self, playerObj, cask)
     o.title = getText("IGUI_CraftingWindow_VinegarCask")
-    o.resizable = false
     return o
 end
 
--- One Cask Info window at a time: opening another closes the last.
 function CaskWindow.open(playerObj, cask)
-    if CaskWindow.instance then CaskWindow.instance:close() end
-    local window = CaskWindow:new(playerObj, cask)
-    window:initialise()
-    window:addToUIManager()
-    CaskWindow.instance = window
+    InfoWindow.open(CaskWindow, playerObj, cask)
 end
 
-function CaskWindow:close()
-    ISCollapsableWindow.close(self)
-    self:removeFromUIManager()
-    if CaskWindow.instance == self then CaskWindow.instance = nil end
-end
-
-function CaskWindow:update()
-    ISCollapsableWindow.update(self)
-    local square, player = self.cask:getSquare(), self.playerObj
-    if not Station.isLoaded(self.cask) or player:isDead() or player:getZ() ~= square:getZ()
-            or IsoUtils.DistanceTo(player:getX(), player:getY(), square:getX() + 0.5, square:getY() + 0.5) > CASK_WINDOW_REACH then
-        self:close()
-    end
-end
-
--- Words that run past the window go on to the next line.
-local function wrapped(text, width)
-    local lines, line = {}, ""
-    for word in string.gmatch(text, "%S+") do
-        local longer = line == "" and word or line .. " " .. word
-        if line ~= "" and getTextManager():MeasureStringX(UIFont.Small, longer) > width then
-            table.insert(lines, line)
-            line = word
-        else
-            line = longer
-        end
-    end
-    if line ~= "" then table.insert(lines, line) end
-    return lines
-end
-
--- Draws a label and value line at y and returns the next line's y. bar does the same with a filled bar.
-function CaskWindow:row(y, label, value)
-    self:drawText(label, CASK_WINDOW_PADDING, y, 0.7, 0.7, 0.7, 1, UIFont.Small)
-    self:drawText(value, CASK_WINDOW_PADDING + CASK_LABEL_WIDTH, y, 1, 1, 1, 1, UIFont.Small)
-    return y + getTextManager():getFontHeight(UIFont.Small) + 2
-end
-
-function CaskWindow:bar(y, label, share, colour, value)
-    local lineHeight = getTextManager():getFontHeight(UIFont.Small)
-    local x = CASK_WINDOW_PADDING + CASK_LABEL_WIDTH
-    local width = self.width - x - CASK_WINDOW_PADDING
-    local top = y + (lineHeight - CASK_BAR_HEIGHT) / 2
-    self:drawText(label, CASK_WINDOW_PADDING, y, 0.7, 0.7, 0.7, 1, UIFont.Small)
-    self:drawRect(x, top, width, CASK_BAR_HEIGHT, 0.6, 0.1, 0.1, 0.1)
-    self:drawRect(x, top, width * math.max(0, math.min(share, 1)), CASK_BAR_HEIGHT, 0.9, colour[1], colour[2], colour[3])
-    self:drawRectBorder(x, top, width, CASK_BAR_HEIGHT, 0.8, 0.4, 0.4, 0.4)
-    self:drawTextCentre(value, x + width / 2, y, 1, 1, 1, 1, UIFont.Small)
-    return y + lineHeight + 4
+function CaskWindow:refresh()
+    local cask = self.station
+    local state = V.caskState(cask)
+    self.info = { state = state, status = V.caskStatus(state, V.getLedger(), V.placeOf(cask)), hosed = V.hoseLink(cask) ~= nil }
 end
 
 function CaskWindow:render()
     ISCollapsableWindow.render(self)
-    if self.isCollapsed then return end
-    local state = V.caskState(self.cask)
-    local status = V.caskStatus(state, V.getLedger(), V.placeOf(self.cask))
-    local y = self:titleBarHeight() + CASK_WINDOW_PADDING
+    if self.isCollapsed or not self.info then return end
+    local state, status = self.info.state, self.info.status
+    local y = self:top()
 
-    y = self:bar(y, getText("IGUI_TraditionalPreservationVinegar_InfoContents"), state.ml / V.CASK_ML, CASK_BAR_COLOURS.contents,
+    y = self:bar(y, "IGUI_TraditionalPreservationVinegar_InfoContents", state.ml / V.CASK_ML, CASK_BAR_COLOURS.contents,
         say("IGUI_TraditionalPreservationVinegar_InfoLitres", litresText(state.ml / 1000), litresText(V.CASK_ML / 1000)))
     local soured = state.strength >= 1 and getText("IGUI_TraditionalPreservationVinegar_InfoReady") or percent(state.strength)
-    y = self:bar(y, getText("IGUI_TraditionalPreservationVinegar_InfoSouring"), state.ml > 0 and state.strength or 0, CASK_BAR_COLOURS.souring,
+    y = self:bar(y, "IGUI_TraditionalPreservationVinegar_InfoSouring", state.ml > 0 and state.strength or 0, CASK_BAR_COLOURS.souring,
         state.ml > 0 and soured or "-")
     local left = "-"
     if state.ml > 0 and state.strength < 1 then left = leftText(status.hoursLeft) end
-    y = self:row(y, getText("IGUI_TraditionalPreservationVinegar_InfoTimeLeft"), left)
-    y = self:row(y, getText("IGUI_TraditionalPreservationVinegar_InfoBottles"), tostring(V.bottlesLeft(state)))
-    y = self:row(y, getText("IGUI_TraditionalPreservationVinegar_Temperature"), say(PLACE_TEXT[status.place], string.format("%.0f", status.temperature)))
-    y = self:row(y, getText("IGUI_TraditionalPreservationVinegar_RateLabel"), percent(status.rate * V.caskSpeed(state)))
+    y = self:row(y, "IGUI_TraditionalPreservationVinegar_InfoTimeLeft", left)
+    y = self:row(y, "IGUI_TraditionalPreservationVinegar_InfoBottles", tostring(V.bottlesLeft(state)))
+    y = self:row(y, "IGUI_TraditionalPreservationVinegar_Temperature", say(PLACE_TEXT[status.place], string.format("%.0f", status.temperature)))
+    y = self:row(y, "IGUI_TraditionalPreservationVinegar_RateLabel", percent(status.rate * V.caskSpeed(state)))
     local mother = state.mother and say("IGUI_TraditionalPreservationVinegar_InfoMotherLayers", tostring(V.motherLayers(state)), litresText(V.nextLayerMl(state) / 1000))
         or getText("IGUI_TraditionalPreservationVinegar_InfoMotherNone")
-    y = self:row(y, getText("IGUI_TraditionalPreservationVinegar_InfoMother"), mother)
-    local hose = getText("IGUI_TraditionalPreservationVinegar_InfoNoHose")
-    if V.hoseLink(self.cask) then hose = getText("IGUI_TraditionalPreservationVinegar_HoseToVessel") end
-    y = self:row(y, getText("IGUI_TraditionalPreservationVinegar_InfoHose"), hose)
+    y = self:row(y, "IGUI_TraditionalPreservationVinegar_InfoMother", mother)
+    y = self:row(y, "IGUI_TraditionalPreservationVinegar_InfoHose",
+        getText(self.info.hosed and "IGUI_TraditionalPreservationVinegar_HoseToVessel" or "IGUI_TraditionalPreservationVinegar_InfoNoHose"))
 
     local notes = {}
     if state.ml > V.AIR_ML then table.insert(notes, say("IGUI_TraditionalPreservationVinegar_Crowded", litresText(V.AIR_ML / 1000))) end
@@ -570,44 +490,14 @@ function CaskWindow:render()
         table.insert(notes, say(key, percent(V.CULTURE_BONUS), percent(V.STARTER_STRENGTH)))
     end
     if state.ml > 0 and state.strength < 1 and status.place ~= "Basement" then table.insert(notes, getText("IGUI_TraditionalPreservationVinegar_InfoAssumes")) end
-    local lineHeight = getTextManager():getFontHeight(UIFont.Small)
-    for _, note in ipairs(notes) do
-        y = y + 4
-        for _, line in ipairs(wrapped(note, self.width - CASK_WINDOW_PADDING * 2)) do
-            self:drawText(line, CASK_WINDOW_PADDING, y, 0.8, 0.8, 0.65, 1, UIFont.Small)
-            y = y + lineHeight
-        end
-    end
-    local height = y + CASK_WINDOW_PADDING
-    if self.height ~= height then self:setHeight(height) end
+    self:drawNotes(y, notes)
 end
 
--- Clicking a cask opens Cask Info, as clicking a door opens it. Vanilla's own checks come first: not
--- while paused, aiming or dead, and only a cask on the player's floor within reach of the window.
-local function caskInReach(playerObj, cask)
-    local square = cask:getSquare()
-    return square and square:getZ() == playerObj:getZ()
-        and IsoUtils.DistanceTo(playerObj:getX(), playerObj:getY(), square:getX() + 0.5, square:getY() + 0.5) <= CASK_WINDOW_REACH
-end
-
--- The click handler is in vanilla's server folder, which loads after this one, so it is wrapped once the
--- game has started.
-local function wrapClickHandler()
-    if not ISObjectClickHandler or ISObjectClickHandler.tpvCaskClick then return end
-    local vanillaClickObject = ISObjectClickHandler.doClickSpecificObject
-    ISObjectClickHandler.tpvCaskClick = true
-    function ISObjectClickHandler.doClickSpecificObject(object, playerNum, playerObj)
-        if object and V.isCask(object) and playerObj and not playerObj:isDead() and not playerObj:isAiming()
-                and not (UIManager.getSpeedControls() and UIManager.getSpeedControls():getCurrentGameSpeed() == 0)
-                and caskInReach(playerObj, object) then
-            CaskWindow.open(playerObj, object)
-            return true
-        end
-        return vanillaClickObject(object, playerNum, playerObj)
-    end
-end
-
-Events.OnGameStart.Add(wrapClickHandler)
+-- Clicking a cask opens Cask Info, as clicking a door opens it.
+InfoWindow.clickOpens(V.isCask, function(playerObj, cask)
+    if TraditionalPreservationVinegarWorld then TraditionalPreservationVinegarWorld.track(cask) end
+    CaskWindow.open(playerObj, cask)
+end)
 
 local function addCaskMenu(context, playerObj, cask)
     local state = V.caskState(cask)
@@ -635,11 +525,13 @@ local function addCaskMenu(context, playerObj, cask)
     empty.isDisabled = state.ml <= 0
 end
 
-local function onFillContextMenu(playerNum, context, worldobjects)
+local function onFillContextMenu(playerNum, context, worldobjects, test)
     local playerObj = getSpecificPlayer(playerNum)
     local seen = {}
     for _, object in ipairs(worldobjects) do
         local kind = V.stationKind(object)
+        -- Vanilla's probe for a controller's prompt: say there is a menu, do no work.
+        if test and (kind == "cask" or kind == "vessel") then return ISWorldObjectContextMenu.setTest() end
         if kind and not seen[kind] then
             seen[kind] = true
             -- A station built this session isn't tracked until its area reloads, and the cask has no

@@ -1,4 +1,4 @@
-# Traditional Preservation (Vinegar) — Build 42 prototype (v0.2.6)
+# Traditional Preservation (Vinegar) — Build 42 prototype (v0.2.8)
 
 **Status: experimental.** The whole chain, from steeped grain to bottled vinegar, has been played in the game with test timers. Temperature effects have only been checked offline so far (see the test plan). Back up your save before enabling.
 
@@ -12,7 +12,7 @@ The ale was then soured by the **Orléans method**, used in France since the Mid
 
 ## Install
 
-Copy this folder to `~/Zomboid/mods/TraditionalPreservationVinegar`, as a real copy rather than a symlink. It needs no other mods.
+Copy this folder to `~/Zomboid/mods/TraditionalPreservationVinegar`, as a real copy rather than a symlink. It needs the **TP Core** mod (`TraditionalPreservationCore`, the series' shared mod) installed and enabled the same way, and no other mods.
 
 ## Getting started
 

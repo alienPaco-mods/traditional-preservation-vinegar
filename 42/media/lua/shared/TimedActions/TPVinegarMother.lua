@@ -4,12 +4,13 @@
 require "TimedActions/ISBaseTimedAction"
 require "TraditionalPreservationVinegar"
 
-ISVinegarMother = ISBaseTimedAction:derive("ISVinegarMother")
+TPVinegarMother = ISBaseTimedAction:derive("TPVinegarMother")
 
 local V = TraditionalPreservationVinegar
+local Action = require "TraditionalPreservationCore/Action"
 local DURATION = 120
 
-function ISVinegarMother:isValid()
+function TPVinegarMother:isValid()
     if not self.cask:getSquare() or not self.character:getInventory():containsRecursive(self.item) then return false end
     local state = V.caskState(self.cask)
     if self.mode == "add" then
@@ -20,12 +21,12 @@ function ISVinegarMother:isValid()
     return state.mother == true
 end
 
-function ISVinegarMother:waitToStart()
+function TPVinegarMother:waitToStart()
     self.character:faceThisObject(self.cask)
     return self.character:shouldBeTurning()
 end
 
-function ISVinegarMother:start()
+function TPVinegarMother:start()
     self:setActionAnim("Loot")
 end
 
@@ -37,7 +38,7 @@ local function swap(character, item, fullType)
     return container:AddItem(fullType)
 end
 
-function ISVinegarMother:complete()
+function TPVinegarMother:complete()
     local state = V.caskState(self.cask)
     if self.mode == "add" then
         if V.addMother(state) then
@@ -54,15 +55,15 @@ function ISVinegarMother:complete()
     return true
 end
 
-function ISVinegarMother:perform()
+function TPVinegarMother:perform()
     ISBaseTimedAction.perform(self)
 end
 
-function ISVinegarMother:getDuration()
-    return DURATION
+function TPVinegarMother:getDuration()
+    return Action.duration(self.character, DURATION)
 end
 
-function ISVinegarMother:new(character, cask, item, mode)
+function TPVinegarMother:new(character, cask, item, mode)
     local o = ISBaseTimedAction.new(self, character)
     o.cask = cask
     o.item = item
