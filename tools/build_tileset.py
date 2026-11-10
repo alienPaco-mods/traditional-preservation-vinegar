@@ -16,7 +16,7 @@ from pathlib import Path
 
 from PIL import Image, ImageChops, ImageDraw
 
-sys.path.insert(0, str(Path(os.environ.get("TPCORE", Path(__file__).resolve().parents[2] / "_tpcore")) / "tools"))
+sys.path.insert(0, str(Path(os.environ.get("TPCORE", Path(__file__).resolve().parents[2] / "TraditionalPreservationCore")) / "tools"))
 import pzart  # noqa: E402
 from pzart import TILE_W, TILE_H, light_at, shrink  # noqa: E402
 from pzart import tint as shade  # noqa: E402

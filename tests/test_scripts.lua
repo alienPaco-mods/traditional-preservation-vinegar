@@ -1,6 +1,6 @@
 -- Checks the mod's scripts against the game's. Run from the mod folder: luajit tests/test_scripts.lua [game folder]
 -- Needs the game files for the vanilla checks, and skips them with a note if they aren't there.
-local H = dofile((os.getenv("TPCORE") or "../_tpcore") .. "/tests/harness.lua")
+local H = dofile((os.getenv("TPCORE") or "../TraditionalPreservationCore") .. "/tests/harness.lua")
 local GAME = arg[1] or (os.getenv("HOME") .. "/.local/share/Steam/steamapps/common/ProjectZomboid/projectzomboid")
 local GENERATED = GAME .. "/media/scripts/generated"
 local MOD = "42/media/scripts"

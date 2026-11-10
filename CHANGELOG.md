@@ -1,5 +1,9 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## Unreleased
+- Internal: the shared core's folder is now `TraditionalPreservationCore` (was `_tpcore`): comments and test
+  paths only. No change in play.
+
 ## 0.2.6
 - Art: the Malting Floor stands on two low battens, so it no longer seems to hover above the floor.
 
