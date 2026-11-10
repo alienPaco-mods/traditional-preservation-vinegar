@@ -1,6 +1,8 @@
 # Changelog: Traditional Preservation (Vinegar)
 
 ## 0.2.8
+- Internal: new `tests/test_console.lua` loads the debug console (TPV) and calls every command, so one can't
+  break unseen.
 - New: with more than one cask in hose reach, Attach Hose to Cask opens a list of them, nearest first, each with
   its status line (litres, how far soured, mother), and you pick one. With one cask it works as before.
   `V.casksForHose` replaces `V.caskForHose`.
