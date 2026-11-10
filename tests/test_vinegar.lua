@@ -260,7 +260,7 @@ check("a basement cask sours at 15 C whatever the weather", math.abs(deep.streng
 check("a basement is 15 C in any season", V.placeTemperature({ temperature = 35, seasonTemperature = 30 }, "Basement") == 15)
 check("which malts at full speed all year", V.maltingRate(15) == 1)
 local function stationAt(z, outside)
-    return { getSquare = function() return { getZ = function() return z end } end, isOutside = function() return outside end }
+    return { getSquare = function() return { getZ = function() return z end, isOutside = function() return outside end } end }
 end
 check("below ground is a basement", V.placeOf(stationAt(-1, false)) == "Basement")
 check("a room is sheltered", V.placeOf(stationAt(0, false)) == "Sheltered")

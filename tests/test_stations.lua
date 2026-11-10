@@ -78,6 +78,7 @@ local function station(index, x, outside)
     function object:getSquare() return self.square end
     function object:getObjectIndex() return 0 end
     function object:isOutside() return outside end
+    function object.square:isOutside() return outside end
     function object:getModData() return self.modData end
     function object:clearAttachedAnimSprite() self.sprites = {} self.clears = self.clears + 1 end
     function object:addAttachedAnimSpriteByName(name) table.insert(self.sprites, name) end
