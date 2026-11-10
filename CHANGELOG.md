@@ -1,6 +1,11 @@
 # Changelog: Traditional Preservation (Vinegar)
 
-## Unreleased
+## 0.2.7
+- **Requires TP Core** (`TraditionalPreservationCore`), the shared Traditional Preservation mod: subscribe to it
+  too. Vinegar no longer carries its own copy of the shared core (weather, places, station tracking, popups and
+  slot rules) and loads TP Core's instead. Same code, same rules and timings; saves keep every vessel, cask, malting
+  floor and hose as they were.
+- Internal: the synced core copies name the core's new source path (TP Core is now a mod). Comment line only.
 - Internal: the synced core copies name the core's new source path (TP Core is now a mod). Comment line only.
 - Internal: the shared core's folder is now `TraditionalPreservationCore` (was `_tpcore`): comments and test
   paths only. No change in play.

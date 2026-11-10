@@ -49,7 +49,7 @@ check("sensitivity off runs at full speed", V.alcoholicRate(-20) == 1 and V.acet
 V.SENSITIVITY = 1.5
 check("harsh never stops a batch", V.aceticRate(-20) >= V.MIN_RATE)
 V.SENSITIVITY = 1
-local Weather = require "TraditionalPreservationVinegar/Core/Weather"
+local Weather = require "TraditionalPreservationCore/Weather"
 check("a cellar is warmer than a cold month", Weather.shelterTemperature(0) == 10)
 check("and thick walls cap a hot one", Weather.shelterTemperature(30) == Weather.SHELTER_MAX)
 

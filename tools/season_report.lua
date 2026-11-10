@@ -6,7 +6,7 @@ Events = { OnInitGlobalModData = { Add = function() end } }
 dofile((os.getenv("TPCORE") or "../TraditionalPreservationCore") .. "/tests/harness.lua").useModPaths()
 dofile("42/media/lua/shared/TraditionalPreservationVinegar.lua")
 local V = TraditionalPreservationVinegar
-local Weather = require "TraditionalPreservationVinegar/Core/Weather"
+local Weather = require "TraditionalPreservationCore/Weather"
 
 local MONTHS = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" }
 

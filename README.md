@@ -351,7 +351,7 @@ The real-world claims the design rests on, and the simplifications made for play
 - The cask's pool, souring, mother and layers live in the cask's `movableData`, which vanilla copies onto the item when a station is picked up and back when it's placed. So the mother moves with the cask and can't be duplicated.
 - Weather is kept as running totals in global ModData, per stage and place, so stations catch up exactly when their area loads again.
 - Station sprites are layered by the mod rather than with `SpriteOverlayConfig`, which can only show one overlay for a first batch.
-- The `TraditionalPreservationVinegar/Core/` folders under `42/media/lua/shared` and `42/media/lua/client` are the shared Traditional Preservation core (weather, places, station tracking, popups), copied in from `~/MODS/TraditionalPreservationCore` by `tp sync`. Edit them there, not here. The rate curves, heat damage, the cask, the hose and the old-save migrations stay in this mod's own files.
+- The shared core (weather, places, station tracking, popups) is the required TP Core mod (`~/MODS/TraditionalPreservationCore`, id `TraditionalPreservationCore`), loaded as `require "TraditionalPreservationCore/Weather"`. Edit it there. The rate curves, heat damage, the cask, the hose and the old-save migrations stay in this mod's own files.
 
 ## Debug commands
 

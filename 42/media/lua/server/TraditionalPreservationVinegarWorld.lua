@@ -6,8 +6,8 @@ if isClient() then return end
 TraditionalPreservationVinegarWorld = TraditionalPreservationVinegarWorld or {}
 local V = TraditionalPreservationVinegar
 local World = TraditionalPreservationVinegarWorld
-local Station = require "TraditionalPreservationVinegar/Core/Station"
-local Weather = require "TraditionalPreservationVinegar/Core/Weather"
+local Station = require "TraditionalPreservationCore/Station"
+local Weather = require "TraditionalPreservationCore/Weather"
 local Tiles = require "TraditionalPreservationVinegar/Tiles"
 
 -- Bubbling gives way to settling lees for the last part of a run.

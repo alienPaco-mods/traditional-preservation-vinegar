@@ -8,10 +8,12 @@ H.installModData()
 H.installEvents()
 H.installGetText()
 
--- The mod's own modules load for real, vanilla's are left out.
+-- The mod's own modules and TP Core's load for real, vanilla's are left out.
 local realRequire = require
 require = function(name)
-    if name:find("^TraditionalPreservationVinegar/") then return realRequire(name) end
+    if name:find("^TraditionalPreservationVinegar/") or name:find("^TraditionalPreservationCore/") then
+        return realRequire(name)
+    end
 end
 
 -- Engine stand-ins

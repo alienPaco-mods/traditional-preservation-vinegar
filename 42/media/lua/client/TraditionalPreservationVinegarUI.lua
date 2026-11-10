@@ -15,8 +15,8 @@ require "TimedActions/ISPourVinegarFluid"
 require "TimedActions/ISVinegarHose"
 require "TimedActions/ISPumpVinegarWort"
 require "ISUI/ISCollapsableWindow"
-local UI = require "TraditionalPreservationVinegar/Core/UI"
-local Station = require "TraditionalPreservationVinegar/Core/Station"
+local UI = require "TraditionalPreservationCore/UI"
+local Station = require "TraditionalPreservationCore/Station"
 
 local V = TraditionalPreservationVinegar
 local vanillaCreateChildren = ISCraftLogicPanel.createChildren

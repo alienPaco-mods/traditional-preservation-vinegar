@@ -3,8 +3,8 @@
 -- how much work they have done, including while their chunk was unloaded.
 TraditionalPreservationVinegar = TraditionalPreservationVinegar or {}
 local V = TraditionalPreservationVinegar
-local Weather = require "TraditionalPreservationVinegar/Core/Weather"
-local Station = require "TraditionalPreservationVinegar/Core/Station"
+local Weather = require "TraditionalPreservationCore/Weather"
+local Station = require "TraditionalPreservationCore/Station"
 local Tiles = require "TraditionalPreservationVinegar/Tiles"
 
 V.MOD_DATA_KEY = "TraditionalPreservationVinegar"
