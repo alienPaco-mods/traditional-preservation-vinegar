@@ -24,17 +24,19 @@ function V.needsBottleBack(item)
     return item:getFullType() == V.VINEGAR_ITEM and item:getCurrentUses() <= 0 and not item:getModData().bottleGiven
 end
 
--- Gives an empty bottle of the right kind for each Vinegar the craft used up. sparesGiven is how many
--- Crafted Bottles the engine already handed over for them, so none comes twice.
-function V.returnBottles(character, usedItems, sparesGiven)
+-- Gives an empty bottle of the right kind for each Vinegar the craft used up. spares lists the Crafted Bottles
+-- the engine already handed over for them (its ReplaceOnDeplete): a Vinegar bottled into a Crafted Bottle keeps
+-- one, any other bottle takes its place, so none comes twice and none comes as the wrong kind.
+function V.returnBottles(character, usedItems, spares)
     for i = 0, usedItems:size() - 1 do
         local item = usedItems:get(i)
         if V.needsBottleBack(item) then
             item:getModData().bottleGiven = true
-            if sparesGiven > 0 then
-                sparesGiven = sparesGiven - 1
-            else
-                local bottle = instanceItem(V.bottleBack(item))
+            local spare = table.remove(spares)
+            local bottleType = V.bottleBack(item)
+            if not (spare and bottleType == V.SPARE_BOTTLE) then
+                if spare then spare:getContainer():DoRemoveItem(spare) end
+                local bottle = instanceItem(bottleType)
                 local fluid = bottle and bottle:getFluidContainer()
                 if fluid then fluid:Empty() end
                 if bottle then Actions.addOrDropItem(character, bottle) end
@@ -43,17 +45,29 @@ function V.returnBottles(character, usedItems, sparesGiven)
     end
 end
 
+-- The Crafted Bottles in the inventory that aren't in before (a set of items).
+local function newSpares(inventory, before)
+    local spares = {}
+    local all = inventory:getAllTypeRecurse(V.SPARE_BOTTLE)
+    for i = 0, all:size() - 1 do
+        local bottle = all:get(i)
+        if not before[bottle] then table.insert(spares, bottle) end
+    end
+    return spares
+end
+
 -- Vanilla gives every used-up Vinegar back as a Crafted Bottle. Wraps ISHandcraftAction.performRecipe:
 -- compare with vanilla after a game update. Salt wraps it too (for shakers); each passes through to the other.
 local performRecipe = ISHandcraftAction.performRecipe
 function ISHandcraftAction:performRecipe()
     local inventory = self.character:getInventory()
-    local sparesBefore = inventory:getCountTypeRecurse(V.SPARE_BOTTLE)
+    local before = {}
+    local all = inventory:getAllTypeRecurse(V.SPARE_BOTTLE)
+    for i = 0, all:size() - 1 do before[all:get(i)] = true end
     performRecipe(self)
     local recipeData = self.logic and self.logic:getRecipeData()
     if not recipeData then return end
-    local sparesGiven = math.max(inventory:getCountTypeRecurse(V.SPARE_BOTTLE) - sparesBefore, 0)
-    V.returnBottles(self.character, recipeData:getAllConsumedItems(), sparesGiven)
+    V.returnBottles(self.character, recipeData:getAllConsumedItems(), newSpares(inventory, before))
 end
 
 -- Vanilla Vinegar leaves nothing when used up. This covers every other way of using it up.

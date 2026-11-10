@@ -422,16 +422,27 @@ local function vinegarItem(uses, bottleType)
     return item
 end
 local fromWater, looted, halfUsed = vinegarItem(0, "Base.WaterBottle"), vinegarItem(0, nil), vinegarItem(4, "Base.Wine")
-V.returnBottles(nil, list({ fromWater, looted, halfUsed }), 0)
+V.returnBottles(nil, list({ fromWater, looted, halfUsed }), {})
 check("a used-up Vinegar gives back the bottle it was filled into", given[1].fullType == "Base.WaterBottle")
 check("emptied, as water bottles spawn full", given[1].fluid.emptied)
 check("looted vinegar gives a Crafted Bottle", given[2].fullType == "Base.BottleCrafted")
 check("and one with uses left gives nothing", #given == 2)
-V.returnBottles(nil, list({ fromWater }), 0)
+V.returnBottles(nil, list({ fromWater }), {})
 check("a bottle only comes back once", #given == 2)
-local spare = vinegarItem(0, "Base.PopBottle")
-V.returnBottles(nil, list({ spare }), 1)
-check("none extra when the game already gave a Crafted Bottle", #given == 2 and spare.modData.bottleGiven)
+-- The engine's own Crafted Bottle (ReplaceOnDeplete), handed over during the craft.
+local function engineSpare()
+    local spare = { removed = false }
+    spare.container = { DoRemoveItem = function(_, item) item.removed = true end }
+    function spare:getContainer() return self.container end
+    return spare
+end
+local inWine, spare = vinegarItem(0, "Base.Wine"), engineSpare()
+V.returnBottles(nil, list({ inWine }), { spare })
+check("a wine bottle comes back in place of the game's Crafted Bottle",
+    spare.removed and #given == 3 and given[3].fullType == "Base.Wine" and inWine.modData.bottleGiven)
+local lootedToo, keptSpare = vinegarItem(0, nil), engineSpare()
+V.returnBottles(nil, list({ lootedToo }), { keptSpare })
+check("looted vinegar keeps the game's Crafted Bottle, none extra", not keptSpare.removed and #given == 3)
 local marked = { modData = {} }
 function marked:getModData() return self.modData end
 V.markBottle(marked, "Base.MilkBottle")

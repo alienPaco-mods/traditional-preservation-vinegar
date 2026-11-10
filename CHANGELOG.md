@@ -1,6 +1,8 @@
 # Changelog: Traditional Preservation (Vinegar)
 
 ## 0.2.8
+- Fixed: a Vinegar bottled into a wine bottle (or any bottle but a Crafted Bottle) gave back a Crafted Bottle when a
+  hand craft such as Make Jar used it up. The game's own Crafted Bottle is now swapped for the bottle it was filled into.
 - Menu icons: pour and draw-off rows show each container with its fluid's colour, bottle rows the bottle as the
   inventory draws it, and Cask Info has the cask's icon.
 - Balance (series pass, F1): Fermentation Vessel and Vinegar Cask need a saw, kept (staves are sawn). Steep
