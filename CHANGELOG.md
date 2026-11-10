@@ -1,6 +1,8 @@
 # Changelog: Traditional Preservation (Vinegar)
 
 ## 0.2.8
+- Menu icons: pour and draw-off rows show each container with its fluid's colour, bottle rows the bottle as the
+  inventory draws it, and Cask Info has the cask's icon.
 - Balance (series pass, F1): Fermentation Vessel and Vinegar Cask need a saw, kept (staves are sawn). Steep
   Grain gives Cooking 3 (was 2).
 - Internal: new `tests/test_console.lua` loads the debug console (TPV) and calls every command, so one can't

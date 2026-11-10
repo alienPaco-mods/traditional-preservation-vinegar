@@ -193,7 +193,8 @@ local function addPourMenu(context, label, playerObj, station, items, mode, empt
         local label = mode == "vesselOut" and say("IGUI_TraditionalPreservationVinegar_Holds", litresText(fluid:getCapacity()))
             or litresText(fluid:getAmount()) .. " L"
         local entry = menu:addOption(item:getDisplayName() .. " (" .. label .. ")", playerObj, onPour, station, { item }, mode)
-        entry.iconTexture = item:getTex()
+        -- Drawn as the inventory draws it: a bucket shows the colour of what is in it.
+        entry.itemForTexture = item
     end
 end
 
@@ -341,17 +342,17 @@ local function addBottleMenu(context, playerObj, cask, state)
     context:addSubMenu(option, menu)
     -- With one kind of bottle, its own icon shows what gets filled. With several, the rows below show each.
     local groups = V.groupBottles(bottles)
-    local icon = #groups == 1 and bottles[1]:getTex() or getTexture(VINEGAR_ICON)
-    local any = menu:addOption(getText("ContextMenu_TraditionalPreservationVinegar_AnyBottle"), playerObj, onBottle, cask, bottles, 1)
-    any.iconTexture = icon
+    local function setIcon(option)
+        if #groups == 1 then option.itemForTexture = bottles[1] else option.iconTexture = getTexture(VINEGAR_ICON) end
+    end
+    setIcon(menu:addOption(getText("ContextMenu_TraditionalPreservationVinegar_AnyBottle"), playerObj, onBottle, cask, bottles, 1))
     local most = math.min(#bottles, V.bottlesLeft(state))
-    local all = menu:addOption(say("ContextMenu_TraditionalPreservationVinegar_AllBottles", tostring(most)), playerObj, onBottle, cask, bottles, most)
-    all.iconTexture = icon
+    setIcon(menu:addOption(say("ContextMenu_TraditionalPreservationVinegar_AllBottles", tostring(most)), playerObj, onBottle, cask, bottles, most))
     -- Picking a kind only helps when there is more than one.
     if #groups < 2 then return end
     for _, group in ipairs(groups) do
         local kind = menu:addOption(group.name .. " (" .. #group.items .. ")", playerObj, onBottle, cask, group.items, 1)
-        kind.iconTexture = group.items[1]:getTex()
+        kind.itemForTexture = group.items[1]
     end
 end
 
@@ -509,7 +510,8 @@ local function addCaskMenu(context, playerObj, cask)
     local status = menu:addOption(caskStatus(cask, state))
     status.isDisabled = true
     tooltipFor(status, caskDetail(cask, state))
-    menu:addOption(getText("ContextMenu_TraditionalPreservationVinegar_CaskInfo"), playerObj, CaskWindow.open, cask)
+    local info = menu:addOption(getText("ContextMenu_TraditionalPreservationVinegar_CaskInfo"), playerObj, CaskWindow.open, cask)
+    info.iconTexture = getTexture(STATION_ICONS.cask)
 
     if V.caskRoom(state) > 0 then
         local fermented = findItems(playerObj, function(item) return V.holdsOnly(item:getFluidContainer(), V.FERMENTED) end)
