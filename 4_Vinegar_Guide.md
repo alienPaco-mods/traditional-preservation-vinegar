@@ -153,6 +153,8 @@ Every station runs on real temperature, **even while you're away**.
 | **Under a roof** | A steady "cellar": the season's average +10 C, at most 28 C. Never overheats |
 | **Basement** (below ground) | **15 C, all year round** |
 
+> ✏ *Margin note:* "under a roof" means any roof overhead, walls or not. A lean-to or a floor laid on the level above is enough; four walls with no roof are still outdoors.
+
 **First bottles, from the start of malting (two full batches, simulated on the game's weather):**
 
 | Start | Outdoors | Under a roof | Basement |
