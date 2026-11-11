@@ -92,7 +92,7 @@ Put the Bucket of Mash on a fire or in an oven. In about 1.5 hours at Normal eff
 
 ### 6. Strain Mash
 
-Crafting menu, Cooking, with a Ripped Sheet or Cheesecloth (kept). The bucket comes back holding **10 L of Wort**, and the grain left in the cloth is **Spent Grain**.
+Crafting menu, Cooking, with a Ripped Sheet or Cheesecloth (kept). The bucket that went in, plain or forged, comes back holding **10 L of Wort**, and the grain left in the cloth is **Spent Grain**.
 
 Wort and Fermented Wort are real liquids, added by this mod, not vanilla ones. They sit in any vanilla container: buckets, bottles, pots, mugs. Both are drinkable: wort is sweet and filling, and fermented wort is a weak, flat, unhopped ale (4% alcohol) that leaves you a little less happy than a proper beer would. Neither mixes with any other liquid, so a container of wort stays pure.
 
@@ -174,8 +174,8 @@ A cask grows its own mother the first time its pool reaches 100%. It doesn't rep
   |---|---|---|---|
   | 0 L | 19 L | 0% | 28.5 |
   | 3 L | 19 L | 14% | 23.7 |
-  | 6.5 L | 19 L | 26% | **21.5** |
-  | 11 L | 19 L | 37% | 27.1 (too full, short of air) |
+  | 6.5 L | 19 L | 25% | **21.5** |
+  | 11 L | 19 L | 37% | 27.2 (too full, short of air) |
   | 3.5 L | 9.5 L | 27% | **19.2** |
 
   Keeping much more than a third fills the cask past 22.5 L, and the lack of air costs more than the starter gains.
@@ -278,6 +278,9 @@ These are the days a run takes by the month it starts, on the game's forecasts f
 | A finished vessel run | Cooking 10 |
 | A finished malting run | Farming 5 |
 | Each bottle of vinegar | Cooking 1 |
+| Build a Malting Floor | Carpentry 10 |
+| Build a Fermentation Vessel | Carpentry 15 |
+| Build an Orléans Vinegar Cask | Carpentry 20 |
 
 Station runs pay out when they finish, so cancelling and restarting gives nothing.
 
@@ -307,7 +310,7 @@ Steeping water stays 4 L at every level.
 
 Times, volumes, yields, temperature curves, the cask and mother rules, XP and the effort multipliers are at the top of `42/media/lua/shared/TraditionalPreservationVinegar.lua`. Grain and water amounts are in `42/media/scripts/TraditionalPreservationVinegar.txt`, and the liquids in `42/media/scripts/TraditionalPreservationVinegar_fluids.txt`.
 
-`tools/build_tileset.py` repaints the stations and overlays, writes the item icons and textures from vanilla art, and writes `42/media/scripts/TraditionalPreservationVinegar_items.txt` (needs Pillow and the game files). It also writes the generated `42/media/lua/shared/TraditionalPreservationVinegar/Tiles.lua`, the tile numbers the Lua reads (don't edit it by hand), and `luajit tests/test_tiles.lua` checks the entity scripts against it. `luajit tests/test_vinegar.lua` checks the rules, `luajit tests/test_world.lua` the sprites, `luajit tests/test_stations.lua` the world file and the batch popup on stand-ins for the engine, `luajit tests/test_scripts.lua` the scripts against the game's (every grain steeps, every item named exists), `luajit tools/season_report.lua` prints the season table, and `luajit tools/simulate.lua` plays two full batches hour by hour with real timers and the game's weather, from the malting floor to bottling, starting in January, April, July and October outdoors, under a roof and in a basement, and checks the litres in against the litres out (40 L of wort gives about 31 L of vinegar).
+`tools/build_tileset.py` repaints the stations and overlays, writes the item icons and textures from vanilla art, and writes `42/media/scripts/TraditionalPreservationVinegar_items.txt` (needs Pillow and the game files). It also writes the generated `42/media/lua/shared/TraditionalPreservationVinegar/Tiles.lua`, the tile numbers the Lua reads (don't edit it by hand), and `luajit tests/test_tiles.lua` checks the entity scripts against it. `luajit tests/test_vinegar.lua` checks the rules, `luajit tests/test_world.lua` the sprites, `luajit tests/test_stations.lua` the world file and the batch popup on stand-ins for the engine, `luajit tests/test_scripts.lua` the scripts against the game's (every grain steeps, every item named exists), `luajit tests/test_console.lua` the debug commands, `luajit tools/season_report.lua` prints the season table, and `luajit tools/simulate.lua` plays two full batches hour by hour with real timers and the game's weather, from the malting floor to bottling, starting in January, April, July and October outdoors, under a roof and in a basement, and checks the litres in against the litres out (40 L of wort gives about 31 L of vinegar).
 
 In debug mode, right-clicking any liquid container in your inventory offers **[Debug] Fill with Wort** and **[Debug] Fill with Fermented Wort**, since liquids can't be spawned from the item list.
 
@@ -359,9 +362,9 @@ In debug mode, `TPV.help()` in the Lua console lists commands for testing this m
 
 ## Known prototype caveats
 
-- **Temperature hasn't been seen in play.** The installed test copy runs every stage in an hour with temperature switched off. Check a cold and a hot month with real timers before relying on the season table.
+- **Temperature hasn't been seen in play.** The in-game runs so far used test timers (`TPV.fast`), which ignore temperature. Check a cold and a hot month with real timers before relying on the season table.
 - Stations indoors go by the outdoor weather and the season, so heating a room doesn't speed them up.
-- A forged or wooden bucket used for mashing comes back as a plain metal bucket.
+- Mash Malt takes a metal bucket, plain or forged (not a wooden one), and Strain Mash gives back the kind that went in. Mash made before 0.2.8 gives a plain metal bucket.
 - The bottle list is written out, as no tag covers plastic bottles, so bottles from other mods aren't accepted.
 - Apples, grapes and other fruit aren't used, as vanilla can't grow apples or grapes.
 - Several vanilla UI functions are wrapped (the station window, slot adds, the Craft button, the pick-up cursor and the station's right-click entry), so compare them with vanilla after a game update.

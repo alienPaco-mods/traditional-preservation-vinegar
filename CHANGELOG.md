@@ -1,6 +1,10 @@
 # Changelog: Traditional Preservation (Vinegar)
 
 ## 0.2.8
+- Docs (2026-11-11 pass against the code): the README no longer says a forged bucket comes back plain (fixed in
+  this version; a wooden bucket was never accepted) or that the installed copy runs test timers; the starter
+  table's 6.5 L row starts at 25%; the Skills table lists the stations' Carpentry XP; `test_console` is listed.
+  No change in play.
 - Fixed: a Vinegar bottled into a wine bottle (or any bottle but a Crafted Bottle) gave back a Crafted Bottle when a
   hand craft such as Make Jar used it up. The game's own Crafted Bottle is now swapped for the bottle it was filled into.
 - Menu icons: pour and draw-off rows show each container with its fluid's colour, bottle rows the bottle as the

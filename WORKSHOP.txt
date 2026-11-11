@@ -4,7 +4,7 @@ Make your own malt vinegar from the grain you grow. Malt it, mash it, ferment it
 
 [b]Build 42 only (42.20 or newer). This is an early release, so back up your save before enabling it. Singleplayer only: multiplayer is not supported.[/b]
 
-Traditional Preservation (Vinegar) requires [b]TP Core[/b] (Traditional Preservation Core): subscribe to it too.
+Traditional Preservation (Vinegar) requires [b]Traditional Preservation (Core)[/b] (TP Core for short): subscribe to it too.
 
 [h2]Features[/h2]
 [list]
