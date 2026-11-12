@@ -1,5 +1,8 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.9
+- Debug console (2026-11-12, consistency sweep): `TPV.here()`, as the other mods have. DEVHELP, guide.
+
 ## 0.2.8
 - Docs (2026-11-11 pass against the code): the README no longer says a forged bucket comes back plain (fixed in
   this version; a wooden bucket was never accepted) or that the installed copy runs test timers; the starter

@@ -18,6 +18,7 @@ end
 
 function TPV.help()
     say("TPV.weather()             the temperature by place, and each stage's working speed there")
+    say("TPV.here()                which place you're standing in (outdoors, under a roof or a basement)")
     say("TPV.age(hours)            give every floor, vessel and cask this many hours of perfect weather")
     say("TPV.fast(hours)           test timers: every floor, vessel and cask run takes this many hours. TPV.fast() turns them off")
     say("TPV.timers()              the hours each stage takes right now")
@@ -41,6 +42,10 @@ function TPV.weather()
         end
         say(string.format("%-9s %.1f C: %s", place, V.placeTemperature(ledger, place), table.concat(speeds, ", ")))
     end
+end
+
+function TPV.here()
+    say("You're in: " .. tostring(V.placeOf(getPlayer())))
 end
 
 function TPV.age(hours)
