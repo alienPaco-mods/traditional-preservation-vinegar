@@ -29,24 +29,24 @@ local function hourly(day, hour)
 end
 
 -- Days until a batch started on this day is done, or nil if the forecasts run out first.
-local function daysToFinish(days, first, target, rate, sheltered)
+local function daysToFinish(days, first, target, rate, place)
     local done, season = 0, days[first].mean
     for index = first, #days do
         for hour = 0, 23 do
             local temperature = hourly(days[index], hour)
             season = season + (temperature - season) / Weather.SEASON_HOURS
-            done = done + rate(sheltered and Weather.shelterTemperature(season) or temperature)
+            done = done + rate(Weather.placeTemperature({ temperature = temperature, seasonTemperature = season }, place))
             if done >= target then return index - first + hour / 24 end
         end
     end
     return nil
 end
 
-local function range(days, month, target, rate, sheltered)
+local function range(days, month, target, rate, place)
     local low, high
     for index, day in ipairs(days) do
         if day.month == month then
-            local taken = daysToFinish(days, index, target, rate, sheltered)
+            local taken = daysToFinish(days, index, target, rate, place)
             if taken then
                 low, high = math.min(low or taken, taken), math.max(high or taken, taken)
             end
@@ -57,10 +57,22 @@ local function range(days, month, target, rate, sheltered)
 end
 
 local days = readDays(arg[1] or "tools/climate_year.csv")
-print("| Month | Ferment, outdoors | Ferment, indoors | First cask, outdoors | First cask, indoors |")
-print("|---|---|---|---|---|")
+-- Indoors and under an open roof read the same (the season's mean), so one column serves both.
+local PLACES = { "Open", "Sheltered", "Basement" }
+print("| Month | Ferment, outdoors | Ferment, indoors | Ferment, basement | First cask, outdoors | First cask, indoors | First cask, basement |")
+print("|---|---|---|---|---|---|---|")
 for month = 1, 12 do
-    print(string.format("| %s | %s | %s | %s | %s |", MONTHS[month],
-        range(days, month, V.ALCOHOLIC_HOURS, V.alcoholicRate, false), range(days, month, V.ALCOHOLIC_HOURS, V.alcoholicRate, true),
-        range(days, month, V.ACETIC_HOURS, V.aceticRate, false), range(days, month, V.ACETIC_HOURS, V.aceticRate, true)))
+    local cells = { MONTHS[month] }
+    for _, place in ipairs(PLACES) do table.insert(cells, range(days, month, V.ALCOHOLIC_HOURS, V.alcoholicRate, place)) end
+    for _, place in ipairs(PLACES) do table.insert(cells, range(days, month, V.ACETIC_HOURS, V.aceticRate, place)) end
+    print("| " .. table.concat(cells, " | ") .. " |")
+end
+-- By a fire the temperature holds while the fuel lasts, whatever the month.
+local Hearth = require "TraditionalPreservationCore/Hearth"
+print("")
+for _, place in ipairs({ Hearth.PLACE, Hearth.EMBERS }) do
+    local celsius = Hearth.fireC(place)
+    print(string.format("%s (%d C), any month: malting %.1f days, ferment %.1f, first cask %.1f", place, celsius,
+        V.MALTING_HOURS / V.maltingRate(celsius) / 24, V.ALCOHOLIC_HOURS / V.alcoholicRate(celsius) / 24,
+        V.ACETIC_HOURS / V.aceticRate(celsius) / 24))
 end

@@ -4,6 +4,7 @@
 TraditionalPreservationVinegar = TraditionalPreservationVinegar or {}
 local V = TraditionalPreservationVinegar
 local Weather = require "TraditionalPreservationCore/Weather"
+local Hearth = require "TraditionalPreservationCore/Hearth"
 local Station = require "TraditionalPreservationCore/Station"
 local Container = require "TraditionalPreservationCore/Container"
 local Tiles = require "TraditionalPreservationVinegar/Tiles"
@@ -68,11 +69,6 @@ V.MOTHER_ITEM = "TraditionalPreservationVinegar.MotherOfVinegar"
 -- Long gaps are worked through in steps this big, as the speed changes on the way.
 local SOUR_STEP = 0.02
 
--- Each hour hotter than this costs an open vessel some of its yield, up to the most it can lose.
-V.HEAT_HARM_ABOVE = 35
-V.HEAT_LOSS_PER_HOUR = 0.01
-V.MAX_HEAT_LOSS = 0.25
-
 -- Skill XP, on vanilla's scale, where most cooking crafts give 3. Station runs pay out when they
 -- finish, so cancelling and restarting can't farm it.
 V.BOTTLE_XP = 1
@@ -117,12 +113,13 @@ function V.aceticRate(celsius)
     return scaled(Weather.curve(ACETIC_CURVE, celsius))
 end
 
--- Places and their temperatures are shared with the other Traditional Preservation mods: outdoors, under
--- a roof (the cellar, which follows the season), or below ground in a basement, at one temperature all year.
--- These three are the mod's public names, used by the actions, the Dev console and the tools.
+-- Places and their temperatures are shared with the other Traditional Preservation mods (TP Core's Weather):
+-- open air, an open roof, indoors, a basement, and by a fire or by banked embers (TP Core's Hearth). These are the
+-- mod's public names, used by the actions, the Dev console and the tools. PLACES are the weather's, which the
+-- ledger keeps totals for; by a fire counts by the clock.
 V.PLACES = Weather.PLACES
-V.placeOf = Weather.placeOf
-V.placeTemperature = Weather.placeTemperature
+V.placeOf = Hearth.placeOf
+V.placeTemperature = Hearth.placeTemperature
 
 -- Ledger keys are kind .. place ("aceticBasement"), as in every save so far.
 local KINDS = {
@@ -131,19 +128,15 @@ local KINDS = {
     acetic = function(celsius) return V.aceticRate(celsius) end,
 }
 
--- One total per stage and place, plus the hours too hot for fermenting.
+-- One total per stage and place. Saves from before 0.2.10 also keep ledger.heat, the hours too hot for an open
+-- vessel; nothing reads it now.
 function V.newLedger(now)
-    local ledger = Weather.newLedger(now, KINDS)
-    ledger.heat = 0
-    return ledger
+    return Weather.newLedger(now, KINDS)
 end
 
--- Adds one stretch of weather to the totals, and counts the hours too hot for an open vessel.
+-- Adds one stretch of weather to the totals.
 function V.advance(ledger, now, temperature)
-    local hours = Weather.advance(ledger, now, temperature, KINDS)
-    if hours and temperature > V.HEAT_HARM_ABOVE then
-        ledger.heat = ledger.heat + hours
-    end
+    Weather.advance(ledger, now, temperature, KINDS)
 end
 
 -- Filled once on OnInitGlobalModData (fillLedger), so this is a plain lookup.
@@ -169,28 +162,31 @@ local function startRun(craftRecipeData, kind)
     local ledger = V.getLedger()
     local modData = craftRecipeData:getModData()
     Weather.startRun(modData, ledger, kind)
-    modData.lastHeat = ledger.heat
-    modData.heat = 0
     modData.sheltered = nil
     modData.mother = nil
 end
 
--- Adds what the weather has given since the last update. It goes by the station's place now,
--- so a roof built over a running vessel counts from then on. Only open stations overheat.
-local function updateRun(craftRecipeData, kind, speed)
-    local ledger = V.getLedger()
-    local modData = craftRecipeData:getModData()
+-- Brings a run up to now at the place it was last told (V.notePlace), by a fire by the clock.
+local function catchUpRun(modData, kind)
     if not modData.done then return end
     -- A run from before basements kept its last totals in two fields.
     modData.last = modData.last or { Open = modData.lastOpen, Sheltered = modData.lastSheltered }
+    modData.done = modData.done + Hearth.catchUp(modData, modData.last, V.getLedger(), kind, runPlace(modData), KINDS[kind])
+end
 
-    local place = runPlace(modData)
-    modData.done = modData.done + Weather.catchUp(modData.last, ledger, kind, place)
-    if place == "Open" then
-        modData.heat = modData.heat + ledger.heat - modData.lastHeat
-    end
-    modData.lastHeat = ledger.heat
-    Weather.showProgress(craftRecipeData, ledger, kind, place, speed, getGameTime():getWorldAgeHours())
+-- Adds what the weather has given since the last update, at the place the station's World last told the run, so
+-- a roof built over a running vessel counts from then on.
+local function updateRun(craftRecipeData, kind, speed)
+    local modData = craftRecipeData:getModData()
+    if not modData.done then return end
+    catchUpRun(modData, kind)
+    Weather.showProgress(craftRecipeData, V.getLedger(), kind, runPlace(modData), speed, getGameTime():getWorldAgeHours(), KINDS[kind])
+end
+
+-- Tells a running batch (kind "malting" or "alcoholic") where its station stands: the place, and the fire's fuel
+-- when it is by one. A move first brings the run up to now where it was. Returns the place.
+function V.notePlace(modData, station, kind, now)
+    return Hearth.notePlace(modData, station, now, function(state) catchUpRun(state, kind) end)
 end
 
 -- OnStart and OnUpdate hooks the recipe scripts name, one pair per weather-timed stage.
@@ -212,14 +208,7 @@ end
 
 -- How a running batch is doing right now, for its popup. hoursLeft assumes the temperature holds.
 function V.batchStatus(kind, modData, recipeHours, ledger)
-    local status = Weather.batchStatus(modData.done or 0, recipeHours, ledger, runPlace(modData), KINDS[kind])
-    status.heatLoss = kind == "alcoholic" and V.heatLoss(modData.heat or 0) or 0
-    return status
-end
-
--- The share of a batch lost to hours too hot, up to MAX_HEAT_LOSS.
-function V.heatLoss(heatHours)
-    return math.min(heatHours * V.HEAT_LOSS_PER_HOUR * V.SENSITIVITY, V.MAX_HEAT_LOSS)
+    return Weather.batchStatus(modData.done or 0, recipeHours, ledger, runPlace(modData), KINDS[kind])
 end
 
 -- The bucket becomes the mash. Its kind (plain or forged) is noted on it, and heating carries the note over
@@ -243,9 +232,9 @@ function V.batchMl(tankMl)
     return math.min(math.floor((tankMl + 1) / V.BUCKET_ML) * V.BUCKET_ML, V.VESSEL_MAX_ML)
 end
 
--- What a run of this much wort gives back, after lees and any heat damage.
-function V.fermentedMl(wortMl, heatHours)
-    return math.floor(wortMl * V.FERMENT_YIELD * (1 - V.heatLoss(heatHours or 0)) + 0.5)
+-- What a run of this much wort gives back, after the lees.
+function V.fermentedMl(wortMl)
+    return math.floor(wortMl * V.FERMENT_YIELD + 0.5)
 end
 
 -- True when a container holds only the named fluid.
@@ -379,16 +368,26 @@ function V.sour(state, rateHours)
     end
 end
 
--- Brings a cask up to date with the weather since it was last seen, by its place now.
+-- Brings a cask up to date with the weather since it was last seen, at place (by a fire by the clock, until the
+-- fuel noted in state ran out).
 function V.updateCask(state, ledger, place)
     -- A cask from before basements kept its last totals in two fields.
     if state.lastOpen and not state.last then state.last = { Open = state.lastOpen, Sheltered = state.lastSheltered } end
     if state.last then
-        V.sour(state, Weather.catchUp(state.last, ledger, "acetic", place))
+        V.sour(state, Hearth.catchUp(state, state.last, ledger, "acetic", place, V.aceticRate))
     else
         state.last = Weather.mark({}, ledger, "acetic")
     end
     state.lastOpen, state.lastSheltered = nil, nil
+end
+
+-- Brings a cask up to date where it stands: a move first catches it up where it was (state.place, kept from 0.2.10;
+-- an older cask goes by its place now). Returns the place.
+function V.updateCaskAt(state, ledger, cask)
+    local now = getGameTime():getWorldAgeHours()
+    local place = Hearth.notePlace(state, cask, now, function(was) V.updateCask(was, ledger, was.place) end)
+    V.updateCask(state, ledger, place)
+    return place
 end
 
 -- For the menus. hoursLeft is to fully soured and assumes the temperature holds.

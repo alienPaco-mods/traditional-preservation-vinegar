@@ -35,12 +35,6 @@ local STATION_ICONS = {
 local say, percent = UI.say, UI.percent
 local tooltipFor, findItems = UI.tooltip, UI.findItems
 
-local PLACE_TEXT = {
-    Open = "IGUI_TraditionalPreservationVinegar_TemperatureOpen",
-    Sheltered = "IGUI_TraditionalPreservationVinegar_TemperatureRoof",
-    Basement = "IGUI_TraditionalPreservationVinegar_TemperatureBasement",
-}
-
 local function isStation(entity)
     return V.stationKind(entity) ~= nil
 end
@@ -49,9 +43,8 @@ local function litresText(litres)
     return UI.litres(litres * 1000)
 end
 
--- A basement holds one temperature all year, so its time left needs no caveat.
-local function timeText(hours, place)
-    return UI.timeText(hours, place == "Basement" and "IGUI_TraditionalPreservationVinegar_TimeSteady" or "IGUI_TraditionalPreservationVinegar_Time")
+local function timeText(hours)
+    return UI.timeText(hours, "IGUI_TraditionalPreservationVinegar_Time")
 end
 
 -- queued lists the items already on their way in.
@@ -154,12 +147,9 @@ local function drawBatchTooltip(slot, tooltip, name, station)
         -- The run holds its wort, so the vessel's Wort tank reads empty while it ferments.
         local run = kind == "alcoholic" and station and station:getModData().vinegarRun
         if run then UI.addLine(layout, "IGUI_TraditionalPreservationVinegar_InRun", say("IGUI_TraditionalPreservationVinegar_Litres", litresText(run.ml / 1000))) end
-        UI.addLine(layout, "IGUI_TraditionalPreservationVinegar_TimeLeft", timeText(status.hoursLeft, status.place))
-        UI.addLine(layout, "IGUI_TraditionalPreservationVinegar_Temperature", say(PLACE_TEXT[status.place], string.format("%.0f", status.temperature)))
+        UI.addLine(layout, "IGUI_TraditionalPreservationVinegar_TimeLeft", timeText(status.hoursLeft))
+        UI.addLine(layout, "IGUI_TraditionalPreservationVinegar_Temperature", UI.placeText(status.place, status.temperature))
         UI.addRateLine(layout, "IGUI_TraditionalPreservationVinegar_RateLabel", status.rate)
-        if status.heatLoss > 0 then
-            UI.addLine(layout, "IGUI_TraditionalPreservationVinegar_Heat", say("IGUI_TraditionalPreservationVinegar_HeatLoss", percent(status.heatLoss)), UI.WARNING_COLOUR)
-        end
     end)
 end
 
@@ -425,9 +415,7 @@ end
 -- Today's temperature and what it means for the pool.
 local function caskDetail(cask, state)
     local status = V.caskStatus(state, V.getLedger(), V.placeOf(cask))
-    local place = PLACE_TEXT[status.place]
-    local rateKey = status.place == "Basement" and "IGUI_TraditionalPreservationVinegar_RateSteady" or "IGUI_TraditionalPreservationVinegar_Rate"
-    local lines = { say(rateKey, say(place, string.format("%.0f", status.temperature)), percent(status.rate)) }
+    local lines = { say("IGUI_TraditionalPreservationVinegar_Rate", UI.placeText(status.place, status.temperature), percent(status.rate)) }
     if state.ml > V.AIR_ML then
         table.insert(lines, say("IGUI_TraditionalPreservationVinegar_Crowded", litresText(V.AIR_ML / 1000)))
     end
@@ -476,7 +464,7 @@ function CaskWindow:render()
     if state.ml > 0 and state.strength < 1 then left = leftText(status.hoursLeft) end
     y = self:row(y, "IGUI_TraditionalPreservationVinegar_InfoTimeLeft", left)
     y = self:row(y, "IGUI_TraditionalPreservationVinegar_InfoBottles", tostring(V.bottlesLeft(state)))
-    y = self:row(y, "IGUI_TraditionalPreservationVinegar_Temperature", say(PLACE_TEXT[status.place], string.format("%.0f", status.temperature)))
+    y = self:row(y, "IGUI_TraditionalPreservationVinegar_Temperature", UI.placeText(status.place, status.temperature))
     y = self:row(y, "IGUI_TraditionalPreservationVinegar_RateLabel", percent(status.rate * V.caskSpeed(state)))
     local mother = state.mother and say("IGUI_TraditionalPreservationVinegar_InfoMotherLayers", tostring(V.motherLayers(state)), litresText(V.nextLayerMl(state) / 1000))
         or getText("IGUI_TraditionalPreservationVinegar_InfoMotherNone")
@@ -490,7 +478,7 @@ function CaskWindow:render()
         local key = V.hasStarter(state) and "IGUI_TraditionalPreservationVinegar_StarterYes" or "IGUI_TraditionalPreservationVinegar_StarterNo"
         table.insert(notes, say(key, percent(V.CULTURE_BONUS), percent(V.STARTER_STRENGTH)))
     end
-    if state.ml > 0 and state.strength < 1 and status.place ~= "Basement" then table.insert(notes, getText("IGUI_TraditionalPreservationVinegar_InfoAssumes")) end
+    if state.ml > 0 and state.strength < 1 then table.insert(notes, getText("IGUI_TraditionalPreservationVinegar_InfoAssumes")) end
     self:drawNotes(y, notes)
 end
 

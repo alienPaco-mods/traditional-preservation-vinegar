@@ -87,7 +87,7 @@ local function simulate(days, startIndex, place)
         if vessel then
             V.onFermentUpdate(vessel)
             if vessel.elapsed >= V.ALCOHOLIC_HOURS * 3600 then
-                local made = V.fermentedMl(20000, vessel.modData.heat)
+                local made = V.fermentedMl(20000)
                 vesselTank.litres = vesselTank.litres + made / 1000
                 note(string.format("vessel done: %.1f L fermented wort", made / 1000))
                 vessel = nil
@@ -116,11 +116,12 @@ local function simulate(days, startIndex, place)
 end
 
 local days = readDays(arg[1] or "tools/climate_year.csv")
-local placeNames = { Open = "outdoors", Sheltered = "under a roof", Basement = "in a basement" }
+-- An open roof reads as indoors (the season's mean), so it isn't run on its own.
+local placeNames = { Open = "outdoors", Sheltered = "indoors", Basement = "in a basement" }
 for _, month in ipairs({ 1, 4, 7, 10 }) do
     local first
     for index, day in ipairs(days) do if day.month == month then first = index break end end
-    for _, place in ipairs(V.PLACES) do
+    for _, place in ipairs({ "Open", "Sheltered", "Basement" }) do
         local firstBottle, log = simulate(days, first, place)
         print(string.format("%s, %s: first bottles on day %s", MONTHS[month], placeNames[place], firstBottle and string.format("%.0f", firstBottle) or "(past the forecasts)"))
         for _, line in ipairs(log or {}) do print(line) end

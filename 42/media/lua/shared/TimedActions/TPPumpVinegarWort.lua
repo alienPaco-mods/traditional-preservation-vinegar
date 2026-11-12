@@ -36,7 +36,7 @@ function TPPumpVinegarWort:complete()
     end
     -- The cask catches up on its own souring first, so the new wort doesn't count time before it arrived.
     local state = V.caskState(self.cask)
-    V.updateCask(state, V.getLedger(), V.placeOf(self.cask))
+    V.updateCaskAt(state, V.getLedger(), self.cask)
     local moved = V.pumpToCask(state, V.vesselTank(self.vessel, ResourceIO.Output):getFluidContainer(), self.ml)
     log("TPV", "hose pumped %.2f L of fermented wort into the cask", moved / 1000)
     return true

@@ -51,8 +51,7 @@ V.SENSITIVITY = 1.5
 check("harsh never stops a batch", V.aceticRate(-20) >= V.MIN_RATE)
 V.SENSITIVITY = 1
 local Weather = require "TraditionalPreservationCore/Weather"
-check("a cellar is warmer than a cold month", Weather.shelterTemperature(0) == 10)
-check("and thick walls cap a hot one", Weather.shelterTemperature(30) == Weather.SHELTER_MAX)
+check("a room is the season's mean", Weather.placeTemperature({ temperature = 30, seasonTemperature = 12 }, "Sheltered") == 12)
 
 check("malting: best at 12 to 20 C", V.maltingRate(12) == 1 and V.maltingRate(20) == 1)
 check("malting: stalls in frost", V.maltingRate(0) < 0.051)
@@ -115,14 +114,15 @@ check("cold barely moves a batch", chilled.elapsed <= 100 * 3600 * 0.06)
 local roofed = recipeData(ALCOHOL_TIME)
 V.onFermentStart(roofed)
 roofed.modData.sheltered = true
-V.getLedger().seasonTemperature = 12
+V.getLedger().seasonTemperature = 20
 runHours(-5, 10, roofed, V.onFermentUpdate)
-check("a sheltered vessel goes by the cellar, not the frost", roofed.elapsed > 10 * 3600 * 0.5)
+check("a sheltered vessel goes by the season, not the frost", roofed.elapsed > 10 * 3600 * 0.5)
 
 local pooled = recipeData(ALCOHOL_TIME)
-pooled.modData = { done = 500, sheltered = true, heat = 9 }
+pooled.modData = { done = 500, sheltered = true, place = "Hearth", fireUntil = 9, under = "Open" }
 V.onFermentStart(pooled)
-check("a reused recipe object starts clean", pooled.modData.done == 0 and pooled.modData.sheltered == nil and pooled.modData.heat == 0)
+check("a reused recipe object starts clean", pooled.modData.done == 0 and pooled.modData.sheltered == nil
+    and pooled.modData.place == nil and pooled.modData.fireUntil == nil and pooled.modData.under == nil)
 
 -- The popup
 local ledger = V.newLedger(0)
@@ -134,12 +134,11 @@ ledger.temperature = 5
 status = V.batchStatus("alcoholic", { done = 120 }, 240, ledger)
 check("the cold stretches the time left", status.hoursLeft > 2000 and status.temperature == 5)
 status = V.batchStatus("alcoholic", { done = 120, sheltered = true }, 240, ledger)
-check("a sheltered batch goes by the cellar", status.temperature == 25 and status.place == "Sheltered")
+check("a sheltered batch goes by the season", status.temperature == 15 and status.place == "Sheltered")
 ledger.temperature = 25
 check("the floor goes by its own temperature range", V.batchStatus("malting", { done = 60 }, 120, ledger).rate < 0.7)
-check("and shows no heat damage", V.batchStatus("malting", { done = 0, heat = 10 }, 120, ledger).heatLoss == 0)
-check("heat shows on a vessel", V.batchStatus("alcoholic", { done = 0, heat = 10 }, 240, ledger).heatLoss == 0.1)
-check("heat costs at most a quarter", V.heatLoss(1000) == V.MAX_HEAT_LOSS)
+check("a run saved with heat hours loses nothing (heat harm is gone, 0.2.10)", V.fermentedMl(20000) == math.floor(20000 * V.FERMENT_YIELD + 0.5)
+    and V.batchStatus("alcoholic", { done = 0, heat = 10 }, 240, ledger).heatLoss == nil)
 
 -- Liquids
 local function container(name, amount, capacity, other)
@@ -191,8 +190,7 @@ check("a run takes one bucket of wort", V.batchMl(10000) == 10000 and V.batchMl(
 check("or two, and never more", V.batchMl(20000) == 20000 and V.batchMl(25000) == 20000)
 check("and nothing short of a bucket", V.batchMl(9000) == 0)
 check("a bucket's dregs still count as a bucket", V.batchMl(9999.5) == 10000)
-check("a run gives back 95%", V.fermentedMl(10000, 0) == 9500 and V.fermentedMl(20000, 0) == 19000)
-check("less for an overheated vessel", V.fermentedMl(20000, 10) == 17100)
+check("a run gives back 95%", V.fermentedMl(10000) == 9500 and V.fermentedMl(20000) == 19000)
 
 -- The cask: one continuous pool
 local cask = { ml = 0, strength = 0 }
@@ -249,27 +247,45 @@ sourHours(cold, 24, 0, false)
 check("frost barely sours an open cask", cold.strength < 0.003)
 local cellar = { ml = 10000, strength = 0 }
 V.updateCask(cellar, V.getLedger(), "Sheltered")
-V.getLedger().seasonTemperature = 15
+V.getLedger().seasonTemperature = 25
 sourHours(cellar, 24, -5, true)
-check("but a cellar keeps working", cellar.strength > 24 * 0.8 / V.ACETIC_HOURS)
+check("but a room in a warm season keeps working", cellar.strength > 24 * 0.8 / V.ACETIC_HOURS)
 
 local deep = { ml = 10000, strength = 0 }
 V.updateCask(deep, V.getLedger(), "Basement")
 sourHours(deep, 24, -15, "Basement")
-check("a basement cask sours at 15 C whatever the weather", math.abs(deep.strength - 24 * V.aceticRate(15) / V.ACETIC_HOURS) < 0.002)
-check("a basement is 15 C in any season", V.placeTemperature({ temperature = 35, seasonTemperature = 30 }, "Basement") == 15)
-check("which malts at full speed all year", V.maltingRate(15) == 1)
+-- The season slips towards the frost; the basement only a third as far, so no slower than its last hour's rate.
+check("a basement cask keeps souring through a frost", deep.strength >= 24 * V.aceticRate(V.placeTemperature(V.getLedger(), "Basement")) / V.ACETIC_HOURS - 1e-6
+    and deep.strength > 10 * cold.strength)
+check("a basement swings a third as far as the season", V.placeTemperature({ temperature = 35, seasonTemperature = 30 }, "Basement") == 17)
+check("which malts at full speed in summer", V.maltingRate(17) == 1)
+-- No fire anywhere: the cell has no squares round a station.
+function getCell() return { getGridSquare = function() return nil end } end
 local function stationAt(z, outside)
-    return { getSquare = function() return { getZ = function() return z end, isOutside = function() return outside end } end }
+    return { getSquare = function() return { getX = function() return 0 end, getY = function() return 0 end,
+        getZ = function() return z end, isOutside = function() return outside end,
+        isInARoom = function() return not outside end } end }
 end
 check("below ground is a basement", V.placeOf(stationAt(-1, false)) == "Basement")
 check("a room is sheltered", V.placeOf(stationAt(0, false)) == "Sheltered")
 check("and the yard is open", V.placeOf(stationAt(0, true)) == "Open")
+
+-- A cask by a fire sours at 28 C by the clock until the fire's noted fuel runs out, then as the place under it.
+local Hearth = require "TraditionalPreservationCore/Hearth"
+local hearthside = { ml = 10000, strength = 0 }
+V.updateCask(hearthside, V.getLedger(), "Open")
+hearthside.fireUntil, hearthside.under = hours + 12, "Open"
+sourHours(hearthside, 24, -15, Hearth.PLACE)
+check("a cask by a fire in a frost sours 12 hours at 28 C, then barely",
+    math.abs(hearthside.strength - 12 * V.aceticRate(Hearth.FIRE_C) / V.ACETIC_HOURS) < 0.002)
 local downstairs = recipeData(ALCOHOL_TIME)
 V.onFermentStart(downstairs)
 downstairs.modData.place = "Basement"
+V.getLedger().seasonTemperature = 25
 runHours(-10, 10, downstairs, V.onFermentUpdate)
-check("a basement vessel works through a frost", math.abs(downstairs.elapsed - 10 * 3600 * V.alcoholicRate(15)) < 1)
+check("a basement vessel in summer works through a cold snap",
+    downstairs.elapsed >= 10 * 3600 * V.alcoholicRate(V.placeTemperature(V.getLedger(), "Basement")) - 1
+    and downstairs.elapsed > 2 * 10 * 3600 * V.alcoholicRate(-10))
 local oldRun = recipeData(ALCOHOL_TIME)
 oldRun.modData = { done = 5, lastOpen = V.getLedger().alcoholicOpen, lastSheltered = V.getLedger().alcoholicSheltered, lastHeat = V.getLedger().heat, heat = 0, sheltered = true }
 runHours(22, 1, oldRun, V.onFermentUpdate)

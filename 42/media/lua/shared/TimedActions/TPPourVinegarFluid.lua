@@ -46,7 +46,7 @@ function TPPourVinegarFluid:complete()
     else
         -- The cask catches up on its own souring first, so the new wort doesn't count time before it arrived.
         local state = V.caskState(self.station)
-        V.updateCask(state, V.getLedger(), V.placeOf(self.station))
+        V.updateCaskAt(state, V.getLedger(), self.station)
         local poured = V.pourIntoCask(state, math.floor(container:getAmount() * 1000 + 0.5))
         container:removeFluid(poured / 1000)
     end

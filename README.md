@@ -1,4 +1,4 @@
-# Traditional Preservation (Vinegar) — Build 42 prototype (v0.2.9)
+# Traditional Preservation (Vinegar) — Build 42 prototype (v0.2.10)
 
 **Status: experimental.** The whole chain, from steeped grain to bottled vinegar, has been played in the game with test timers. Temperature effects have only been checked offline so far (see the test plan). Back up your save before enabling.
 
@@ -17,9 +17,9 @@ Copy this folder to `~/Zomboid/mods/TraditionalPreservationVinegar`, as a real c
 ## Getting started
 
 1. **Grow barley, wheat or rye.** Sow from August to October, dry the sheaves on a drying rack and thresh them. Threshed grain doesn't spoil, so one harvest lasts all year. A full batch takes 48 grain, about 16 plants at base yield.
-2. **Malt in autumn, or any time in a basement.** Malt keeps forever, so make it once and brew from it all year.
+2. **Malt in spring or autumn.** Malt keeps forever, so make it once and brew from it all year.
 3. **Keep yeast to hand.** Each vessel run takes one full packet of vanilla Yeast. Traditional Preservation (Yeast) can make more.
-4. **Brew and sour from spring to early autumn, under a roof.** Or below ground, where it carries on slowly through winter.
+4. **Brew and sour indoors from May to August.** In winter only a fire keeps it going: set the vessel and cask within 2 tiles of one.
 5. **Save your empty bottles and jars.** Each Vinegar uses up one bottle, and a Mother of Vinegar lives in a jar.
 6. **Never empty the cask.** Before topping up, keep at least a third as much vinegar in the cask as the fermented wort you're about to add: about 6–7 L before a full batch, 3–4 L before a half batch. Then the mother's speed bonus works from the start.
 
@@ -241,32 +241,33 @@ Time counts by the game clock, at any Day Length, and keeps counting while the a
 | Vessel | below 10 C | 10–18 C | 18–25 C | 25–30 C (85% or more) | above 30 C, 10% by 40 C |
 | Cask | below 10 C | 10–20 C | 20–30 C | | above 30 C, 25% by 40 C |
 
-There are three kinds of place, from the game's own flags:
+The places are TP Core's, from the game's own flags:
 
-- **Outdoors**: the day's weather. Above 35 C an outdoor vessel loses 1% of its batch an hour, up to 25%.
-- **Under a roof** (indoors on the ground floor or above): a building evens out the weather, so it follows the average outdoor temperature of the last 10 days or so, plus 10 C, and never goes above 28 C. A warm afternoon or a cold night makes no difference. A roofed vessel never overheats.
-- **In a basement** (any level below ground): the earth holds it at **15 C all year**. Malting runs at full speed in any month. The vessel takes about 13 days and the cask about 54 (40 with a mother and starter), summer or winter.
+- **Open air**: the day's weather.
+- **Under an open roof** (a porch, an open shed) or **indoors** (a room): an unheated building follows the average outdoor temperature of the last 10 days or so. A warm afternoon or a cold night makes no difference. A room is **22 C while the power grid is on**, as vanilla's are.
+- **In a basement** (any level below ground): the earth takes the edge off the seasons, about 5 C in January and 14 C in July. Cooler than a room all summer, and under 10 C most of the winter.
+- **By a fire**: any lit fire within 2 tiles on the same floor holds **28 C** (banked embers 24 C) for as long as the fuel lasts: the vessel takes 11 days and a fresh cask 35, in any month. Too warm for malting (14 days instead of 5).
 
-That gives the year a shape: malt in a cool season or a basement, brew and sour in a warm room from spring to autumn, and keep going slowly below ground through winter.
+That gives the year a shape: malt in spring or autumn, brew and sour indoors from May to August, and keep a cask going through winter by the fire. A batch that runs into the cold waits under 10 C until it warms again.
 
-Hover a running batch in the floor's window for its progress, time left at today's temperature, the temperature and place, its working rate and any heat damage.
+Hover a running batch in the floor's window for its progress, time left at today's temperature, the temperature and place, and its working rate.
 
-These are the days a run takes by the month it starts, on the game's forecasts for default weather (`tools/season_report.lua`). A basement takes the same in every month.
+These are the days a run takes by the month it starts, on the game's forecasts for default weather, the grid off (`tools/season_report.lua`).
 
-| Month | Ferment, outdoors | Ferment, under a roof | Cask from fresh, outdoors | Cask from fresh, under a roof |
-|---|---|---|---|---|
-| Jan | 106–140 | 68–112 | 160–198 | 110–153 |
-| Feb | 70–112 | 18–76 | 123–162 | 73–116 |
-| Mar | 39–76 | 10–40 | 88–126 | 44–76 |
-| Apr | 22–44 | 10–17 | 59–89 | 35–49 |
-| May | 12–22 | 10–11 | 44–60 | 35–38 |
-| Jun | 11–15 | 10–11 | 39–46 | 35 |
-| Jul | 10–12 | 10–11 | 39–47 | 35 |
-| Aug | 10–17 | 10–11 | 45–86 | 35 |
-| Sep | 11–30 | 10–11 | 88–287 | 35–39 |
-| Oct | 29–157 | 10–17 | 269–290 | 37–194 |
-| Nov | 157–178 | 10–140 | 235–268 | 182–206 |
-| Dec | 136–162 | 86–119 | 197–234 | 148–182 |
+| Month | Ferment, open air | Ferment, indoors | Ferment, basement | Cask from fresh, open air | Cask from fresh, indoors | Cask from fresh, basement |
+|---|---|---|---|---|---|---|
+| Jan | 106–140 | 137–178 | 135–177 | 160–198 | 179–216 | 195–233 |
+| Feb | 70–112 | 101–141 | 100–142 | 123–162 | 141–178 | 159–197 |
+| Mar | 39–76 | 64–105 | 65–107 | 88–126 | 103–140 | 122–161 |
+| Apr | 22–44 | 15–68 | 23–71 | 59–89 | 57–103 | 80–124 |
+| May | 12–22 | 10–33 | 16–37 | 44–60 | 38–68 | 66–90 |
+| Jun | 11–15 | 10–17 | 14–22 | 39–46 | 35–46 | 61–71 |
+| Jul | 10–12 | 10–12 | 12–18 | 39–47 | 35–41 | 60–74 |
+| Aug | 10–17 | 10–18 | 13–23 | 45–86 | 36–79 | 67–277 |
+| Sep | 11–30 | 10–135 | 16–138 | 88–287 | 52–324 | 258–333 |
+| Oct | 29–157 | 12–200 | 37–200 | 269–290 | 290–320 | 303–330 |
+| Nov | 157–178 | 184–200 | 184–200 | 235–268 | 254–288 | 267–301 |
+| Dec | 136–162 | 166–199 | 165–198 | 197–234 | 217–253 | 231–266 |
 
 ## Skills
 
@@ -310,7 +311,7 @@ Steeping water stays 4 L at every level.
 
 Times, volumes, yields, temperature curves, the cask and mother rules, XP and the effort multipliers are at the top of `42/media/lua/shared/TraditionalPreservationVinegar.lua`. Grain and water amounts are in `42/media/scripts/TraditionalPreservationVinegar.txt`, and the liquids in `42/media/scripts/TraditionalPreservationVinegar_fluids.txt`.
 
-`tools/build_tileset.py` repaints the stations and overlays, writes the item icons and textures from vanilla art, and writes `42/media/scripts/TraditionalPreservationVinegar_items.txt` (needs Pillow and the game files). It also writes the generated `42/media/lua/shared/TraditionalPreservationVinegar/Tiles.lua`, the tile numbers the Lua reads (don't edit it by hand), and `luajit tests/test_tiles.lua` checks the entity scripts against it. `luajit tests/test_vinegar.lua` checks the rules, `luajit tests/test_world.lua` the sprites, `luajit tests/test_stations.lua` the world file and the batch popup on stand-ins for the engine, `luajit tests/test_scripts.lua` the scripts against the game's (every grain steeps, every item named exists), `luajit tests/test_console.lua` the debug commands, `luajit tools/season_report.lua` prints the season table, and `luajit tools/simulate.lua` plays two full batches hour by hour with real timers and the game's weather, from the malting floor to bottling, starting in January, April, July and October outdoors, under a roof and in a basement, and checks the litres in against the litres out (40 L of wort gives about 31 L of vinegar).
+`tools/build_tileset.py` repaints the stations and overlays, writes the item icons and textures from vanilla art, and writes `42/media/scripts/TraditionalPreservationVinegar_items.txt` (needs Pillow and the game files). It also writes the generated `42/media/lua/shared/TraditionalPreservationVinegar/Tiles.lua`, the tile numbers the Lua reads (don't edit it by hand), and `luajit tests/test_tiles.lua` checks the entity scripts against it. `luajit tests/test_vinegar.lua` checks the rules, `luajit tests/test_world.lua` the sprites, `luajit tests/test_stations.lua` the world file and the batch popup on stand-ins for the engine, `luajit tests/test_scripts.lua` the scripts against the game's (every grain steeps, every item named exists), `luajit tests/test_console.lua` the debug commands, `luajit tools/season_report.lua` prints the season table, and `luajit tools/simulate.lua` plays two full batches hour by hour with real timers and the game's weather, from the malting floor to bottling, starting in January, April, July and October outdoors, indoors and in a basement, and checks the litres in against the litres out (40 L of wort gives about 31 L of vinegar).
 
 In debug mode, right-clicking any liquid container in your inventory offers **[Debug] Fill with Wort** and **[Debug] Fill with Fermented Wort**, since liquids can't be spawned from the item list.
 
@@ -343,7 +344,8 @@ The real-world claims the design rests on, and the simplifications made for play
 - The mother speeds a cask by 25% only while the pool is at least 25% soured.
 - The cask slows above 22.5 L of 30 L (three quarters), down to half speed when full.
 - One vanilla Vinegar counts as 1 L (10 uses at 0.1 L each, from the jarring recipe), although vanilla gives it the weight of about 0.2 L. That mismatch is accepted so the output stays exactly vanilla.
-- A roofed station uses the 10-day mean temperature plus 10 C, capped at 28 C. A basement is a flat 15 C. Room heating isn't modelled.
+- A room or an open roof uses the 10-day mean temperature (22 C while the grid is on); a basement swings a third as far from 10 C. Room heating isn't modelled beyond a fire within 2 tiles.
+- No heat harm: the sampled climate never passes 35 C (heat harm was dropped in 0.2.10).
 - Hops, boiling the wort, and clarifying or pasteurising the vinegar are left out.
 - Barley, wheat and rye are interchangeable.
 
@@ -383,8 +385,8 @@ Still to check in the game:
 4. A full vessel and a running vessel refuse to be picked up, with the red line.
 5. Spent Grain eaten from a trough, and taken by the composter.
 6. Wort refuses to mix with another drink in a vanilla container.
-7. "15 C in a basement" on a station below ground.
-8. A run with real timers and temperature on, in a cold month and a hot month, under a roof, outdoors and in a basement.
+7. "(Basement)" and its temperature on a station below ground; "(By a fire)" at 28 C within 2 tiles of a lit fire.
+8. A run with real timers and temperature on, in a cold month and a hot month, indoors, outdoors, in a basement and by a fire.
 9. The hose: attach; Pump to Cask from both stations, with 5 L, 10 L, the air line and all that fits each moving what it says; greyed options giving their reasons (empty vessel, short tank, no room, already at the air line); detach; and a destroyed station dropping the hose.
 10. Cask Info: opens from the cask's submenu, fills its bars, counts down while souring, shows bottles once ready and the hose when joined, and closes past 6 squares or when the cask is picked up.
 11. Green Malt: fresh for 2 days and rotten after 5. Stale Green Malt still kilns into Malt; rotten Green Malt stays rotten on the fire, and the composter takes it.

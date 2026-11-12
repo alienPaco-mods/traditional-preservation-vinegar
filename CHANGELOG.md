@@ -1,5 +1,15 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.10
+- **By a fire** (2026-11-12, consistency sweep step C): the Malting Floor, Fermentation Vessel and cask work at 28 C
+  within 2 tiles of a lit fire, 24 C by banked embers, for as long as the fuel lasts (`V.notePlace`,
+  `V.updateCaskAt`; a cask notes its place in its state). TP Core's new places: an unheated room follows the season
+  (22 C while the grid is on), a basement swings a third as far, so vinegar is a summer job without a fire.
+- **Heat harm dropped**: the game's climate never passes 35 C. `HEAT_HARM_ABOVE`, `HEAT_LOSS_PER_HOUR`,
+  `MAX_HEAT_LOSS`, `V.heatLoss`, the popup's Heat Damage line are gone; old saves' `ledger.heat` and runs' `heat`
+  are left unread. The "steady" basement wording is gone too. Season report (basement and fire), simulation, README,
+  guide almanac, Workshop text, DEVHELP.
+
 ## 0.2.9
 - Debug console (2026-11-12, consistency sweep): `TPV.here()`, as the other mods have. DEVHELP, guide.
 

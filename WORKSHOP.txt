@@ -15,7 +15,7 @@ Traditional Preservation (Vinegar) requires [b]Traditional Preservation (Core)[/
 [*]A continuous cask the Orléans way: draw vinegar off, top up with new, never empty it
 [*]A Mother of Vinegar that grows in the cask, speeds it up, and can be split to start another cask
 [*]An optional rubber hose to pump fermented wort from the vessel into the cask, in the amount you choose
-[*]Temperature matters: a cold winter nearly stops a batch, a roof helps, and a basement holds 15 C all year
+[*]Temperature matters: a cold winter stops a batch, summer indoors is best, and a fire within 2 tiles keeps it going in winter
 [*]Works without power, and keeps working while you are away
 [/list]
 
@@ -61,11 +61,12 @@ The cask is one pool of up to 30 L that you keep going for the whole game. Every
 
 [h2]Temperature[/h2]
 [list]
-[*][b]Outdoors[/b]: the day's weather. A vessel in the sun above 35 C loses part of its batch.
-[*][b]Under a roof[/b]: a building evens out the weather. It follows the last 10 days' average outdoors plus 10 C, never over 28 C.
-[*][b]In a basement[/b]: 15 C all year. Malting runs at full speed, the vessel takes about 13 days and the cask about 54.
+[*][b]Open air[/b]: the day's weather.
+[*][b]Under an open roof[/b] or [b]indoors[/b]: an unheated building follows the last 10 days' average outdoors. A room is 22 C while the power grid is on.
+[*][b]In a basement[/b]: the season, a third as far: about 5 C in January, 14 C in July.
+[*][b]By a fire[/b]: any lit fire within 2 tiles holds 28 C (banked embers 24 C): the vessel takes 11 days and a fresh cask 35, in any month.
 [/list]
-Malt in a cool season or a basement, brew and sour in a warm room from spring to autumn, and keep going slowly below ground through winter. Hover a running batch for its time left and working rate.
+Malt in spring or autumn, brew and sour indoors from May to August, and keep a cask going through winter by the fire. Hover a running batch for its time left and working rate.
 
 [h2]Good to know[/h2]
 [list]

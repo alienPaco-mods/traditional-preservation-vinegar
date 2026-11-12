@@ -3,6 +3,7 @@
 if not isDebugEnabled() then return end
 
 local V = TraditionalPreservationVinegar
+local Hearth = require "TraditionalPreservationCore/Hearth"
 TPV = {}
 
 local KINDS = { "malting", "alcoholic", "acetic" }
@@ -18,7 +19,7 @@ end
 
 function TPV.help()
     say("TPV.weather()             the temperature by place, and each stage's working speed there")
-    say("TPV.here()                which place you're standing in (outdoors, under a roof or a basement)")
+    say("TPV.here()                which place you're standing in (open air, an open roof, indoors, a basement, by a fire)")
     say("TPV.age(hours)            give every floor, vessel and cask this many hours of perfect weather")
     say("TPV.fast(hours)           test timers: every floor, vessel and cask run takes this many hours. TPV.fast() turns them off")
     say("TPV.timers()              the hours each stage takes right now")
@@ -33,14 +34,20 @@ end
 
 function TPV.weather()
     local ledger = V.getLedger()
-    say(string.format("Temperature now %.1f C, season (10-day average) %.1f C, hours over %d C so far: %.1f",
-        ledger.temperature or 0, ledger.seasonTemperature or 0, V.HEAT_HARM_ABOVE, ledger.heat or 0))
+    say(string.format("Temperature now %.1f C, season (10-day average) %.1f C", ledger.temperature or 0, ledger.seasonTemperature or 0))
     for _, place in ipairs(V.PLACES) do
         local speeds = {}
         for _, kind in ipairs(KINDS) do
             table.insert(speeds, string.format("%s %.0f%%", kind, (ledger[kind .. place .. "Rate"] or 0) * 100))
         end
         say(string.format("%-9s %.1f C: %s", place, V.placeTemperature(ledger, place), table.concat(speeds, ", ")))
+    end
+    for _, place in ipairs({ Hearth.PLACE, Hearth.EMBERS }) do
+        local speeds = {}
+        for _, kind in ipairs(KINDS) do
+            table.insert(speeds, string.format("%s %.0f%%", kind, V[kind .. "Rate"](Hearth.fireC(place)) * 100))
+        end
+        say(string.format("%-9s %.1f C: %s (by the clock: TPV.age skips it)", place, Hearth.fireC(place), table.concat(speeds, ", ")))
     end
 end
 
@@ -76,7 +83,7 @@ function TPV.cask()
     local cask = near(V.isCask, "cask")
     if not cask then return end
     local state = V.caskState(cask)
-    V.updateCask(state, V.getLedger(), V.placeOf(cask))
+    V.updateCaskAt(state, V.getLedger(), cask)
     say(string.format("Cask at %d,%d,%d (%s): %.2f L, %.1f%% soured, %d bottles ready",
         cask:getX(), cask:getY(), cask:getZ(), V.placeOf(cask), state.ml / 1000, state.strength * 100, V.bottlesLeft(state)))
     if state.mother then
@@ -92,7 +99,7 @@ function TPV.setCask(litres, percent)
     local cask = near(V.isCask, "cask")
     if not cask then return end
     local state = V.caskState(cask)
-    V.updateCask(state, V.getLedger(), V.placeOf(cask))
+    V.updateCaskAt(state, V.getLedger(), cask)
     state.ml = math.floor(math.min(litres or 0, V.CASK_ML / 1000) * 1000 + 0.5)
     state.strength = math.max(0, math.min((percent or 100) / 100, 1))
     say(string.format("Cask set to %.2f L at %.0f%%.", state.ml / 1000, state.strength * 100))

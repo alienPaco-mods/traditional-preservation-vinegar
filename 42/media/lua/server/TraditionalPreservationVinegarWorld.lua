@@ -29,12 +29,12 @@ local function restrictTank(tank, name)
 end
 
 -- A progress of 0 to 1, or nil with nothing running. Tells the run where it stands.
-local function readRun(station, logic, entry, place)
+local function readRun(station, logic, entry, kind)
     local uiLogic = Station.uiLogic(station, entry, logic)
     if not uiLogic then return nil end
     local craftData = V.runningBatch(station, logic, uiLogic)
     if not craftData then return nil end
-    craftData:getModData().place = place
+    V.notePlace(craftData:getModData(), station, kind, getGameTime():getWorldAgeHours())
     return logic:getProgress(craftData), craftData
 end
 
@@ -105,15 +105,14 @@ local function settleRun(vessel, resources, logic, craftData, input, output)
         if not run then
             local ml = V.batchMl(litres(input) * 1000)
             input:getFluidContainer():removeFluid(ml / 1000)
-            run = { ml = ml, heat = 0 }
+            run = { ml = ml }
             modData.vinegarRun = run
             log("TPV", "vessel run took %.1f L of wort", ml / 1000)
         end
-        run.heat = craftData:getModData().heat or 0
         return
     end
     if takeMarker(resources, logic) then
-        local ml = run and V.fermentedMl(run.ml, run.heat) or 0
+        local ml = run and V.fermentedMl(run.ml) or 0
         if ml > 0 then output:getFluidContainer():addFluid(V.FERMENTED, ml / 1000) end
         award(Perks.Cooking, V.FERMENT_XP)
         log("TPV", "vessel run finished with %.2f L of fermented wort", ml / 1000)
@@ -129,7 +128,7 @@ local function stationSprite(station, entry)
     if entry.base == V.CASK_SPRITE then
         local state = V.caskState(station)
         local before = state.strength
-        V.updateCask(state, V.getLedger(), V.placeOf(station))
+        V.updateCaskAt(state, V.getLedger(), station)
         if before < 1 and state.strength >= 1 then
             log("TPV", "cask fully soured: %.2f L, mother layers %d", state.ml / 1000, V.motherLayers(state))
         end
@@ -139,7 +138,7 @@ local function stationSprite(station, entry)
     local resources = station:getComponent(ComponentType.Resources)
     local logic = station:getComponent(ComponentType.CraftLogic)
     if not resources or not logic then return entry.sprite end
-    local progress, craftData = readRun(station, logic, entry, V.placeOf(station))
+    local progress, craftData = readRun(station, logic, entry, entry.base == V.FLOOR_SPRITE and "malting" or "alcoholic")
 
     if entry.base == V.FLOOR_SPRITE then
         local waiting = countItems(resources, logic:getInputsGroupName(), ResourceIO.Input)

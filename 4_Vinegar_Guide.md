@@ -149,22 +149,25 @@ Every station runs on real temperature, **even while you're away**.
 
 | Place | Temperature |
 |---|---|
-| **Outdoors** | The day's weather. A vessel above 35 C loses up to 25% of its batch |
-| **Under a roof** | A steady "cellar": the season's average +10 C, at most 28 C. Never overheats |
-| **Basement** (below ground) | **15 C, all year round** |
+| **Open air** | The day's weather |
+| **Under an open roof**, or **indoors** | The season: the average of the last 10 days. A room is 22 C while the power grid is on |
+| **Basement** (below ground) | Follows the season a third as far: about 5 C in January, 14 C in July |
+| **By a fire** (any lit fire within 2 tiles, same floor) | **28 C**, for as long as the fuel lasts; banked embers 24 C |
 
-> ✏ *Margin note:* "under a roof" means any roof overhead, walls or not. A lean-to or a floor laid on the level above is enough; four walls with no roof are still outdoors.
+> ✏ *Margin note:* four walls with no roof are still open air. A porch or a lean-to is an open roof; a shed you build with walls and a whole roof is a room.
 
-**First bottles, from the start of malting (two full batches, simulated on the game's weather):**
+**First bottles, from the start of malting (two full batches, simulated on the game's weather, the grid off):**
 
-| Start | Outdoors | Under a roof | Basement |
+| Start | Open air | Indoors | Basement |
 |---|---|---|---|
-| January | day 217 | day 165 | day 72 |
-| April | day 103 | day 59 | day 72 |
-| July | day 61 | day 60 | day 72 |
-| October | day 310 | day 58 | day 72 |
+| January | day 217 | day 232 | day 255 |
+| April | day 103 | day 114 | day 142 |
+| July | day 61 | day 50 | day 89 |
+| October | day 310 | day 336 | day 352 |
 
-**The brewer's year:** malt in a cool season (or a basement), brew and sour in a warm room from spring to autumn, and keep a basement cask ticking over through winter.
+**By a fire**, any month: the vessel ferments in 11 days and a cask's first batch sours in 35, at 28 C. Banked embers (24 C) are as quick: 10 and 35. Don't malt there: sprouting grain wants it cool, and 28 C takes the floor 14 days instead of 5.
+
+**The brewer's year:** malt in spring or autumn, brew and sour indoors from May to August. A batch started after the summer stalls under 10 C until spring, unless the vessel and cask stand by a fire. A basement is cooler than a room all year: no help to vinegar.
 
 ---
 
@@ -240,7 +243,7 @@ A sip scales down: half a litre of wort is 150 calories.
 | Craft does nothing / says why | Less than 10 L of wort, no full yeast packet, output not drawn off, or already working |
 | Yeast refused | It's part-used. A run needs a full packet |
 | Can't bottle | The cask isn't 100% soured, or there are no empty 1 L+ bottles nearby |
-| Cask stuck at a low % | It's cold. Check the hover tooltip; consider a roof or basement |
+| Cask stuck at a low % | It's under 10 C. Check the hover tooltip; set the cask within 2 tiles of a lit fire, or wait for summer |
 | Pump to Cask greyed out | Hover it: the vessel is empty or short, the cask has no room, or it's already at the air line |
 | Can't pick up a station | It holds liquid, is running, or is hosed |
 
@@ -267,7 +270,7 @@ A sip scales down: half a litre of wort is 150 calories.
 
 | Command | What it does |
 |---|---|
-| `TPV.weather()` | The temperature outdoors, under a roof and in a basement, and how fast malting, fermenting and souring work in each. |
+| `TPV.weather()` | The temperature in each place (open air, under an open roof, indoors, a basement, by a fire, by banked embers), and how fast malting, fermenting and souring work there. |
 | `TPV.here()` | Which kind of place you're standing in. |
 | `TPV.age(hours)` | Gives every floor, vessel and cask this many hours of perfect weather. `TPV.age(120)` finishes a malting run, 240 a vessel run, 840 a cask from fresh. |
 | `TPV.fast(hours)` | Test timers: every floor, vessel and cask run takes this many hours, with temperature ignored. `TPV.fast()` turns them off again. It replaces editing `V.TEST_HOURS`. |

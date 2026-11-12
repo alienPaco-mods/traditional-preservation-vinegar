@@ -44,6 +44,9 @@ ScriptManager = { instance = { getCraftRecipe = function() return { Load = noop 
 
 local PREFIX = "traditionalpreservationvinegar_01_"
 
+-- No fires here: nothing is a fireplace, and no station is a campfire.
+function instanceof() return false end
+
 local function square(x, z)
     local s = { objects = {} }
     function s:getX() return x end
@@ -75,10 +78,12 @@ local function station(index, x, outside)
     end
     function object:getComponent(kind) return kind == "Resources" and resources or logic end
     function object:getSprite() return { getName = function() return PREFIX .. index end } end
+    function object:getName() return nil end
     function object:getSquare() return self.square end
     function object:getObjectIndex() return 0 end
     function object:isOutside() return outside end
     function object.square:isOutside() return outside end
+    function object.square:isInARoom() return not outside end
     function object:getModData() return self.modData end
     function object:clearAttachedAnimSprite() self.sprites = {} self.clears = self.clears + 1 end
     function object:addAttachedAnimSpriteByName(name) table.insert(self.sprites, name) end
@@ -207,9 +212,8 @@ local shown = {}
 for _, item in ipairs(lines) do table.insert(shown, item.label .. " " .. item.value) end
 -- 10 hours at 38 C is 22% speed: 2.2 of 240 done, 237.8 left is 1081 hours. Every one of them over 35 C costs 1%.
 check("the popup's lines", table.concat(shown, " | ") == "Progress: 1% | Fermenting: 20.0 L of wort | "
-    .. "Time Remaining: 45d 1h, if the temperature holds | Temperature: 38 C outdoors | Working Rate: 22% | "
-    .. "Heat Damage: 10% of this batch lost")
-check("a slow rate and heat damage are coloured", lines[5].colour[2] == 0.7 and lines[6].colour[2] == 0.35 and lines[1].colour[2] == 1)
+    .. "Time Remaining: 45d 1h, if the temperature holds | Temperature: 38 C (Open air) | Working Rate: 22%")
+check("a slow rate is coloured, and no heat damage line", lines[5].colour[2] == 0.7 and lines[1].colour[2] == 1 and #lines == 5)
 check("and no translator warnings", #H.textWarnings == 0)
 check("the popup is wide enough", tooltip.width == 150)
 
