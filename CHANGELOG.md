@@ -1,5 +1,12 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.11
+- **The cellar runs a month behind** (2026-11-12, TP Core): a basement follows the ground, about 5 C from January to
+  March and 13 C from July to September: cooler than a room until August, warmer in the autumn (a vessel started there
+  in September ferments in 16 to 20 days). The season report and simulation start from a long-running save's weather
+  and read 30-day months (each month's forecast also held the 10 days before it, which stretched the old tables):
+  first bottles in January day 170 / 182 / 230, July day 65 / 53 / 88. Guide almanac, README, Workshop text.
+
 ## 0.2.10
 - **By a fire** (2026-11-12, consistency sweep step C): the Malting Floor, Fermentation Vessel and cask work at 28 C
   within 2 tiles of a lit fire, 24 C by banked embers, for as long as the fuel lasts (`V.notePlace`,

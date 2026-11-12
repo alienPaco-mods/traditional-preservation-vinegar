@@ -1,4 +1,4 @@
-# Traditional Preservation (Vinegar) — Build 42 prototype (v0.2.10)
+# Traditional Preservation (Vinegar) — Build 42 prototype (v0.2.11)
 
 **Status: experimental.** The whole chain, from steeped grain to bottled vinegar, has been played in the game with test timers. Temperature effects have only been checked offline so far (see the test plan). Back up your save before enabling.
 
@@ -245,7 +245,7 @@ The places are TP Core's, from the game's own flags:
 
 - **Open air**: the day's weather.
 - **Under an open roof** (a porch, an open shed) or **indoors** (a room): an unheated building follows the average outdoor temperature of the last 10 days or so. A warm afternoon or a cold night makes no difference. A room is **22 C while the power grid is on**, as vanilla's are.
-- **In a basement** (any level below ground): the earth takes the edge off the seasons, about 5 C in January and 14 C in July. Cooler than a room all summer, and under 10 C most of the winter.
+- **In a basement** (any level below ground): the earth takes the edge off the seasons, running a month behind the season: about 5 C from January to March and 13 C from July to September. Cooler than a room until August, warmer in the autumn (a September vessel ferments in 16 to 20 days there), and under 10 C from December to May.
 - **By a fire**: any lit fire within 2 tiles on the same floor holds **28 C** (banked embers 24 C) for as long as the fuel lasts: the vessel takes 11 days and a fresh cask 35, in any month. Too warm for malting (14 days instead of 5).
 
 That gives the year a shape: malt in spring or autumn, brew and sour indoors from May to August, and keep a cask going through winter by the fire. A batch that runs into the cold waits under 10 C until it warms again.
@@ -344,7 +344,7 @@ The real-world claims the design rests on, and the simplifications made for play
 - The mother speeds a cask by 25% only while the pool is at least 25% soured.
 - The cask slows above 22.5 L of 30 L (three quarters), down to half speed when full.
 - One vanilla Vinegar counts as 1 L (10 uses at 0.1 L each, from the jarring recipe), although vanilla gives it the weight of about 0.2 L. That mismatch is accepted so the output stays exactly vanilla.
-- A room or an open roof uses the 10-day mean temperature (22 C while the grid is on); a basement swings a third as far from 10 C. Room heating isn't modelled beyond a fire within 2 tiles.
+- A room or an open roof uses the 10-day mean temperature (22 C while the grid is on); a basement follows the ground (the 10-day mean's own 30-day mean, a month behind) two fifths as far from 10 C. Room heating isn't modelled beyond a fire within 2 tiles.
 - No heat harm: the sampled climate never passes 35 C (heat harm was dropped in 0.2.10).
 - Hops, boiling the wort, and clarifying or pasteurising the vinegar are left out.
 - Barley, wheat and rye are interchangeable.

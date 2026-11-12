@@ -151,7 +151,7 @@ Every station runs on real temperature, **even while you're away**.
 |---|---|
 | **Open air** | The day's weather |
 | **Under an open roof**, or **indoors** | The season: the average of the last 10 days. A room is 22 C while the power grid is on |
-| **Basement** (below ground) | Follows the season a third as far: about 5 C in January, 14 C in July |
+| **Basement** (below ground) | Follows the ground, a month behind the season: about 5 C from January to March, 13 C from July to September |
 | **By a fire** (any lit fire within 2 tiles, same floor) | **28 C**, for as long as the fuel lasts; banked embers 24 C |
 
 > ✏ *Margin note:* four walls with no roof are still open air. A porch or a lean-to is an open roof; a shed you build with walls and a whole roof is a room.
@@ -160,14 +160,14 @@ Every station runs on real temperature, **even while you're away**.
 
 | Start | Open air | Indoors | Basement |
 |---|---|---|---|
-| January | day 217 | day 232 | day 255 |
-| April | day 103 | day 114 | day 142 |
-| July | day 61 | day 50 | day 89 |
-| October | day 310 | day 336 | day 352 |
+| January | day 170 | day 182 | day 230 |
+| April | day 84 | day 92 | day 147 |
+| July | day 65 | day 53 | day 88 |
+| October | day 247 | day 261 | day 289 |
 
 **By a fire**, any month: the vessel ferments in 11 days and a cask's first batch sours in 35, at 28 C. Banked embers (24 C) are as quick: 10 and 35. Don't malt there: sprouting grain wants it cool, and 28 C takes the floor 14 days instead of 5.
 
-**The brewer's year:** malt in spring or autumn, brew and sour indoors from May to August. A batch started after the summer stalls under 10 C until spring, unless the vessel and cask stand by a fire. A basement is cooler than a room all year: no help to vinegar.
+**The brewer's year:** malt in spring or autumn, brew and sour indoors from May to August. A batch started after the summer stalls under 10 C until spring, unless the vessel and cask stand by a fire. A basement is cooler than a room until August, but it holds the summer's warmth into the autumn: a vessel started there in September ferments in 16 to 20 days, while one upstairs can stall for months.
 
 ---
 

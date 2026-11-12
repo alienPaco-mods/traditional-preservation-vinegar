@@ -22,7 +22,8 @@ local function readDays(path)
     for line in io.lines(path) do
         local f = {}
         for value in line:gmatch("%S+") do table.insert(f, value) end
-        if #f >= 6 then table.insert(days, { month = tonumber(f[2]), low = tonumber(f[4]), mean = tonumber(f[5]), high = tonumber(f[6]) }) end
+        -- Each month's forecast also holds the 10 days before it (offset below 0): skipped, so a month is 30 days.
+        if #f >= 6 and tonumber(f[3]) >= 0 then table.insert(days, { world = tonumber(f[1]), offset = tonumber(f[3]), month = tonumber(f[2]), low = tonumber(f[4]), mean = tonumber(f[5]), high = tonumber(f[6]) }) end
     end
     return days
 end
@@ -40,11 +41,21 @@ local function run(seconds)
     return data
 end
 
+-- The first sampled world's calendar year, settled (Weather.settledMeans).
+local function settle(days)
+    local year = {}
+    for _, day in ipairs(days) do
+        if day.world == days[1].world then table.insert(year, day) end
+    end
+    return require("TraditionalPreservationCore/Weather").settledMeans(year)
+end
+local settled
+
 local function simulate(days, startIndex, place)
     hour = (startIndex - 1) * 24
     store.ledger = nil
     local ledger = V.getLedger()
-    ledger.seasonTemperature = days[startIndex].mean
+    ledger.seasonTemperature, ledger.groundTemperature = settled(days[startIndex].month, days[startIndex].offset)
     local log = {}
     local function note(text) table.insert(log, string.format("  day %5.1f  %s", (hour - (startIndex - 1) * 24) / 24, text)) end
     local function tick()
@@ -116,6 +127,7 @@ local function simulate(days, startIndex, place)
 end
 
 local days = readDays(arg[1] or "tools/climate_year.csv")
+settled = settle(days)
 -- An open roof reads as indoors (the season's mean), so it isn't run on its own.
 local placeNames = { Open = "outdoors", Sheltered = "indoors", Basement = "in a basement" }
 for _, month in ipairs({ 1, 4, 7, 10 }) do

@@ -257,7 +257,7 @@ sourHours(deep, 24, -15, "Basement")
 -- The season slips towards the frost; the basement only a third as far, so no slower than its last hour's rate.
 check("a basement cask keeps souring through a frost", deep.strength >= 24 * V.aceticRate(V.placeTemperature(V.getLedger(), "Basement")) / V.ACETIC_HOURS - 1e-6
     and deep.strength > 10 * cold.strength)
-check("a basement swings a third as far as the season", V.placeTemperature({ temperature = 35, seasonTemperature = 30 }, "Basement") == 17)
+check("a basement swings two fifths as far as the ground", V.placeTemperature({ temperature = 35, seasonTemperature = 30, groundTemperature = 27.5 }, "Basement") == 17)
 check("which malts at full speed in summer", V.maltingRate(17) == 1)
 -- No fire anywhere: the cell has no squares round a station.
 function getCell() return { getGridSquare = function() return nil end } end

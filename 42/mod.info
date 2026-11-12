@@ -1,7 +1,7 @@
 name=Traditional Preservation (Vinegar)
 id=TraditionalPreservationVinegar
 author=alienPaco
-modversion=0.2.10
+modversion=0.2.11
 versionMin=42.20
 description=Malt, mash and strain your own grain, ferment the wort with yeast, and keep a vinegar cask going the traditional Orleans way, with a living mother. Bottles out as vanilla Vinegar. B42 prototype.
 icon=icon.png

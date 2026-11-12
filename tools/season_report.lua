@@ -15,8 +15,9 @@ local function readDays(path)
     for line in io.lines(path) do
         local f = {}
         for value in line:gmatch("%S+") do table.insert(f, value) end
-        if #f >= 6 then
-            table.insert(days, { month = tonumber(f[2]), low = tonumber(f[4]), mean = tonumber(f[5]), high = tonumber(f[6]) })
+        -- Each month's forecast also holds the 10 days before it (offset below 0): skipped, so a month is 30 days.
+        if #f >= 6 and tonumber(f[3]) >= 0 then
+            table.insert(days, { world = tonumber(f[1]), offset = tonumber(f[3]), month = tonumber(f[2]), low = tonumber(f[4]), mean = tonumber(f[5]), high = tonumber(f[6]) })
         end
     end
     return days
@@ -28,14 +29,27 @@ local function hourly(day, hour)
     return swing >= 0 and day.mean + (day.high - day.mean) * swing or day.mean + (day.mean - day.low) * swing
 end
 
+-- The first sampled world's calendar year, settled (Weather.settledMeans).
+local function settle(days)
+    local year = {}
+    for _, day in ipairs(days) do
+        if day.world == days[1].world then table.insert(year, day) end
+    end
+    return require("TraditionalPreservationCore/Weather").settledMeans(year)
+end
+local settled
+
 -- Days until a batch started on this day is done, or nil if the forecasts run out first.
 local function daysToFinish(days, first, target, rate, place)
-    local done, season = 0, days[first].mean
+    local season, ground = settled(days[first].month, days[first].offset)
+    local done = 0
     for index = first, #days do
         for hour = 0, 23 do
             local temperature = hourly(days[index], hour)
             season = season + (temperature - season) / Weather.SEASON_HOURS
-            done = done + rate(Weather.placeTemperature({ temperature = temperature, seasonTemperature = season }, place))
+            ground = ground + (season - ground) / Weather.GROUND_HOURS
+            done = done + rate(Weather.placeTemperature({ temperature = temperature, seasonTemperature = season,
+                groundTemperature = ground }, place))
             if done >= target then return index - first + hour / 24 end
         end
     end
@@ -57,6 +71,7 @@ local function range(days, month, target, rate, place)
 end
 
 local days = readDays(arg[1] or "tools/climate_year.csv")
+settled = settle(days)
 -- Indoors and under an open roof read the same (the season's mean), so one column serves both.
 local PLACES = { "Open", "Sheltered", "Basement" }
 print("| Month | Ferment, outdoors | Ferment, indoors | Ferment, basement | First cask, outdoors | First cask, indoors | First cask, basement |")
