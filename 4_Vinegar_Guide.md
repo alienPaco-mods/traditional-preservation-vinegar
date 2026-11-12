@@ -154,7 +154,7 @@ Every station runs on real temperature, **even while you're away**.
 | **Basement** (below ground) | Follows the ground, a month behind the season: about 5 C from January to March, 13 C from July to September |
 | **By a fire** (any lit fire within 2 tiles, same floor) | **28 C**, for as long as the fuel lasts; banked embers 24 C |
 
-> ✏ *Margin note:* four walls with no roof are still open air. A porch or a lean-to is an open roof; a shed you build with walls and a whole roof is a room.
+> *Margin note:* four walls with no roof are still open air. A porch or a lean-to is an open roof; a shed you build with walls and a whole roof is a room.
 
 **First bottles, from the start of malting (two full batches, simulated on the game's weather, the grid off):**
 
@@ -173,16 +173,16 @@ Every station runs on real temperature, **even while you're away**.
 
 ## 10. Secrets & Hidden Features
 
-- 🍺 **Wort and Fermented Wort are drinkable.** Wort is sweet and filling. Fermented Wort is a flat 4% ale that'll cheer no one but works in a pinch.
-- 🐄 **Spent Grain is animal feed.** Cows, sheep, pigs, chickens and turkeys eat it from a trough. Or compost it.
-- 🧼 **Liquids stay pure.** Wort won't mix with other drinks, and Draw Off only offers *empty* containers.
+- **Wort and Fermented Wort are drinkable.** Wort is sweet and filling. Fermented Wort is a flat 4% ale that'll cheer no one but works in a pinch.
+- **Spent Grain is animal feed.** Cows, sheep, pigs, chickens and turkeys eat it from a trough. Or compost it.
+- **Liquids stay pure.** Wort won't mix with other drinks, and Draw Off only offers *empty* containers.
 - ↩ **Cancel is free.** Cancelling a vessel run returns the wort and the yeast.
-- ❌ **Chalk X = done.** A finished vessel shows a chalk cross and a sample cup with lees.
-- 🫙 **Bottles pile up at the foot** of a fully soured cask, so you can see a ready cask from across the yard.
-- 📈 **Skill XP:** Cooking for steeping, mashing, straining, finished vessel runs and bottling; Farming for finished malting runs.
-- 🧮 **Bottles = uses.** One vanilla Vinegar is 10 uses = 1 L. Vanilla jarring takes 2 uses, so **one bottle pickles 5 jars**. The litre is a bookkeeping convention: the bottle keeps vanilla's light weight (0.2), so vinegar is easy to carry once it's bottled. The bulky part is the cask.
-- 🔁 **Leftovers aren't wasted.** Anything under a full litre after bottling stays as starter for the next top-up.
-- 🍾 **Bottles come back.** Use up a Vinegar while pickling and you get its original bottle back, empty (a Water Bottle stays a Water Bottle). Used up any other way, or looted, it leaves an empty Crafted Bottle.
+- **Chalk X = done.** A finished vessel shows a chalk cross and a sample cup with lees.
+- **Bottles pile up at the foot** of a fully soured cask, so you can see a ready cask from across the yard.
+- **Skill XP:** Cooking for steeping, mashing, straining, finished vessel runs and bottling; Farming for finished malting runs.
+- **Bottles = uses.** One vanilla Vinegar is 10 uses = 1 L. Vanilla jarring takes 2 uses, so **one bottle pickles 5 jars**. The litre is a bookkeeping convention: the bottle keeps vanilla's light weight (0.2), so vinegar is easy to carry once it's bottled. The bulky part is the cask.
+- **Leftovers aren't wasted.** Anything under a full litre after bottling stays as starter for the next top-up.
+- **Bottles come back.** Use up a Vinegar while pickling and you get its original bottle back, empty (a Water Bottle stays a Water Bottle). Used up any other way, or looted, it leaves an empty Crafted Bottle.
 
 ---
 
@@ -206,9 +206,9 @@ Both liquids are drinkable. Neither is worth brewing just to drink, but in a lea
 
 A sip scales down: half a litre of wort is 150 calories.
 
-> ✏ *Margin note:* why doesn't fermenting cost calories? The yeast eats about 50 g of sugar a litre and leaves about 4% alcohol behind. Alcohol carries 7 calories a gram, so the energy is still in there, just no longer as sugar. 20 g of sugar left plus the alcohol comes back to about 300. Real brewers would nod.
+> *Margin note:* why doesn't fermenting cost calories? The yeast eats about 50 g of sugar a litre and leaves about 4% alcohol behind. Alcohol carries 7 calories a gram, so the energy is still in there, just no longer as sugar. 20 g of sugar left plus the alcohol comes back to about 300. Real brewers would nod.
 
-> ✏ *Margin note:* fermented wort is ale made without hops. Hops are what keep beer bright and stop it going stale. Unhopped ale tastes flat and sweetish-sour, hence the small hit to your mood.
+> *Margin note:* fermented wort is ale made without hops. Hops are what keep beer bright and stop it going stale. Unhopped ale tastes flat and sweetish-sour, hence the small hit to your mood.
 
 ### Why it works the way it does
 
@@ -266,7 +266,7 @@ A sip scales down: half a litre of wort is 150 calories.
 
 *For testers, modders and the curious. These commands exist only when the game is started in debug mode (Steam launch option `-debug`). Type them into the in-game **Command Console** and press Enter. `TPV.help()` lists them in the game.*
 
-> ⚠ They change your save directly, so try them on a test save, not a playthrough you care about.
+> **Warning:** They change your save directly, so try them on a test save, not a playthrough you care about.
 
 | Command | What it does |
 |---|---|

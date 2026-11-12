@@ -1,6 +1,7 @@
 # Changelog: Traditional Preservation (Vinegar)
 
 ## 0.2.12
+- Guide: no emojis (2026-11-12): the decorative bullets and margin-note marks are gone, warning signs read **Warning:**.
 - **Info in the Malting Floor's and Fermentation Vessel's windows** (2026-11-12, consistency sweep step E, TP Core's
   StationInfo): the place, its temperature and the stage's working rate there (malting or alcoholic), the running
   batch's bar with its time left, and what is waiting or finished; the vessel also lists its Wort and Fermented tanks.
