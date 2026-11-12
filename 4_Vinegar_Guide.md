@@ -71,7 +71,7 @@ Vanilla vinegar is loot-only, and without it there's no pickling. This mod lets 
 
 ## 4. Walkthrough
 
-**Malting.** Steep 24 grain in 4 L of water to make Steeped Grain. Load up to 4 on the **Malting Floor** and press Craft. It sprouts in 5 days (best at 12–20 C). Watch the tray: wet grain, sprouts, matted rootlets, then a malt shovel when done.
+**Malting.** Steep 24 grain in 4 L of water to make Steeped Grain. Load up to 4 on the **Malting Floor** and press Craft. It sprouts in 5 days (best at 12–20 C). The floor's window says where it stands, the temperature and how fast it is working, with a bar and the time left for each batch. Watch the tray: wet grain, sprouts, matted rootlets, then a malt shovel when done.
 
 **Kilning.** Put Green Malt on a fire or in an oven. It dries into **Malt** in about 3 hours. Don't leave it a day or it burns. **Don't leave it waiting either:** Green Malt is fresh for 2 days and rotten after 5, counted from when the floor finishes. Stale malt still kilns fine, but rotten Green Malt never turns into Malt. Compost it.
 
@@ -274,7 +274,7 @@ A sip scales down: half a litre of wort is 150 calories.
 
 | Command | What it does |
 |---|---|
-| `TPV.weather()` | The temperature in each place (open air, under an open roof, indoors, a basement, by a fire, by banked embers), and how fast malting, fermenting and souring work there. |
+| `TPV.weather()` | The temperature in each place (open air, under an open roof, indoors, a loft, a basement, in a shed, by a fire, by banked embers), and how fast malting, fermenting and souring work there. |
 | `TPV.here()` | Which kind of place you're standing in. |
 | `TPV.age(hours)` | Gives every floor, vessel and cask this many hours of perfect weather. `TPV.age(120)` finishes a malting run, 240 a vessel run, 840 a cask from fresh. |
 | `TPV.fast(hours)` | Test timers: every floor, vessel and cask run takes this many hours, with temperature ignored. `TPV.fast()` turns them off again. It replaces editing `V.TEST_HOURS`. |

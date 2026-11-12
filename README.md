@@ -255,20 +255,22 @@ Hover a running batch in the floor's window for its progress, time left at today
 
 These are the days a run takes by the month it starts, on the game's forecasts for default weather, the grid off (`tools/season_report.lua`).
 
-| Month | Ferment, open air | Ferment, indoors | Ferment, basement | Cask from fresh, open air | Cask from fresh, indoors | Cask from fresh, basement |
-|---|---|---|---|---|---|---|
-| Jan | 106–140 | 137–178 | 135–177 | 160–198 | 179–216 | 195–233 |
-| Feb | 70–112 | 101–141 | 100–142 | 123–162 | 141–178 | 159–197 |
-| Mar | 39–76 | 64–105 | 65–107 | 88–126 | 103–140 | 122–161 |
-| Apr | 22–44 | 15–68 | 23–71 | 59–89 | 57–103 | 80–124 |
-| May | 12–22 | 10–33 | 16–37 | 44–60 | 38–68 | 66–90 |
-| Jun | 11–15 | 10–17 | 14–22 | 39–46 | 35–46 | 61–71 |
-| Jul | 10–12 | 10–12 | 12–18 | 39–47 | 35–41 | 60–74 |
-| Aug | 10–17 | 10–18 | 13–23 | 45–86 | 36–79 | 67–277 |
-| Sep | 11–30 | 10–135 | 16–138 | 88–287 | 52–324 | 258–333 |
-| Oct | 29–157 | 12–200 | 37–200 | 269–290 | 290–320 | 303–330 |
-| Nov | 157–178 | 184–200 | 184–200 | 235–268 | 254–288 | 267–301 |
-| Dec | 136–162 | 166–199 | 165–198 | 197–234 | 217–253 | 231–266 |
+| Month | Ferment, open air | Ferment, indoors | Ferment, loft | Ferment, basement | Cask from fresh, open air | Cask from fresh, indoors | Cask from fresh, loft | Cask from fresh, basement |
+|---|---|---|---|---|---|---|---|---|
+| Jan | 84–115 | 103–133 | 102–133 | 130–156 | 127–154 | 139–168 | 135–163 | 185–211 |
+| Feb | 58–87 | 76–106 | 75–105 | 104–130 | 98–126 | 111–139 | 107–135 | 157–184 |
+| Mar | 34–60 | 48–79 | 46–78 | 77–103 | 71–98 | 82–111 | 78–106 | 130–157 |
+| Apr | 16–36 | 22–51 | 20–50 | 50–76 | 50–72 | 55–82 | 50–78 | 102–129 |
+| May | 11–18 | 10–22 | 10–21 | 23–50 | 41–51 | 38–54 | 35–50 | 75–104 |
+| Jun | 11–12 | 10 | 10 | 17–23 | 39–43 | 35–39 | 35 | 66–75 |
+| Jul | 10–14 | 10 | 10 | 15–18 | 40–54 | 35–41 | 35–36 | 63–67 |
+| Aug | 11–17 | 10–12 | 10–11 | 15–16 | 48–230 | 39–244 | 36–187 | 67–151 |
+| Sep | 11–85 | 10–111 | 10–103 | 16–20 | 231–237 | 246–251 | 204–246 | 161–265 |
+| Oct | 87–158 | 124–200 | 117–200 | 20–143 | 210–231 | 224–248 | 221–245 | 262–266 |
+| Nov | 136–157 | 158–183 | 158–183 | 150–200 | 184–210 | 196–223 | 192–220 | 239–262 |
+| Dec | 110–135 | 130–157 | 130–157 | 156–181 | 155–183 | 167–195 | 164–191 | 212–238 |
+
+While the grid is on, a room or a loft (22 C) ferments in 10 days and sours a fresh cask in 35, any month. By a fire (28 C): 11 and 35, malting 14; by banked embers (24 C): 10 and 35, malting 7.
 
 ## Skills
 
@@ -366,7 +368,7 @@ In debug mode, `TPV.help()` in the Lua console lists commands for testing this m
 ## Known prototype caveats
 
 - **Temperature hasn't been seen in play.** The in-game runs so far used test timers (`TPV.fast`), which ignore temperature. Check a cold and a hot month with real timers before relying on the season table.
-- Stations indoors go by the outdoor weather and the season, so heating a room doesn't speed them up.
+- A room is warmed only by the power grid (22 C, as vanilla keeps it) or a fire within 2 tiles; a generator or a heater doesn't change a station's temperature.
 - Mash Malt takes a metal bucket, plain or forged (not a wooden one), and Strain Mash gives back the kind that went in. Mash made before 0.2.8 gives a plain metal bucket.
 - The bottle list is written out, as no tag covers plastic bottles, so bottles from other mods aren't accepted.
 - Apples, grapes and other fruit aren't used, as vanilla can't grow apples or grapes.

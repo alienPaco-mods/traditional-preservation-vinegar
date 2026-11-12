@@ -1,6 +1,7 @@
 # Changelog: Traditional Preservation (Vinegar)
 
 ## 0.2.15
+- **Docs pass, sweep step G** (2026-11-12): the guide describes the Malting Floor's window; `TPV.weather()` lists the loft and *In a shed*; README season table from the tool with Loft columns, the grid, a fire and embers; the room-heating caveat (README, Workshop text) says the grid and a fire count; Workshop text names Fish & Meat.
 - Needs Build 42.22 or newer (`versionMin`, was 42.20: everything is checked on 42.22). Workshop text (sweep step F). The guide gives a powered room's times (22 C: ferment 10 days, first
   cask 35).
 - **Souring loses a tenth to the air, not a fifth** (2026-11-12; user, after the realism pass: a breathing cask

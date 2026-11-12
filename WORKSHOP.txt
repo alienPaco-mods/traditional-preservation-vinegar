@@ -85,12 +85,12 @@ Set the malting, fermenting and souring days, the mother's speed bonus, temperat
 English malt vinegar, once called alegar, began as soured ale. It was soured by the Orléans method, used in France since the Middle Ages: a barrel kept about three quarters full, with air holes above the liquid and a pale mother floating on top. Every week or two some vinegar was drawn off and the same amount of new ale poured in under the mother. The barrel was never emptied, and a thick mother could have a layer peeled off to start another barrel.
 
 [h2]Works well with[/h2]
-[b]Traditional Preservation (Yeast)[/b] makes the vanilla Yeast each vessel run needs. [b]Traditional Preservation (Salt)[/b] and [b](Fish)[/b] complete the pickling and preserving pantry. This mod needs no other mods besides TP Core.
+[b]Traditional Preservation (Yeast)[/b] makes the vanilla Yeast each vessel run needs. [b]Traditional Preservation (Salt)[/b] and [b](Fish & Meat)[/b] complete the pickling and preserving pantry. This mod needs no other mods besides TP Core.
 
 [h2]Known limitations[/h2]
 [list]
 [*]Multiplayer is not supported. This mod is singleplayer only for now.
-[*]Stations indoors go by the outdoor weather and the season, so heating a room doesn't speed them up.
+[*]A room is warmed only by the power grid (22 C) or a fire within 2 tiles; a generator or a heater doesn't change a station's temperature.
 [*]Apples and grapes aren't used, as vanilla can't grow them.
 [/list]
 
