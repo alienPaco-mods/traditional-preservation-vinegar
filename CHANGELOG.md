@@ -1,5 +1,16 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.16
+- **Wort that sours** (user, 2026-11-13; from the realism pass): wort waiting for the yeast becomes **Sour Wort**
+  (new fluid `MaltSourWort`, drinkable, a little unhappiness) in 2 days at 20 C, 1 at 30 C, about 5 in a cool cellar,
+  never while frozen (`WORT_CURVE`, `V.WORT_SOUR_HOURS` 48). Buckets and containers age through TP Core's
+  `FluidAgeing` (`V.WORT_SPEC`); the vessel's Wort tank keeps its record on the vessel (`V.ageTank`, `V.tankAge`).
+  The vessel refuses sour wort (Craft says why, Pour Wort is greyed), **Pour Away the Wort** empties the tank, the
+  info block shows "sours in about". Pitched wort is safe; a cancelled run gives its wort back with its age;
+  fermented wort keeps. Sandbox **Wort sours** (on). `TPV.ageWort(hours)`; `TPV.weather()` shows the `wort` rate;
+  `tools/season_report.lua` prints a "Wort sours" table. Tests. README's simplification on souring loss said a
+  fifth: now a tenth, as 0.2.15 made it.
+
 ## 0.2.15
 - **The Yearly Plan** (guide chapter 15, user 2026-11-13): malting, fermenting and souring as the game's planting seasons: season, best and poor months, out of season, where and how long at best (fermenting and souring from `tools/season_report.lua`; malting at the month's mean, marked "about"), and the fire, embers and powered room for any month. The Tester's Toolkit is now chapter 16.
 - **Docs pass, sweep step G** (2026-11-12): the guide describes the Malting Floor's window; `TPV.weather()` lists the loft and *In a shed*; README season table from the tool with Loft columns, the grid, a fire and embers; the room-heating caveat (README, Workshop text) says the grid and a fire count; Workshop text names Fish & Meat.

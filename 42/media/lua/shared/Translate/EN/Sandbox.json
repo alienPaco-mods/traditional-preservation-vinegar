@@ -18,5 +18,7 @@
   "Sandbox_TraditionalPreservationVinegar_BrewingEffort_tooltip": "How long the hands-on work takes: kilning the malt, heating the mash, and the steeping, mashing and straining crafts. Light is quickest, Normal takes half as long again, Hard twice as long.",
   "Sandbox_TraditionalPreservationVinegar_BrewingEffort_option1": "Light",
   "Sandbox_TraditionalPreservationVinegar_BrewingEffort_option2": "Normal",
-  "Sandbox_TraditionalPreservationVinegar_BrewingEffort_option3": "Hard"
+  "Sandbox_TraditionalPreservationVinegar_BrewingEffort_option3": "Hard",
+  "Sandbox_TraditionalPreservationVinegar_WortSours": "Wort sours",
+  "Sandbox_TraditionalPreservationVinegar_WortSours_tooltip": "Wort waiting for the yeast sours: in 2 days at 20 C, 1 at 30 C, about 5 in a cool cellar, never while frozen. The vessel refuses sour wort. Fermented wort keeps."
 }

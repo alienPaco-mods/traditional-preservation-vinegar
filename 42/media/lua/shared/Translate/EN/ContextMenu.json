@@ -16,5 +16,6 @@
   "ContextMenu_TraditionalPreservationVinegar_PumpToCask": "Pump to Cask",
   "ContextMenu_TraditionalPreservationVinegar_PumpLitres": "%1 L",
   "ContextMenu_TraditionalPreservationVinegar_PumpAirLine": "Up to the air line (%1 L)",
-  "ContextMenu_TraditionalPreservationVinegar_PumpAll": "All that fits (%1 L)"
+  "ContextMenu_TraditionalPreservationVinegar_PumpAll": "All that fits (%1 L)",
+  "ContextMenu_TraditionalPreservationVinegar_PourAwayWort": "Pour Away the Wort"
 }

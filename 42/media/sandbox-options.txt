@@ -53,3 +53,10 @@ option TraditionalPreservationVinegar.BrewingEffort {
     translation = TraditionalPreservationVinegar_BrewingEffort,
     valueTranslation = TraditionalPreservationVinegar_BrewingEffort,
 }
+
+option TraditionalPreservationVinegar.WortSours {
+    type = boolean,
+    default = true,
+    page = TraditionalPreservationVinegar,
+    translation = TraditionalPreservationVinegar_WortSours,
+}

@@ -74,5 +74,10 @@
   "IGUI_TraditionalPreservationVinegar_PumpAirHelp": "Fills the cask to %1 L, the most it holds at full souring speed.",
   "IGUI_TraditionalPreservationVinegar_SplitNotYet": "The mother needs 2 layers before a layer can be split off. It has %1, and grows the next once the cask has made about %2 L more vinegar.",
   "IGUI_TraditionalPreservationVinegar_InfoGrain": "Steeped Grain: %1",
-  "IGUI_TraditionalPreservationVinegar_InfoWort": "Wort: %1 L"
+  "IGUI_TraditionalPreservationVinegar_InfoWort": "Wort: %1 L",
+  "IGUI_TraditionalPreservationVinegar_WortSour": "The wort in the tank has soured. Pour it away.",
+  "IGUI_TraditionalPreservationVinegar_VesselSour": "Fermentation Vessel: %1 L of wort, soured",
+  "IGUI_TraditionalPreservationVinegar_InfoSours": "sours in about %1",
+  "IGUI_TraditionalPreservationVinegar_InfoSoured": "soured",
+  "IGUI_TraditionalPreservationVinegar_NoSourWort": "Sour wort won't ferment. Pour it away."
 }

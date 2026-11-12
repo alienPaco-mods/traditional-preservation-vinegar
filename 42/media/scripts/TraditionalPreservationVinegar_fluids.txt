@@ -27,6 +27,35 @@ module Base
         }
     }
 
+    /* Wort left too long before the yeast: wild lactic bacteria have soured it. Safe to drink, but the
+       vessel refuses it (TP Core's FluidAgeing renames wort to this; see V.WORT_SPEC). */
+    fluid MaltSourWort
+    {
+        ColorReference = Peru,
+        DisplayName = Fluid_Name_MaltSourWort,
+        Categories
+        {
+            Beverage,
+        }
+        Properties
+        {
+            HungerChange = -5.0,
+            ThirstChange = -20.0,
+            UnhappyChange = 10.0,
+            Calories = 250.0,
+            Carbohydrates = 55.0,
+            Proteins = 2.0,
+        }
+        BlendWhiteList
+        {
+            whitelist = true,
+            fluids
+            {
+                MaltSourWort,
+            }
+        }
+    }
+
     /* Wort after the yeast: a weak, flat, unhopped ale. The cask turns it to vinegar. */
     fluid MaltFermentedWort
     {

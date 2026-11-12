@@ -1,4 +1,4 @@
-# Traditional Preservation (Vinegar) — Build 42 prototype (v0.2.15)
+# Traditional Preservation (Vinegar) — Build 42 prototype (v0.2.16)
 
 **Status: experimental.** The whole chain, from steeped grain to bottled vinegar, has been played in the game with test timers. Temperature effects have only been checked offline so far (see the test plan). Back up your save before enabling.
 
@@ -96,6 +96,15 @@ Crafting menu, Cooking, with a Ripped Sheet or Cheesecloth (kept). The bucket th
 
 Wort and Fermented Wort are real liquids, added by this mod, not vanilla ones. They sit in any vanilla container: buckets, bottles, pots, mugs. Both are drinkable: wort is sweet and filling, and fermented wort is a weak, flat, unhopped ale (4% alcohol) that leaves you a little less happy than a proper beer would. Neither mixes with any other liquid, so a container of wort stays pure.
 
+**Wort sours if it waits for the yeast** (sandbox **Wort sours**, on by default). Lactic bacteria from the grain get there first: wort left in a bucket, any container or the vessel's Wort tank becomes **Sour Wort** in 2 days at 20 C, 1 day at 30 C, about 5 days in a cool cellar, and never while frozen. Sour wort is still drinkable (a little unhappiness), but the vessel won't take it: pour it away. It ages by where it stands, as Dairy's milk does (TP Core's `FluidAgeing`), also while you're away; mixing old and new wort keeps the older age. Once a run has started the wort is safe, and fermented wort keeps.
+
+| Wort sours (days, `tools/season_report.lua`) | Outdoors | Indoors | Grid on (22 C) | Basement |
+|---|---|---|---|---|
+| January | 36-70 | 63-96 | 1.6 | 12-14 |
+| April | 3-12 | 7-13 | 1.6 | 8-11 |
+| July | 1.2-2.8 | 1.5-2.2 | 1.6 | 4.3-5.2 |
+| October | 7-31 | 5-12 | 1.6 | 5-6 |
+
 **Spent Grain** weighs 0.8: a bucket's 24 grain weigh about 0.5 dry and soak up water in the mash. It rots in about 3 to 6 days. Put it in a composter, or feed it to farm animals from a trough: cows, sheep, pigs, chickens and turkeys all eat it.
 
 ### 7. Fermentation Vessel
@@ -111,11 +120,14 @@ A run takes whole buckets from the tank: **10 L** with one bucket's worth in, **
 Craft won't start, and says why, when:
 - the vessel is already working,
 - there is less than 10 L of wort in the tank,
+- the tank's wort has soured (use **Pour Away the Wort**),
 - the Fermented tank still holds the last batch.
 
 When a run starts, its wort leaves the Wort tank and is held by the run, so the tank reads empty while it ferments. The status line and the batch's hover show how many litres are fermenting.
 
-**Cancel** stops the run and gives everything back: the wort to the tank and the yeast to the slot.
+**Cancel** stops the run and gives everything back: the wort to the tank, with the age it had, and the yeast to the slot.
+
+The vessel's info block shows how long the tank's wort keeps where the vessel stands ("sours in about 2 days"), or that it has soured. **Pour Away the Wort** (right-click, whenever the tank holds wort and no run is going) empties the Wort tank onto the ground.
 
 When it finishes, right-click and use **Draw Off Fermented Wort**. Only completely empty containers are offered, so nothing is ever topped up into a mixture.
 
@@ -218,7 +230,7 @@ The mother also travels with its cask: pick up an empty cask and put it down els
 
 ## Right-click menus
 
-- **Fermentation Vessel**: a grey status line (empty, wort waiting, fermenting with its progress, or fermented wort ready), **Pour Wort**, and **Draw Off Fermented Wort** when there is some. Options you can't use yet are greyed out, and hovering says why.
+- **Fermentation Vessel**: a grey status line (empty, wort waiting, wort soured, fermenting with its progress, or fermented wort ready), **Pour Wort** (greyed with "Sour wort won't ferment" when all you carry is sour), **Pour Away the Wort** when the tank holds some, and **Draw Off Fermented Wort** when there is some. Options you can't use yet are greyed out, and hovering says why.
 - **Orléans Vinegar Cask**: one submenu with the status line, **Cask Info**, **Pour Fermented Wort**, **Bottle Vinegar**, **Take Mother** / **Split Mother** / **Add Mother**, **Empty Cask**, and the hose line and **Detach Hose** when joined.
 - **Hose** (on the vessel): **Attach Hose to Cask**, or a grey line and **Detach Hose** when joined.
 
@@ -300,6 +312,7 @@ Under Traditional Preservation (Vinegar):
 | Established-culture speed bonus (percent) | 25 | How much quicker a mother with a starter makes the cask |
 | Temperature sensitivity | Normal | Off, Forgiving, Normal or Harsh |
 | Brewing effort | Normal | How long the hands-on work takes, below |
+| Wort sours | On | Wort waiting for the yeast sours (2 days at 20 C); off, it keeps for ever as before 0.2.16 |
 
 | Brewing effort | Light | Normal | Hard |
 |---|---|---|---|
@@ -342,7 +355,8 @@ The real-world claims the design rests on, and the simplifications made for play
 - Crushing the malt is folded into Mash Malt, and steeping into the Malting Floor's time.
 - 24 seeds per bucket, about 0.5 kg of grain for 10 L, is a much weaker wort than a real one (roughly 1–2 kg per 10 L). It was chosen so a batch needs about 15 barley plants, one per bottle.
 - A whole yeast packet per run, as a station slot can't take part of one.
-- Fermentation yields 95% by volume (lees), and souring loses about 20% overall.
+- Fermentation yields 95% by volume (lees), and souring loses about a tenth overall.
+- Wort sours on one curve (2 days at 20 C, 1 at 30 C, about 5 at 13 C, stopped at 0 C) and goes straight to Sour Wort; real wild souring varies with the grain and the vessel, and spoils further into mould, which is left out.
 - The mother grows one layer per 15 L of vinegar made, and a split always gives one layer.
 - The mother speeds a cask by 25% only while the pool is at least 25% soured.
 - The cask slows above 22.5 L of 30 L (three quarters), down to half speed when full.
@@ -354,6 +368,7 @@ The real-world claims the design rests on, and the simplifications made for play
 
 ## Engineering notes
 
+- The Wort tank's age: the tank is a station resource, not an item, so FluidAgeing can't keep a record on it. The record sits on the vessel's modData under FluidAgeing's key (`V.ageTank`, `V.tankAge`), the tank's wort is never renamed (the tank only takes wort), and the vessel checks the record instead (`V.isSour`). A run keeps the age it took (`run.wortAge`) for a cancel.
 - The vessel's liquid is handled by the mod, not the engine. The engine doesn't hold a liquid recipe to its amounts, and runs whichever recipe it likes. So Ferment Wort takes only the yeast as a recipe input and gives a marker item, the world code takes 10 or 20 L from the tank when it sees the run start, and turns the marker into fermented wort in the other tank when the run ends.
 - A station slot consumes a drainable item whole, which is why a run takes a full yeast packet rather than 5 uses.
 - The cask's pool, souring, mother and layers live in the cask's `movableData`, which vanilla copies onto the item when a station is picked up and back when it's placed. So the mother moves with the cask and can't be duplicated.
@@ -393,4 +408,5 @@ Still to check in the game:
 9. The hose: attach; Pump to Cask from both stations, with 5 L, 10 L, the air line and all that fits each moving what it says; greyed options giving their reasons (empty vessel, short tank, no room, already at the air line); detach; and a destroyed station dropping the hose.
 10. Cask Info: opens from the cask's submenu, fills its bars, counts down while souring, shows bottles once ready and the hose when joined, and closes past 6 squares or when the cask is picked up.
 11. Green Malt: fresh for 2 days and rotten after 5. Stale Green Malt still kilns into Malt; rotten Green Malt stays rotten on the fire, and the composter takes it.
-12. `console.txt` shows no repeating Lua errors after an hour of play, including with the other Traditional Preservation mods on.
+12. Wort that sours (0.2.16): `TPV.ageWort(48)` turns carried wort into Sour Wort and the tank's wort to soured; Craft refuses with the reason, Pour Wort is greyed with "Sour wort won't ferment", Pour Away the Wort empties the tank; the info block's "sours in about"; a cancelled run gives back wort with its age.
+13. `console.txt` shows no repeating Lua errors after an hour of play, including with the other Traditional Preservation mods on.

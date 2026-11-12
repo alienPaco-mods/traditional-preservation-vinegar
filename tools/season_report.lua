@@ -59,7 +59,7 @@ local function daysToFinish(days, first, target, rate, place)
     return nil
 end
 
-local function range(days, month, target, rate, place)
+local function range(days, month, target, rate, place, format)
     local low, high
     for index, day in ipairs(days) do
         if day.month == month then
@@ -70,7 +70,7 @@ local function range(days, month, target, rate, place)
         end
     end
     if not low then return "" end
-    return string.format("%.0f-%.0f", low, high)
+    return string.format(format or "%.0f-%.0f", low, high)
 end
 
 local days = readDays(arg[1] or "tools/climate_year.csv")
@@ -83,6 +83,17 @@ for month = 1, 12 do
     local cells = { MONTHS[month] }
     for _, place in ipairs(PLACES) do table.insert(cells, range(days, month, V.ALCOHOLIC_HOURS, V.alcoholicRate, place)) end
     for _, place in ipairs(PLACES) do table.insert(cells, range(days, month, V.ACETIC_HOURS, V.aceticRate, place)) end
+    print("| " .. table.concat(cells, " | ") .. " |")
+end
+-- Wort waiting for the yeast: days until it sours, by where it stands (a bucket or the vessel's tank).
+print("")
+print("| Month | Wort sours, outdoors | indoors | grid on | loft | basement |")
+print("|---|---|---|---|---|---|")
+for month = 1, 12 do
+    local cells = { MONTHS[month] }
+    for _, place in ipairs(PLACES) do
+        table.insert(cells, range(days, month, V.WORT_SOUR_HOURS, V.wortRate, place, "%.1f-%.1f"))
+    end
     print("| " .. table.concat(cells, " | ") .. " |")
 end
 -- By a fire the temperature holds while the fuel lasts, whatever the month.

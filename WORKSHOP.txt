@@ -26,7 +26,7 @@ Traditional Preservation (Vinegar) requires [b]Traditional Preservation (Core)[/
 [*][b]Kiln[/b]: put the Green Malt on a fire or in an oven for about 3 hours. Malt keeps forever. Green Malt doesn't: it's fresh for 2 days and rotten after 5, and rotten Green Malt won't kiln. Compost it.
 [*][b]Mash Malt[/b] (crafting menu): 1 Malt and a metal bucket holding 10 L of water.
 [*][b]Heat the mash[/b] on a fire or in an oven for about 1.5 hours.
-[*][b]Strain Mash[/b] (crafting menu, with a Ripped Sheet or Cheesecloth, kept): the bucket comes back holding 10 L of Wort, plus Spent Grain for the composter or your farm animals.
+[*][b]Strain Mash[/b] (crafting menu, with a Ripped Sheet or Cheesecloth, kept): the bucket comes back holding 10 L of Wort, plus Spent Grain for the composter or your farm animals. Don't let the wort wait: it sours in about 2 days in a warm room (5 in a cellar), and the vessel won't take sour wort. Mash on the day the vessel is free; Malt keeps.
 [*][b]Fermentation Vessel[/b]: pour in 10 or 20 L of wort, add one full packet of Yeast and press Craft. 10 days at 18 to 25 C gives 95% back as Fermented Wort.
 [*][b]Orléans Vinegar Cask[/b]: pour the fermented wort in. The pool sours in 35 days at 20 to 30 C, 26 with a mother.
 [*][b]Bottle Vinegar[/b]: from the cask's right-click menu, 1 L and an empty bottle make one vanilla Vinegar.

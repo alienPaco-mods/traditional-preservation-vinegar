@@ -1,6 +1,6 @@
 -- Traditional Preservation (Vinegar): moving liquid by hand between a container and a station.
 -- "vesselIn" pours wort into a vessel, "vesselOut" draws fermented wort off into a container, and
--- "caskIn" pours fermented wort into a cask's pool.
+-- "caskIn" pours fermented wort into a cask's pool, and "vesselDump" (no item) pours away the vessel's wort.
 require "TimedActions/ISBaseTimedAction"
 require "TraditionalPreservationVinegar"
 
@@ -10,10 +10,15 @@ local V = TraditionalPreservationVinegar
 local Action = require "TraditionalPreservationCore/Action"
 
 local function tankFor(self)
-    return V.vesselTank(self.station, self.mode == "vesselIn" and ResourceIO.Input or ResourceIO.Output)
+    local input = self.mode == "vesselIn" or self.mode == "vesselDump"
+    return V.vesselTank(self.station, input and ResourceIO.Input or ResourceIO.Output)
 end
 
 function TPPourVinegarFluid:isValid()
+    if self.mode == "vesselDump" then
+        local logic = self.station:getComponent(ComponentType.CraftLogic)
+        return self.station:getSquare() ~= nil and V.litres(tankFor(self)) > 0 and not (logic and logic:isRunning())
+    end
     if not self.station:getSquare() or not self.character:getInventory():containsRecursive(self.item) then return false end
     local container = self.item:getFluidContainer()
     if not container then return false end
@@ -38,8 +43,14 @@ end
 
 function TPPourVinegarFluid:complete()
     if TraditionalPreservationVinegarWorld then TraditionalPreservationVinegarWorld.track(self.station) end
+    if self.mode == "vesselDump" then
+        tankFor(self):getFluidContainer():Empty()
+        V.tankAge(self.station)
+        return true
+    end
     local container = self.item:getFluidContainer()
     if self.mode == "vesselIn" then
+        V.pourIntoTank(self.station, self.item, getGameTime():getWorldAgeHours())
         tankFor(self):drainFromItem(self.item)
     elseif self.mode == "vesselOut" then
         tankFor(self):drainToItem(self.item)
@@ -58,6 +69,7 @@ function TPPourVinegarFluid:perform()
 end
 
 function TPPourVinegarFluid:getDuration()
+    if self.mode == "vesselDump" then return Action.pourDuration(self.character, V.litres(tankFor(self)), 20) end
     local container = self.item:getFluidContainer()
     local amount = container and container:getAmount() or 0
     if self.mode == "vesselOut" then amount = container and container:getCapacity() or 0 end

@@ -4,9 +4,10 @@ if not isDebugEnabled() then return end
 
 local V = TraditionalPreservationVinegar
 local Hearth = require "TraditionalPreservationCore/Hearth"
+local FluidAgeing = require "TraditionalPreservationCore/FluidAgeing"
 TPV = {}
 
-local KINDS = { "malting", "alcoholic", "acetic" }
+local KINDS = { "malting", "alcoholic", "acetic", "wort" }
 local ITEMS = { "SteepedGrain", "GreenMalt", "Malt", "BucketMash", "BucketPreparedMash", "SpentGrain", "MotherOfVinegar" }
 
 local function say(text) print("[TPV] " .. text) end
@@ -28,6 +29,7 @@ function TPV.help()
     say("TPV.mother(layers)        give the nearest cask a mother with this many layers. TPV.mother(0) takes it away")
     say("TPV.wort(litres)          fill the nearest vessel's Wort tank")
     say("TPV.fermented(litres)     fill the nearest vessel's Fermented tank")
+    say("TPV.ageWort(hours)        age the wort you carry and the nearest vessel's tank by hours at 20 C. TPV.ageWort(48) sours it")
     say("TPV.give(name, n)         spawn mod items. TPV.give() lists the names")
     say("Stations must be within " .. V.REACH .. " squares. Right-click a container in debug mode to fill it with wort.")
 end
@@ -129,6 +131,26 @@ end
 
 function TPV.wort(litres) fillTank(ResourceIO.Input, V.WORT, litres, "Wort") end
 function TPV.fermented(litres) fillTank(ResourceIO.Output, V.FERMENTED, litres, "Fermented") end
+
+-- Adds hours at 20 C to every wort record you carry and to the nearest vessel's tank, then renames what has soured.
+function TPV.ageWort(hours)
+    hours = hours or V.WORT_SOUR_HOURS
+    local now, count = getGameTime():getWorldAgeHours(), 0
+    local items = getPlayer():getInventory():getAllEvalRecurse(function(item) return item:getFluidContainer() ~= nil end)
+    for i = 0, items:size() - 1 do
+        local item = items:get(i)
+        local record = FluidAgeing.look(item, now)
+        if record and record.kind == V.WORT_KIND then
+            record.age = record.age + hours
+            FluidAgeing.look(item, now)
+            count = count + 1
+        end
+    end
+    local vessel = V.findNear(getPlayer(), V.isVessel)
+    local tank = vessel and V.tankAge(vessel, now)
+    if tank then tank.age = tank.age + hours end
+    say(string.format("Aged %d carried container(s)%s by %.0f hours at 20 C.", count, tank and " and the vessel's tank" or "", hours))
+end
 
 function TPV.give(name, count)
     if not name then return say("Items: " .. table.concat(ITEMS, ", ") .. ", plus any full type such as Base.Yeast or Base.RubberHose") end

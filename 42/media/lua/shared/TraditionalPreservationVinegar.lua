@@ -7,6 +7,7 @@ local Weather = require "TraditionalPreservationCore/Weather"
 local Hearth = require "TraditionalPreservationCore/Hearth"
 local Station = require "TraditionalPreservationCore/Station"
 local Container = require "TraditionalPreservationCore/Container"
+local FluidAgeing = require "TraditionalPreservationCore/FluidAgeing"
 local Tiles = require "TraditionalPreservationVinegar/Tiles"
 
 V.MOD_DATA_KEY = "TraditionalPreservationVinegar"
@@ -49,6 +50,12 @@ V.MIN_RATE = 0.02
 V.BOTTLE_ML = 1000
 V.WORT = "MaltWort"
 V.FERMENTED = "MaltFermentedWort"
+-- Wort left waiting for the yeast sours: lactic bacteria from the grain get there first. It goes by this name
+-- once it has, and the vessel won't take it. Hours against 20 C; WORT_CURVE scales them by the place.
+V.SOUR_WORT = "MaltSourWort"
+V.WORT_KIND = "wort"
+V.WORT_SOUR_HOURS = 48
+V.WORT_SOURS = true
 -- A vessel run takes whole buckets of wort from its tank, one or two, and leaves 5% behind as lees.
 V.BUCKET_ML = 10000
 V.VESSEL_MAX_ML = 20000
@@ -93,6 +100,10 @@ local ALCOHOLIC_CURVE = { { 9.9, 0.05 }, { 10, 0.35 }, { 18, 1 }, { 25, 1 }, { 3
 -- Below 10 C barely works, slower to 20, best to 30, then falling away.
 local ACETIC_CURVE = { { 9.9, 0.05 }, { 10, 0.3 }, { 20, 1 }, { 30, 1 }, { 35, 0.6 }, { 40, 0.25 } }
 
+-- Souring speed against 20 C: 2 days there, 1 at 30 C, about 5 in a summer cellar (13 C), two weeks in a winter
+-- one; frozen it waits. Past 40 C the heat starts to kill the bacteria.
+local WORT_CURVE = { { 0, 0 }, { 5, 0.15 }, { 13, 0.4 }, { 20, 1 }, { 30, 2 }, { 40, 2 }, { 50, 0.5 }, { 60, 0 } }
+
 -- Sprouting grain likes it cool: best from 12 to 20 C, and it stalls in frost or heat.
 local MALTING_CURVE = { { 4.9, 0.05 }, { 5, 0.3 }, { 12, 1 }, { 20, 1 }, { 28, 0.35 }, { 33, 0.05 } }
 
@@ -113,6 +124,11 @@ function V.aceticRate(celsius)
     return scaled(Weather.curve(ACETIC_CURVE, celsius))
 end
 
+-- Not scaled by the sensitivity: that setting is for the brewer's own stages.
+function V.wortRate(celsius)
+    return Weather.curve(WORT_CURVE, celsius)
+end
+
 -- Places and their temperatures are shared with the other Traditional Preservation mods (TP Core's Weather):
 -- open air, an open roof, indoors, a basement, and by a fire or by banked embers (TP Core's Hearth). These are the
 -- mod's public names, used by the actions, the Dev console and the tools. PLACES are the weather's, which the
@@ -126,6 +142,7 @@ local KINDS = {
     malting = function(celsius) return V.maltingRate(celsius) end,
     alcoholic = function(celsius) return V.alcoholicRate(celsius) end,
     acetic = function(celsius) return V.aceticRate(celsius) end,
+    [V.WORT_KIND] = function(celsius) return V.wortRate(celsius) end,
 }
 
 -- One total per stage and place. Saves from before 0.2.10 also keep ledger.heat, the hours too hot for an open
@@ -151,6 +168,19 @@ function V.fillLedger()
 end
 
 Events.OnInitGlobalModData.Add(V.fillLedger)
+
+-- Wort in a bucket or any container ages through TP Core's FluidAgeing, as Dairy's milk does. It has one stage
+-- only: Sour Wort is both its turned and its spoiled fluid. Fermented wort is not registered, so it keeps.
+V.WORT_SPEC = FluidAgeing.register({
+    kind = V.WORT_KIND,
+    rate = V.wortRate,
+    turnHours = V.WORT_SOUR_HOURS,
+    spoilHours = V.WORT_SOUR_HOURS,
+    fresh = { [V.WORT] = V.SOUR_WORT },
+    spoiled = { [V.WORT] = V.SOUR_WORT },
+    getLedger = function() return V.getLedger() end,
+    enabled = function() return V.WORT_SOURS end,
+})
 
 -- A run's place, from a run saved before basements too.
 local function runPlace(modData)
@@ -224,6 +254,8 @@ function V.onStrained(craftRecipeData, character)
     local container = bucket and bucket:getFluidContainer()
     if container then
         container:Empty()
+        -- New wort starts its own age, whatever the bucket held before.
+        bucket:getModData()[FluidAgeing.KEY] = nil
         container:addFluid(V.WORT, math.min(10, container:getCapacity()))
     end
 end
@@ -305,6 +337,58 @@ end
 
 function V.litres(tank)
     return tank and tank:getFluidContainer():getAmount() or 0
+end
+
+-- The Wort tank is a station resource, not an item, so FluidAgeing can't keep a record on it: the record sits on
+-- the vessel's modData under FluidAgeing's key instead. Brings it up to now at place, starting one for wort that
+-- has none, and forgets it once the tank is empty. Returns the record, or nil with no wort or souring off.
+function V.ageTank(modData, ml, place, now)
+    local key = FluidAgeing.KEY
+    if ml <= 0 or not V.WORT_SOURS then
+        modData[key] = nil
+        return nil
+    end
+    local ledger, record = V.getLedger(), modData[key]
+    if not record or record.kind ~= V.WORT_KIND then
+        record = FluidAgeing.newRecord(V.WORT_SPEC, ledger, now, place)
+        modData[key] = record
+        return record
+    end
+    return FluidAgeing.advance(record, V.WORT_SPEC, ledger, now, place)
+end
+
+-- The vessel's tank record, brought up to now where the vessel stands. Items age by the weather's place, so the
+-- tank does too (a fire counts as the room it warms).
+function V.tankAge(vessel, now)
+    local ml = math.floor(V.litres(V.vesselTank(vessel, ResourceIO.Input)) * 1000 + 0.5)
+    return V.ageTank(vessel:getModData(), ml, Weather.placeOf(vessel), now or getGameTime():getWorldAgeHours())
+end
+
+-- The tank's record as it stands now, without changing the vessel: for windows and menus. Nil with no record yet.
+function V.peekTank(vessel, now)
+    local record = vessel:getModData()[FluidAgeing.KEY]
+    if not record or record.kind ~= V.WORT_KIND or not V.WORT_SOURS then return nil end
+    if V.litres(V.vesselTank(vessel, ResourceIO.Input)) <= 0 then return nil end
+    return FluidAgeing.advance(FluidAgeing.copy(record), V.WORT_SPEC, V.getLedger(),
+        now or getGameTime():getWorldAgeHours(), Weather.placeOf(vessel))
+end
+
+function V.isSour(record)
+    return record ~= nil and FluidAgeing.stage(record, V.WORT_SPEC) ~= "Fresh"
+end
+
+-- Hours until a record sours at a temperature, or nil when it has or won't there (frozen).
+function V.hoursToSour(record, celsius)
+    local left, rate = FluidAgeing.hoursLeft(record, V.WORT_SPEC), V.wortRate(celsius)
+    if not left or V.isSour(record) or rate <= 0 then return nil end
+    return left / rate
+end
+
+-- Wort poured into the tank brings its age: the older wins, as with milk. Call it before the wort moves.
+function V.pourIntoTank(vessel, item, now)
+    local had = V.tankAge(vessel, now) ~= nil
+    local record = FluidAgeing.sourceRecord(item, now)
+    if record then FluidAgeing.receive(vessel:getModData(), record, had, Weather.placeOf(vessel)) end
 end
 
 -- The cask's own state. It sits in movableData because vanilla copies that onto the item when a
@@ -641,6 +725,7 @@ function V.applySandbox()
     if options.CultureBonus then V.CULTURE_BONUS = options.CultureBonus / 100 end
     if options.TemperatureSensitivity then V.SENSITIVITY = Weather.sensitivity(options.TemperatureSensitivity) end
     if options.BrewingEffort then V.EFFORT = V.EFFORT_SCALES[options.BrewingEffort] or V.EFFORT end
+    if options.WortSours ~= nil then V.WORT_SOURS = options.WortSours end
 end
 
 local function applyRecipeTime(name, hours)

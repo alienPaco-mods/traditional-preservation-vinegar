@@ -78,7 +78,11 @@ Vanilla vinegar is loot-only, and without it there's no pickling. This mod lets 
 
 **Mashing.** Malt + a metal bucket with exactly 10 L of water gives a **Bucket of Mash**. Heat it 1.5 hours to make **Prepared Mash**, then **Strain Mash** through a cloth. The bucket comes back holding **10 L of Wort**, plus a **Spent Grain**.
 
-**Fermenting.** Right-click the vessel and **Pour Wort**. The vessel's window has a tank for the wort and one for what comes out, and says where it stands and how fast it is working. Put **one full yeast packet** in its slot and press **Craft**. It takes **10 L or 20 L**, in whole buckets only, and gives back 95% as **Fermented Wort** after 10 days. Then **Draw Off** into empty containers, or pump it across with the hose.
+**Don't let the wort wait.** Wort left for the yeast **sours**: in 2 days in a 20 C room, 1 day at 30 C, about 5 in a cool cellar, never while frozen. It turns to **Sour Wort**, which you can drink but the vessel won't take. That goes for a bucket, any container, and the vessel's own Wort tank. Mash on the day the vessel is free, and keep your grain as Malt, which never spoils.
+
+> *Margin note:* a real brewer's day runs mash, strain and pitch without a break. Sweet wort is a feast for the lactic bacteria that ride in on the grain, and in a warm room they win within a day or two. Once the yeast is in, the alcohol and the acid it makes keep them out, which is why the wort is safe the moment a run starts.
+
+**Fermenting.** Right-click the vessel and **Pour Wort**. The vessel's window has a tank for the wort and one for what comes out, and says where it stands and how fast it is working. Put **one full yeast packet** in its slot and press **Craft**. It takes **10 L or 20 L**, in whole buckets only, and gives back 95% as **Fermented Wort** after 10 days. Then **Draw Off** into empty containers, or pump it across with the hose. The window's Wort tank line says how long the wort keeps where the vessel stands (*"sours in about 2 days"*), or that it has soured; then right-click and **Pour Away the Wort**.
 
 **Souring.** Right-click the cask, **Orléans Vinegar Cask**, **Pour Fermented Wort**. Watch the status line: *"19.0 L, 40% soured, about 12 days left."* At 100% it reads **"ready to bottle"**. For the whole picture, just **click the cask** (or pick **Cask Info** in the submenu): bars for how full and how soured, time left, bottles ready, temperature, working rate, the mother and the hose, updating live until you walk away.
 
@@ -235,6 +239,7 @@ A sip scales down: half a litre of wort is 150 calories.
 
 - **Two buckets per run.** One yeast packet either way, and 2 buckets gives twice the vinegar.
 - **Malt the whole harvest in autumn.** Malt keeps forever, so brew whenever you like.
+- **Mash only what the vessel takes that day.** Wort sours in about 2 days in a warm room (5 in a cellar), so strain 10 or 20 L on the day the vessel is free, not a week's worth.
 - **Hose the vessel to the cask** and pump instead of carrying buckets. **Up to the air line** gives the fastest souring.
 - **Before topping up, keep a third as much vinegar in the cask as the wort you're adding.** That's about **6–7 L before a full 19 L batch** (about 21 days to 100% instead of 28) and **3–4 L before a half batch**. Much more than a third overfills the cask, and it slows for lack of air.
 - **One cask can keep a household pickling all year.** A second cask (via Split Mother) is for big families or trade.
@@ -245,7 +250,8 @@ A sip scales down: half a litre of wort is 150 calories.
 
 | Problem | Why |
 |---|---|
-| Craft does nothing / says why | Less than 10 L of wort, no full yeast packet, output not drawn off, or already working |
+| Craft does nothing / says why | Less than 10 L of wort, the wort has soured, no full yeast packet, output not drawn off, or already working |
+| Pour Wort greyed: "Sour wort won't ferment" | The wort you carry waited too long. Drink it or pour it out, and mash a fresh bucket |
 | Yeast refused | It's part-used. A run needs a full packet |
 | Can't bottle | The cask isn't 100% soured, or there are no empty 1 L+ bottles nearby |
 | Cask stuck at a low % | It's under 10 C. Check the hover tooltip; set the cask within 2 tiles of a lit fire, or wait for summer |
@@ -264,6 +270,7 @@ A sip scales down: half a litre of wort is 150 calories.
 | Established-culture speed bonus | 25% | The mother's boost |
 | Temperature sensitivity | Normal | Off / Forgiving / Normal / Harsh |
 | Brewing effort | Normal | Light ×1 / **Normal ×1.5** / Hard ×2 on kilning, heating and craft times |
+| Wort sours | On | Wort waiting for the yeast sours (2 days at 20 C); off, it keeps for ever |
 
 ---
 
@@ -297,7 +304,7 @@ Each process laid out as the game's planting seasons: the months it works unheat
 
 | Command | What it does |
 |---|---|
-| `TPV.weather()` | The temperature in each place (open air, under an open roof, indoors, a loft, a basement, in a shed, by a fire, by banked embers), and how fast malting, fermenting and souring work there. |
+| `TPV.weather()` | The temperature in each place (open air, under an open roof, indoors, a loft, a basement, in a shed, by a fire, by banked embers), and how fast malting, fermenting, souring and wort's own souring (`wort`) work there. |
 | `TPV.here()` | Which kind of place you're standing in. |
 | `TPV.age(hours)` | Gives every floor, vessel and cask this many hours of perfect weather. `TPV.age(120)` finishes a malting run, 240 a vessel run, 840 a cask from fresh. |
 | `TPV.fast(hours)` | Test timers: every floor, vessel and cask run takes this many hours, with temperature ignored. `TPV.fast()` turns them off again. It replaces editing `V.TEST_HOURS`. |
@@ -307,6 +314,7 @@ Each process laid out as the game's planting seasons: the months it works unheat
 | `TPV.mother(layers)` | Gives the nearest cask a mother with that many layers. `TPV.mother(2)` lets you test Split Mother, and `TPV.mother(0)` removes it. |
 | `TPV.wort(litres)` | Fills the nearest vessel's Wort tank (20 if you leave the litres out). |
 | `TPV.fermented(litres)` | Fills the nearest vessel's Fermented tank, to test drawing off and the hose. |
+| `TPV.ageWort(hours)` | Adds this many hours at 20 C to every wort you carry and to the nearest vessel's Wort tank. `TPV.ageWort(48)` (the default) sours it. |
 | `TPV.give(name, n)` | Spawns mod items such as `Malt` or `MotherOfVinegar`, or any full type such as `Base.Yeast` or `Base.RubberHose`. `TPV.give()` lists the names. |
 
 Debug mode also adds **[Debug] Fill with Wort** and **[Debug] Fill with Fermented Wort** to a container's right-click menu.

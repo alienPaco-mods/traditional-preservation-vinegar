@@ -130,6 +130,8 @@ function ISWidgetCraftLogicControl:startCraft()
             reason = "IGUI_TraditionalPreservationVinegar_InUse"
         elseif V.batchMl(V.litres(V.vesselTank(self.entity, ResourceIO.Input)) * 1000) <= 0 then
             reason = "IGUI_TraditionalPreservationVinegar_NeedsWort"
+        elseif V.isSour(V.peekTank(self.entity)) then
+            reason = "IGUI_TraditionalPreservationVinegar_WortSour"
         elseif V.litres(V.vesselTank(self.entity, ResourceIO.Output)) > 0 then
             reason = "IGUI_TraditionalPreservationVinegar_DrawOffFirst"
         end
@@ -158,6 +160,15 @@ local function drawBatchTooltip(slot, tooltip, name, station)
 end
 
 UI.progressTooltips({ MaltGrain = drawBatchTooltip, FermentWort = drawBatchTooltip })
+
+-- How long the tank's wort keeps where the vessel stands, or that it has soured; nil when neither applies.
+local function wortKeeps(vessel, ledger)
+    local record = V.peekTank(vessel)
+    if not record then return nil end
+    if V.isSour(record) then return getText("IGUI_TraditionalPreservationVinegar_InfoSoured") end
+    local hours = V.hoursToSour(record, Weather.placeTemperature(ledger, Weather.placeOf(vessel)))
+    return hours and say("IGUI_TraditionalPreservationVinegar_InfoSours", timeText(hours)) or nil
+end
 
 -- The block in the floor's and the vessel's own windows: where the station stands, the temperature and the stage's
 -- rate there, the running batch's bar, and what waits or is done. The vessel's tanks have their own columns, so its
@@ -188,8 +199,9 @@ local function stationInfo(entity)
         for _, io in ipairs({ ResourceIO.Input, ResourceIO.Output }) do
             local tank = V.vesselTank(entity, io)
             local capacity = tank and tank:getFluidContainer():getCapacity() or 0
-            table.insert(options.rows, { TANK_TITLES[io], say("IGUI_TraditionalPreservationVinegar_InfoLitres",
-                litresText(V.litres(tank)), litresText(capacity)) })
+            local text = say("IGUI_TraditionalPreservationVinegar_InfoLitres", litresText(V.litres(tank)), litresText(capacity))
+            local keeps = io == ResourceIO.Input and wortKeeps(entity, ledger)
+            table.insert(options.rows, { TANK_TITLES[io], keeps and text .. ", " .. keeps or text })
         end
     end
     return StationInfo.block(options)
@@ -314,6 +326,11 @@ local function addHoseMenu(menu, playerObj, station)
     end
 end
 
+local function onPourAway(playerObj, vessel)
+    if not ISEntityUI.WalkToEntity(playerObj, vessel) then return end
+    ISTimedActionQueue.add(TPPourVinegarFluid:new(playerObj, vessel, nil, "vesselDump"))
+end
+
 local function vesselStatus(vessel)
     local logic = vessel:getComponent(ComponentType.CraftLogic)
     local input = V.litres(V.vesselTank(vessel, ResourceIO.Input))
@@ -324,7 +341,10 @@ local function vesselStatus(vessel)
         return say("IGUI_TraditionalPreservationVinegar_VesselRunning", litresText(run and run.ml / 1000 or 0), percent(logic:getProgress(craftData)))
     end
     if output > 0 then return say("IGUI_TraditionalPreservationVinegar_VesselReady", litresText(output)) end
-    if input > 0 then return say("IGUI_TraditionalPreservationVinegar_VesselWaiting", litresText(input)) end
+    if input > 0 then
+        local key = V.isSour(V.peekTank(vessel)) and "IGUI_TraditionalPreservationVinegar_VesselSour" or "IGUI_TraditionalPreservationVinegar_VesselWaiting"
+        return say(key, litresText(input))
+    end
     return getText("IGUI_TraditionalPreservationVinegar_VesselEmpty")
 end
 
@@ -338,7 +358,16 @@ local function addVesselMenu(context, playerObj, vessel)
     local input, output = V.vesselTank(vessel, ResourceIO.Input), V.vesselTank(vessel, ResourceIO.Output)
     if input and not input:isFull() and not (logic and logic:isRunning()) then
         local worts = findItems(playerObj, function(item) return V.holdsOnly(item:getFluidContainer(), V.WORT) end)
-        addPourMenu(context, getText("ContextMenu_TraditionalPreservationVinegar_PourWort"), playerObj, vessel, worts, "vesselIn", getText("IGUI_TraditionalPreservationVinegar_NoWort"), WORT_ICON)
+        -- Someone carrying only sour wort is told why it won't go in.
+        local none = "IGUI_TraditionalPreservationVinegar_NoWort"
+        if #worts == 0 and #findItems(playerObj, function(item) return V.holdsOnly(item:getFluidContainer(), V.SOUR_WORT) end) > 0 then
+            none = "IGUI_TraditionalPreservationVinegar_NoSourWort"
+        end
+        addPourMenu(context, getText("ContextMenu_TraditionalPreservationVinegar_PourWort"), playerObj, vessel, worts, "vesselIn", getText(none), WORT_ICON)
+    end
+    if V.litres(input) > 0 and not (logic and logic:isRunning()) then
+        local dump = context:addOption(getText("ContextMenu_TraditionalPreservationVinegar_PourAwayWort"), playerObj, onPourAway, vessel)
+        dump.iconTexture = getTexture(WORT_ICON)
     end
     if output and not output:isEmpty() then
         -- Only empty containers, so nothing is ever topped up into a mixture.

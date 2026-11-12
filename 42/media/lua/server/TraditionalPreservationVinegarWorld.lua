@@ -104,8 +104,10 @@ local function settleRun(vessel, resources, logic, craftData, input, output)
     if craftData then
         if not run then
             local ml = V.batchMl(litres(input) * 1000)
+            -- Pitched wort is safe from souring; its age is kept in case the run is cancelled.
+            local age = V.tankAge(vessel)
             input:getFluidContainer():removeFluid(ml / 1000)
-            run = { ml = ml }
+            run = { ml = ml, wortAge = age and age.age or nil }
             modData.vinegarRun = run
             log("TPV", "vessel run took %.1f L of wort", ml / 1000)
         end
@@ -118,7 +120,10 @@ local function settleRun(vessel, resources, logic, craftData, input, output)
         log("TPV", "vessel run finished with %.2f L of fermented wort", ml / 1000)
         modData.vinegarRun = nil
     elseif run and not logic:isRunning() then
+        V.tankAge(vessel)
         input:getFluidContainer():addFluid(V.WORT, run.ml / 1000)
+        local age = V.tankAge(vessel)
+        if age and run.wortAge then age.age = math.max(age.age, run.wortAge) end
         log("TPV", "vessel run cancelled, %.1f L of wort back in the tank", run.ml / 1000)
         modData.vinegarRun = nil
     end
@@ -163,6 +168,7 @@ local function stationSprite(station, entry)
         entry.restricted = true
     end
     settleRun(station, resources, logic, craftData, input, output)
+    V.tankAge(station)
     return World.vesselSprite(litres(input), progress, litres(output))
 end
 

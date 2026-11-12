@@ -513,12 +513,48 @@ check("and nothing else", V.inputRefusal("floor", "Base.BarleySeed") ~= nil)
 -- Sandbox
 onInit()
 check("the default vessel run is 10 days", loaded["TraditionalPreservationVinegar.FermentWort"]:find("864000", 1, true) ~= nil)
-SandboxVars = { TraditionalPreservationVinegar = { MaltingDays = 3, AlcoholicDays = 5, AceticDays = 14, CultureBonus = 50, TemperatureSensitivity = 1 } }
+-- Wort that sours
+check("wort: 2 days at 20 C", V.WORT_SOUR_HOURS / V.wortRate(20) == 48)
+check("wort: 1 day at 30 C", V.WORT_SOUR_HOURS / V.wortRate(30) == 24)
+check("wort: about 5 days in a summer cellar", math.abs(V.WORT_SOUR_HOURS / V.wortRate(13) / 24 - 5) < 0.01)
+check("wort: never while frozen", V.wortRate(0) == 0 and V.wortRate(-10) == 0)
+check("wort: not scaled by the sensitivity", (function() local was = V.SENSITIVITY; V.SENSITIVITY = 0
+    local rate = V.wortRate(0); V.SENSITIVITY = was; return rate == 0 end)())
+check("sour wort is both stages", V.WORT_SPEC.fresh[V.WORT] == V.SOUR_WORT and V.WORT_SPEC.spoiled[V.WORT] == V.SOUR_WORT)
+
+local function wortHours(span, temperature, tank)
+    for _ = 1, span do
+        hours = hours + 1
+        V.advance(V.getLedger(), hours, temperature)
+    end
+    return V.ageTank(tank, 10000, "Open", hours)
+end
+local tank = {}
+local record = V.ageTank(tank, 10000, "Open", hours)
+check("a filled tank starts a record", record and record.age == 0 and tank.tpFluidAge == record)
+record = wortHours(47, 20, tank)
+check("47 hours at 20 C: still wort", not V.isSour(record) and math.abs(V.hoursToSour(record, 20) - 1) < 0.01)
+record = wortHours(1, 20, tank)
+check("48 hours at 20 C: soured", V.isSour(record) and V.hoursToSour(record, 20) == nil)
+tank = {}
+V.ageTank(tank, 10000, "Open", hours)
+record = wortHours(100, -5, tank)
+check("frozen wort waits", record.age == 0 and V.hoursToSour(record, -5) == nil)
+record = wortHours(24, 30, tank)
+check("a day at 30 C sours it", V.isSour(record))
+check("an empty tank forgets its record", V.ageTank(tank, 0, "Open", hours) == nil and tank.tpFluidAge == nil)
+V.WORT_SOURS = false
+check("souring off keeps no record", V.ageTank(tank, 10000, "Open", hours) == nil and tank.tpFluidAge == nil)
+V.WORT_SOURS = true
+
+SandboxVars = { TraditionalPreservationVinegar = { MaltingDays = 3, AlcoholicDays = 5, AceticDays = 14, CultureBonus = 50, TemperatureSensitivity = 1, WortSours = false } }
 onInit()
 check("the sandbox sets the vessel time", loaded["TraditionalPreservationVinegar.FermentWort"]:find("432000", 1, true) ~= nil)
 check("the sandbox sets the malting time", loaded["TraditionalPreservationVinegar.MaltGrain"]:find("259200", 1, true) ~= nil)
 check("and the cask's days, bonus and sensitivity", V.ACETIC_HOURS == 336 and V.CULTURE_BONUS == 0.5 and V.SENSITIVITY == 0)
 check("Normal effort is the default, half as long again as Light", params["TraditionalPreservationVinegar.GreenMalt"] == "MinutesToCook = 180")
+check("the sandbox can turn souring off", V.WORT_SOURS == false)
+V.WORT_SOURS = true
 check("for the mash heat and the crafts too", params["TraditionalPreservationVinegar.BucketMash"] == "MinutesToCook = 90" and loaded["TraditionalPreservationVinegar.MashMalt"]:find("450", 1, true) ~= nil)
 SandboxVars.TraditionalPreservationVinegar.BrewingEffort = 3
 onInit()
