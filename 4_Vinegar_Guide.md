@@ -151,6 +151,7 @@ Every station runs on real temperature, **even while you're away**.
 |---|---|
 | **Open air** | The day's weather |
 | **Under an open roof**, or **indoors** | The season: the average of the last 10 days. A room is 22 C while the power grid is on |
+| **Loft** (the top storey: a room upstairs with no room over it) | As indoors, plus three tenths of whatever the 10-day average is above 10 C: the sun on the roof (about 24 C in a 21 C July, no warmer than a room from October to April); 22 C while the power grid is on |
 | **Basement** (below ground) | Follows the ground, a month behind the season: about 5 C from January to March, 13 C from July to September |
 | **By a fire** (any lit fire within 2 tiles, same floor) | **28 C**, for as long as the fuel lasts; banked embers 24 C |
 

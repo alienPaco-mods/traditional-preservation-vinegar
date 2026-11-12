@@ -129,11 +129,11 @@ end
 local days = readDays(arg[1] or "tools/climate_year.csv")
 settled = settle(days)
 -- An open roof reads as indoors (the season's mean), so it isn't run on its own.
-local placeNames = { Open = "outdoors", Sheltered = "indoors", Basement = "in a basement" }
+local placeNames = { Open = "outdoors", Sheltered = "indoors", Loft = "in a loft", Basement = "in a basement" }
 for _, month in ipairs({ 1, 4, 7, 10 }) do
     local first
     for index, day in ipairs(days) do if day.month == month then first = index break end end
-    for _, place in ipairs({ "Open", "Sheltered", "Basement" }) do
+    for _, place in ipairs({ "Open", "Sheltered", "Loft", "Basement" }) do
         local firstBottle, log = simulate(days, first, place)
         print(string.format("%s, %s: first bottles on day %s", MONTHS[month], placeNames[place], firstBottle and string.format("%.0f", firstBottle) or "(past the forecasts)"))
         for _, line in ipairs(log or {}) do print(line) end

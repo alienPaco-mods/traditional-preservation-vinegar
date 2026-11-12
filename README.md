@@ -245,6 +245,7 @@ The places are TP Core's, from the game's own flags:
 
 - **Open air**: the day's weather.
 - **Under an open roof** (a porch, an open shed) or **indoors** (a room): an unheated building follows the average outdoor temperature of the last 10 days or so. A warm afternoon or a cold night makes no difference. A room is **22 C while the power grid is on**, as vanilla's are.
+- **In a loft** (the top storey: a room upstairs with no room over it): as indoors, plus three tenths of whatever the 10-day average is above 10 C: the sun on the roof (about 24 C in a 21 C July, no warmer than a room from October to April); 22 C while the power grid is on.
 - **In a basement** (any level below ground): the earth takes the edge off the seasons, running a month behind the season: about 5 C from January to March and 13 C from July to September. Cooler than a room until August, warmer in the autumn (a September vessel ferments in 16 to 20 days there), and under 10 C from December to May.
 - **By a fire**: any lit fire within 2 tiles on the same floor holds **28 C** (banked embers 24 C) for as long as the fuel lasts: the vessel takes 11 days and a fresh cask 35, in any month. Too warm for malting (14 days instead of 5).
 

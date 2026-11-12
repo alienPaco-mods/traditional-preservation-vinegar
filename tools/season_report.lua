@@ -73,9 +73,9 @@ end
 local days = readDays(arg[1] or "tools/climate_year.csv")
 settled = settle(days)
 -- Indoors and under an open roof read the same (the season's mean), so one column serves both.
-local PLACES = { "Open", "Sheltered", "Basement" }
-print("| Month | Ferment, outdoors | Ferment, indoors | Ferment, basement | First cask, outdoors | First cask, indoors | First cask, basement |")
-print("|---|---|---|---|---|---|---|")
+local PLACES = { "Open", "Sheltered", "Loft", "Basement" }
+print("| Month | Ferment, outdoors | Ferment, indoors | Ferment, loft | Ferment, basement | First cask, outdoors | First cask, indoors | First cask, loft | First cask, basement |")
+print("|---|---|---|---|---|---|---|---|---|")
 for month = 1, 12 do
     local cells = { MONTHS[month] }
     for _, place in ipairs(PLACES) do table.insert(cells, range(days, month, V.ALCOHOLIC_HOURS, V.alcoholicRate, place)) end

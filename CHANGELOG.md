@@ -1,5 +1,11 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.13
+- **TP Core's loft** (2026-11-12, consistency sweep step H): a floor, vessel or cask in the top storey reads the
+  loft's temperature: the first cask sours 3 to 5 days sooner there, and the first bottles come 4 to 5 days sooner
+  from a January, April or October start. Season report and simulation have a loft column; goldens re-recorded.
+  README, guide, Workshop text.
+
 ## 0.2.12
 - Guide: no emojis (2026-11-12): the decorative bullets and margin-note marks are gone, warning signs read **Warning:**.
 - **Info in the Malting Floor's and Fermentation Vessel's windows** (2026-11-12, consistency sweep step E, TP Core's
