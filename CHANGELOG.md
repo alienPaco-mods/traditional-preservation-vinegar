@@ -1,6 +1,7 @@
 # Changelog: Traditional Preservation (Vinegar)
 
 ## 0.2.15
+- **The Yearly Plan** (guide chapter 15, user 2026-11-13): malting, fermenting and souring as the game's planting seasons: season, best and poor months, out of season, where and how long at best (fermenting and souring from `tools/season_report.lua`; malting at the month's mean, marked "about"), and the fire, embers and powered room for any month. The Tester's Toolkit is now chapter 16.
 - **Docs pass, sweep step G** (2026-11-12): the guide describes the Malting Floor's window; `TPV.weather()` lists the loft and *In a shed*; README season table from the tool with Loft columns, the grid, a fire and embers; the room-heating caveat (README, Workshop text) says the grid and a fire count; Workshop text names Fish & Meat.
 - Needs Build 42.22 or newer (`versionMin`, was 42.20: everything is checked on 42.22). Workshop text (sweep step F). The guide gives a powered room's times (22 C: ferment 10 days, first
   cask 35).

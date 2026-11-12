@@ -20,7 +20,8 @@
 12. Tips
 13. Troubleshooting
 14. Sandbox Settings
-15. Appendix: The Tester's Toolkit
+15. The Yearly Plan
+16. Appendix: The Tester's Toolkit
 
 ---
 
@@ -266,7 +267,29 @@ A sip scales down: half a litre of wort is 150 calories.
 
 ---
 
-## 15. Appendix: The Tester's Toolkit
+## 15. The Yearly Plan
+
+Each process laid out as the game's planting seasons: the months it works unheated, its best and poor months, and the months it is out of season (then only by a fire, banked embers or in a powered room, below). The fermenting and cask days are the game's sampled weather with the grid off, from pouring (two batches); malting is at the month's average temperature, so it's marked "about". Malting in July gives first bottles about **day 52** in a loft; in April about day 85 to 92; in October or January day 170 and more.
+
+| Process | Season | Best months | Poor months | Out of season | Where, at its best | Takes, at its best |
+|---|---|---|---|---|---|---|
+| **Malting** (Malt keeps; Green Malt must be kilned within 2 days) | April to October | May, June, July, August, September | April, October (about 8 to 9 days) | November to March | Indoors or the open air (12 to 20 C); a basement from May to November | About 5 days |
+| **Fermenting** | May to September | June, July, August | May (up to 22 days); September (upstairs it can stall for months: use a basement, 16 to 20) | October to April: 76 days and more | Indoors or a loft | 10 days |
+| **Souring** | May to August | June, July | May (38 to 54 days); August (pour early: a late pour can sour into March) | September to April: 200 days and more | A cask in a loft or indoors | 35 to 41 days (26 with the mother at work) |
+
+**Any month by a fire or a powered room:**
+
+| Where | Malt | Ferment | Sour |
+|---|---|---|---|
+| By banked embers (24 C) | 7½ days | 10 days | 35 days |
+| By a lit fire (28 C) | 14 days | 11 days | 35 days |
+| A powered room (22 C) | 5 days | 10 days | 35 days |
+
+> *Margin note:* malt in spring and autumn, brew and sour indoors from May to August, and leave the winter to the hearth, as the Brewer's Almanac says (chapter 9). Keep a jarred mother in a fridge over the winter: it is fresh for 30 days, longer in the cold.
+
+---
+
+## 16. Appendix: The Tester's Toolkit
 
 *For testers, modders and the curious. These commands exist only when the game is started in debug mode (Steam launch option `-debug`). Type them into the in-game **Command Console** and press Enter. `TPV.help()` lists them in the game.*
 
