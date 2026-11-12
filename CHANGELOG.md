@@ -1,5 +1,13 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.15
+- Needs Build 42.22 or newer (`versionMin`, was 42.20: everything is checked on 42.22). Workshop text (sweep step F). The guide gives a powered room's times (22 C: ferment 10 days, first
+  cask 35).
+- **Souring loses a tenth to the air, not a fifth** (2026-11-12; user, after the realism pass: a breathing cask
+  loses a few percent to a tenth). `V.ACETIC_LOSS` 0.1: 19 L of fermented wort gives about 17.2 L, 17 bottles, 85
+  jars' worth (was 15.5 L, 15 bottles, 75 jars). The days to the first bottles are unchanged. Test, simulation
+  golden re-recorded, guide, Collection guide, README, Workshop text.
+
 ## 0.2.14
 - **On TP Core's shared modules** (2026-11-12): bottles come back through Core's `Handcraft` (in place of the mod's
   own wrap of `ISHandcraftAction.performRecipe`), a malting or fermenting run catches up through Core's

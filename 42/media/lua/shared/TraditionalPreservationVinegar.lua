@@ -60,7 +60,7 @@ V.CASK_ML = 30000
 V.AIR_ML = 22500
 V.CROWDED_RATE = 0.5
 -- Souring from nothing to full strength loses this share of the liquid to the air.
-V.ACETIC_LOSS = 0.2
+V.ACETIC_LOSS = 0.1
 -- The mother only speeds a cask that still has this much sour vinegar in it as a starter.
 V.STARTER_STRENGTH = 0.25
 -- A mother grows a new layer for about every full batch it sours, and one with two or more can be split.

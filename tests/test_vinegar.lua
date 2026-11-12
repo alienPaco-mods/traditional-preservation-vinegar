@@ -212,11 +212,11 @@ check("half soured halfway through the cask time at the best temperature", math.
 sourHours(cask, V.ACETIC_HOURS / 2 + 1, 25, false)
 check("fully soured after the cask time (35 days by default)", cask.strength == 1 and V.ACETIC_HOURS == 35 * 24)
 check("and the first full pool grows a mother", cask.mother == true)
-check("souring loses a fifth to the air, so 19 L gives 15 bottles", V.bottlesLeft(cask) == 15 and math.abs(cask.ml - 19000 * math.exp(-0.2)) < 300)
+check("souring loses a tenth to the air, so 19 L gives 17 bottles", V.bottlesLeft(cask) == 17 and math.abs(cask.ml - 19000 * math.exp(-0.1)) < 300)
 
 local bottled = 0
 while V.takeBottle(cask) do bottled = bottled + 1 end
-check("exactly that many come out", bottled == 15)
+check("exactly that many come out", bottled == 17)
 check("what is left after the last bottle stays as starter", cask.ml > 0 and cask.ml < 1000 and cask.strength == 1)
 
 local topped = { ml = 15000, strength = 1, mother = true }

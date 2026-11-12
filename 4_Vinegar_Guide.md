@@ -28,7 +28,7 @@
 
 Vanilla vinegar is loot-only, and without it there's no pickling. This mod lets you brew **malt vinegar** from grain you grow, the old English way: malt the grain, mash it, ferment it into a weak ale, and sour that ale in a cask with a living **Mother of Vinegar**. It ends as ordinary **vanilla Vinegar**, so it works in every jarring recipe.
 
-**One full batch gives about 15 bottles: roughly 75 jars of pickles.**
+**One full batch gives about 17 bottles: roughly 85 jars of pickles.**
 
 ---
 
@@ -46,7 +46,7 @@ Vanilla vinegar is loot-only, and without it there's no pickling. This mod lets 
 | Yeast | 1 full packet |
 | Cloth | 1 Ripped Sheet or Cheesecloth (kept) |
 | Metal buckets | 2 (returned) |
-| Empty bottles | 15 |
+| Empty bottles | 17 |
 
 ---
 
@@ -92,7 +92,7 @@ The cask isn't a batch machine. It's a **living pool**, kept going the way Frenc
 - It holds **30 L**, but the culture needs air: above **22.5 L** it slows, down to half speed when brimming.
 - **New fermented wort thins the pool.** 15 L at 100% plus 5 L of fresh wort is 20 L at 75%.
 - **Bottling only works at 100%.**
-- **Souring loses about a fifth to the air.** 19 L of fermented wort becomes about 15.5 L of vinegar.
+- **Souring loses about a tenth to the air.** 19 L of fermented wort becomes about 17 L of vinegar.
 - **Empty Cask** (in the cask's menu) pours everything away and leaves the mother: for a pool gone wrong, not for every day.
 - **Never empty it.** The vinegar you leave behind is the *starter* that powers the mother (next section). Before topping up, keep at least a third as much vinegar in the cask as the fermented wort you're about to add: 6–7 L before a full 19 L batch. Then the mother's speed bonus works from the start.
 
@@ -169,6 +169,8 @@ Every station runs on real temperature, **even while you're away**.
 
 **By a fire**, any month: the vessel ferments in 11 days and a cask's first batch sours in 35, at 28 C. Banked embers (24 C) are as quick: 10 and 35. Don't malt there: sprouting grain wants it cool, and 28 C takes the floor 14 days instead of 5.
 
+**A powered room** (22 C while the grid is on), any month: the vessel ferments in 10 days and a cask's first batch sours in 35, as by banked embers.
+
 **The brewer's year:** malt in spring or autumn, brew and sour indoors from May to August. A batch started after the summer stalls under 10 C until spring, unless the vessel and cask stand by a fire. A basement is cooler than a room until August, but it holds the summer's warmth into the autumn: a vessel started there in September ferments in 16 to 20 days, while one upstairs can stall for months.
 
 ---
@@ -219,7 +221,7 @@ A sip scales down: half a litre of wort is 150 calories.
 - **Why does the cask want air?** The bacteria that make vinegar need oxygen and work only at the surface. That's why Orléans barrels were kept three quarters full, with air holes above the liquid, and why your cask slows past 22.5 L.
 - **Why keep a starter?** Fresh ale on its own is easy prey for other microbes. Pour it under sour vinegar and the acid protects it while the mother gets to work. The old rule, "never empty the barrel", is the whole method.
 - **What is the mother?** A mat of cellulose spun by the vinegar bacteria themselves. It really does thicken over time, and vinegar makers really did peel layers off to start new barrels.
-- **Where does a fifth of it go?** Into the air. Alcohol and a little water evaporate from a barrel that's open to breathe, over weeks of souring.
+- **Where does a tenth of it go?** Into the air. Alcohol and a little water evaporate from a barrel that's open to breathe, over weeks of souring.
 
 ### Old names, old ways
 

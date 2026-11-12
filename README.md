@@ -1,4 +1,4 @@
-# Traditional Preservation (Vinegar) — Build 42 prototype (v0.2.14)
+# Traditional Preservation (Vinegar) — Build 42 prototype (v0.2.15)
 
 **Status: experimental.** The whole chain, from steeped grain to bottled vinegar, has been played in the game with test timers. Temperature effects have only been checked offline so far (see the test plan). Back up your save before enabling.
 
@@ -51,8 +51,8 @@ From threshed grain, the first vinegar takes about 55 to 60 days in good weather
 | Cloth | 1 Ripped Sheet or Cheesecloth, kept |
 | Metal buckets | 2, all returned |
 | Byproducts | 2 Spent Grain |
-| Vinegar | about 15.5 L, which is 15 bottles |
-| Pickling | about 75 jars |
+| Vinegar | about 17.2 L, which is 17 bottles |
+| Pickling | about 85 jars |
 
 ## Stations
 
@@ -126,11 +126,11 @@ The cask is one continuous pool of up to **30 L**, not a batch station, so it ha
 - **Pour Fermented Wort**: pick a container holding nothing but fermented wort. It goes in up to the cask's room, and anything over stays in the container.
 - The pool has a **souring** value from 0 to 100%. New fermented wort thins it by its share: 15 L at 100% topped up with 5 L becomes 20 L at 75%.
 - Souring takes **35 days** from nothing to 100% at the best temperature (20 to 30 C). A well-kept cask with a mother gives about 21 bottles a month in summer.
-- Souring loses about **a fifth of the liquid to the air**, so 19 L of fermented wort becomes about 15.5 L of vinegar.
+- Souring loses about **a tenth of the liquid to the air** (`V.ACETIC_LOSS`, 0.1 since 0.2.15; a fifth before), so 19 L of fermented wort becomes about 17.2 L of vinegar.
 - The culture works on the surface and needs air. Above **22.5 L** it slows, down to half speed when brimming at 30 L.
 - **Bottle Vinegar** appears once the pool is 100% soured.
 
-The grey status line reads like `Orléans Vinegar Cask: 9.5 L, 40% soured, about 3 days left, mother established`, or `Orléans Vinegar Cask: 15.5 L, ready to bottle, mother established`. Hover it for the temperature, how fast it's souring, and notes about air and the mother. The time left assumes today's temperature holds.
+The grey status line reads like `Orléans Vinegar Cask: 9.5 L, 40% soured, about 3 days left, mother established`, or `Orléans Vinegar Cask: 17.2 L, ready to bottle, mother established`. Hover it for the temperature, how fast it's souring, and notes about air and the mother. The time left assumes today's temperature holds.
 
 **Cask Info** (in the submenu, or just click the cask) opens a small window with the same facts laid out: a bar for how full the cask is and one for its souring, the time left, bottles ready, the temperature and place, the working rate (temperature, mother and air together), the mother's layers and the hose. It updates while open and closes when you walk more than 6 squares away.
 
@@ -149,7 +149,7 @@ Vanilla Vinegar (`Base.Vinegar2`) holds no liquid, just 10 uses. The vanilla jar
 
 What's left after the last whole bottle stays in the cask as starter for the next top-up.
 
-**A gameplay convention, not physics.** Vanilla's Vinegar weighs 0.2, far less than a real litre of liquid (about 1.0 in inventory terms), so 15 bottles carry 15 L for about 3 weight. The mod keeps the output identical to vanilla Vinegar rather than inventing heavier filled bottles, as working with vanilla recipes and other mods comes first. The litre per bottle only sets how much the cask yields; it isn't a claim about what the bottle weighs.
+**A gameplay convention, not physics.** Vanilla's Vinegar weighs 0.2, far less than a real litre of liquid (about 1.0 in inventory terms), so 17 bottles carry 17 L for about 3 weight. The mod keeps the output identical to vanilla Vinegar rather than inventing heavier filled bottles, as working with vanilla recipes and other mods comes first. The litre per bottle only sets how much the cask yields; it isn't a claim about what the bottle weighs.
 
 **Bottles come back.** A used-up Vinegar gives its bottle back, as the Salt mod does with shakers. In a hand craft such as pickling, it's the same kind of bottle it was filled into (a Water Bottle comes back as an empty Water Bottle). Used up any other way, for example as a dressing, or for looted vinegar, it leaves an empty Crafted Bottle: vanilla's own replacement can name only one item, and the other bottles spawn full of their drink.
 

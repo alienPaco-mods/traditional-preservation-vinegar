@@ -2,7 +2,7 @@
 
 Make your own malt vinegar from the grain you grow. Malt it, mash it, ferment it with yeast, and let an Orléans cask and its living mother do the rest. It ends in the real vanilla Vinegar, so it works in every vanilla recipe, pickling included. Built for long playthroughs, when the looted vinegar is gone.
 
-[b]Build 42 only (42.20 or newer). This is an early release, so back up your save before enabling it. Singleplayer only: multiplayer is not supported.[/b]
+[b]Build 42 only (42.22 or newer). This is an early release, so back up your save before enabling it. Singleplayer only: multiplayer is not supported.[/b]
 
 Traditional Preservation (Vinegar) requires [b]Traditional Preservation (Core)[/b] (TP Core for short): subscribe to it too.
 
@@ -10,7 +10,7 @@ Traditional Preservation (Vinegar) requires [b]Traditional Preservation (Core)[/
 [list]
 [*]A fully farmable chain from barley, wheat or rye
 [*]Ends in the real vanilla Vinegar, for every vanilla recipe
-[*]A full batch gives 15 bottles, enough to pickle 75 jars
+[*]A full batch gives 17 bottles, enough to pickle 85 jars
 [*]A buildable Malting Floor, Fermentation Vessel and Orléans Vinegar Cask, each with two facings and its own stages
 [*]A continuous cask the Orléans way: draw vinegar off, top up with new, never empty it
 [*]A Mother of Vinegar that grows in the cask, speeds it up, and can be split to start another cask
@@ -49,7 +49,7 @@ The vessel's window has a yeast slot and two tanks, Wort and Fermented. A run ta
 The cask is one pool of up to 30 L that you keep going for the whole game. Everything is in its right-click menu.
 [list]
 [*]New fermented wort thins the pool: 15 L at 100% topped up with 5 L becomes 20 L at 75%.
-[*]Souring loses about a fifth to the air, so 19 L of fermented wort becomes about 15.5 L of vinegar.
+[*]Souring loses about a tenth to the air, so 19 L of fermented wort becomes about 17 L of vinegar.
 [*]The culture needs air. Over 22.5 L it slows, to half speed when brimming at 30 L.
 [*]You can only bottle once the pool is 100% soured. What's left after the last whole bottle stays behind as starter.
 [*]The status line shows the litres, how soured it is and the time left. Click the cask, or pick [b]Cask Info[/b], for a small window with bars for both, the temperature, the working rate, the mother and the hose.
