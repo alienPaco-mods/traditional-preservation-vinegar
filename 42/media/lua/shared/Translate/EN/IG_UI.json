@@ -72,5 +72,7 @@
   "IGUI_TraditionalPreservationVinegar_PumpNotEnough": "The vessel has only %1 L of fermented wort.",
   "IGUI_TraditionalPreservationVinegar_PumpAtAirLine": "The cask is already at the air line (%1 L). More than that slows the souring.",
   "IGUI_TraditionalPreservationVinegar_PumpAirHelp": "Fills the cask to %1 L, the most it holds at full souring speed.",
-  "IGUI_TraditionalPreservationVinegar_SplitNotYet": "The mother needs 2 layers before a layer can be split off. It has %1, and grows the next once the cask has made about %2 L more vinegar."
+  "IGUI_TraditionalPreservationVinegar_SplitNotYet": "The mother needs 2 layers before a layer can be split off. It has %1, and grows the next once the cask has made about %2 L more vinegar.",
+  "IGUI_TraditionalPreservationVinegar_InfoGrain": "Steeped Grain: %1",
+  "IGUI_TraditionalPreservationVinegar_InfoWort": "Wort: %1 L"
 }

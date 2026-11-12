@@ -37,7 +37,7 @@ function getCell()
 end
 CraftLogicUILogic = {
     new = function(_, _, logic)
-        return { getCraftLogic = function() return logic end, getItemsInProgress = function() return {} end }
+        return { getCraftLogic = function() return logic end, getItemsInProgress = function() return logic.inProgress or {} end }
     end,
 }
 ScriptManager = { instance = { getCraftRecipe = function() return { Load = noop } end, getItem = function() return { DoParam = noop } end } }
@@ -60,6 +60,7 @@ end
 local function tank(litres)
     local container = { litres = litres }
     function container:getAmount() return self.litres end
+    function container:getCapacity() return 20 end
     return { getFluidContainer = function() return container end }
 end
 
@@ -160,6 +161,10 @@ local function class()
     return { derive = function() return class() end }
 end
 ISCollapsableWindow = class()
+-- What TP Core's StationInfo derives from; the stations' provider is kept here instead of hooked.
+ISPanel = H.class("ISPanel")
+local stationInfo
+require("TraditionalPreservationCore/StationInfo").add = function(provider) stationInfo = provider end
 ISWorldMenuElements = { ContextEntity = noop }
 dofile("42/media/lua/client/TraditionalPreservationVinegarUI.lua")
 
@@ -216,6 +221,23 @@ check("the popup's lines", table.concat(shown, " | ") == "Progress: 1% | Ferment
 check("a slow rate is coloured, and no heat damage line", lines[5].colour[2] == 0.7 and lines[1].colour[2] == 1 and #lines == 5)
 check("and no translator warnings", #H.textWarnings == 0)
 check("the popup is wide enough", tooltip.width == 150)
+
+-- The info block in the vessel's window, for the run in the open at 38 C: its tanks as rows, the run's bar.
+local logic = vessel:getComponent("CraftLogic")
+logic.inProgress = { [batch] = { yeast = 1 } }
+function logic:getProgress() return 0.01 end
+local block = stationInfo(vessel)
+local rows = {}
+for _, row in ipairs(block.rows) do table.insert(rows, getText(row[1]) .. " " .. row[2]) end
+check("the vessel's rows", table.concat(rows, " | ") == "Place Open air | Temperature 38 C | Working rate 22% | "
+    .. "Wort 0.0 of 20.0 L | Fermented 0.0 of 20.0 L")
+check("the run's bar, slow", #block.bars == 1 and block.bars[1].text == "Wort: 20.0 L"
+    and block.bars[1].value == "1%, 45 d 1 h left" and block.bars[1].colour[1] == 0.75)
+check("and the weather note", table.concat(block.notes, " | ") == "Times left assume the temperature holds as it is now.")
+local floor = station(V.FLOOR_SPRITE, 3, false)
+check("an empty floor indoors", stationInfo(floor).rows[1][2] == "Indoors" and stationInfo(floor).notes[1] == "Nothing in it.")
+check("the cask has no crafting window block", stationInfo(cask) == nil)
+logic.inProgress = nil
 
 -- A batch that has just finished hands its data back to the engine's pool before its slot goes.
 function batch:getRecipe() return nil end

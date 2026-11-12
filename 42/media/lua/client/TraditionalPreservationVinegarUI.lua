@@ -1,5 +1,6 @@
 -- Traditional Preservation (Vinegar): keeps wrong items out of the station slots, shows the vessel's
--- tanks in its window, and adds a running batch's popup and the right-click options on the vessel and cask.
+-- tanks in its window, and adds a running batch's popup, the info block in the floor's and the vessel's crafting
+-- windows (TP Core's StationInfo) and the right-click options on the vessel and cask.
 require "Entity/ISUI/Components/Crafting/ISCraftLogicPanel"
 require "Entity/ISUI/Components/Crafting/ISWidgetCraftLogicControl"
 require "Entity/ISUI/Components/Crafting/ISWidgetCraftLogicInputControl"
@@ -15,6 +16,8 @@ require "TimedActions/TPVinegarHose"
 require "TimedActions/TPPumpVinegarWort"
 local UI = require "TraditionalPreservationCore/UI"
 local InfoWindow = require "TraditionalPreservationCore/InfoWindow"
+local StationInfo = require "TraditionalPreservationCore/StationInfo"
+local Weather = require "TraditionalPreservationCore/Weather"
 
 local V = TraditionalPreservationVinegar
 local vanillaCreateChildren = ISCraftLogicPanel.createChildren
@@ -154,6 +157,44 @@ local function drawBatchTooltip(slot, tooltip, name, station)
 end
 
 UI.progressTooltips({ MaltGrain = drawBatchTooltip, FermentWort = drawBatchTooltip })
+
+-- The block in the floor's and the vessel's own windows: where the station stands, the temperature and the stage's
+-- rate there, the running batch's bar, and what waits or is done. The vessel's tanks have their own columns, so its
+-- rows only say what is in them. The cask has no crafting window: its Info window does this.
+local function stationInfo(entity)
+    local kind = V.stationKind(entity)
+    if kind ~= "floor" and kind ~= "vessel" then return nil end
+    local contents = StationInfo.contents(entity)
+    if not contents then return nil end
+    local stage = kind == "floor" and "malting" or "alcoholic"
+    local ledger = V.getLedger()
+    local place = V.placeOf(entity)
+    local temperature = Weather.placeTemperature(ledger, place)
+    local rate = stage == "malting" and V.maltingRate(temperature) or V.alcoholicRate(temperature)
+    local run = entity:getModData().vinegarRun
+    local batches = {}
+    for _, batch in ipairs(contents.batches) do
+        local status = V.batchStatus(stage, batch.data:getModData(), batch.data:getRecipe():getTime() / 3600, ledger)
+        local name = stage == "malting" and say("IGUI_TraditionalPreservationVinegar_InfoGrain", tostring(batch.count))
+            or say("IGUI_TraditionalPreservationVinegar_InfoWort", litresText(run and run.ml / 1000 or 0))
+        table.insert(batches, { name = name, progress = status.progress, hoursLeft = status.hoursLeft })
+    end
+    local options = { place = place, temperature = temperature, rate = rate, batches = batches,
+        waiting = #contents.waiting, finished = #contents.finished }
+    if kind == "vessel" then
+        options.finished = 0  -- the marker the run leaves becomes the Fermented tank
+        options.rows = {}
+        for _, io in ipairs({ ResourceIO.Input, ResourceIO.Output }) do
+            local tank = V.vesselTank(entity, io)
+            local capacity = tank and tank:getFluidContainer():getCapacity() or 0
+            table.insert(options.rows, { TANK_TITLES[io], say("IGUI_TraditionalPreservationVinegar_InfoLitres",
+                litresText(V.litres(tank)), litresText(capacity)) })
+        end
+    end
+    return StationInfo.block(options)
+end
+
+StationInfo.add(stationInfo)
 
 local function onPour(playerObj, station, items, mode)
     if not ISEntityUI.WalkToEntity(playerObj, station) then return end

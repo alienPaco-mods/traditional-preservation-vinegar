@@ -1,5 +1,11 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.12
+- **Info in the Malting Floor's and Fermentation Vessel's windows** (2026-11-12, consistency sweep step E, TP Core's
+  StationInfo): the place, its temperature and the stage's working rate there (malting or alcoholic), the running
+  batch's bar with its time left, and what is waiting or finished; the vessel also lists its Wort and Fermented tanks.
+  The cask keeps its Info window.
+
 ## 0.2.11
 - **The cellar runs a month behind** (2026-11-12, TP Core): a basement follows the ground, about 5 C from January to
   March and 13 C from July to September: cooler than a room until August, warmer in the autumn (a vessel started there
