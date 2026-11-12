@@ -39,8 +39,11 @@ local function settle(days)
 end
 local settled
 
--- Days until a batch started on this day is done, or nil if the forecasts run out first.
+-- Days until a batch started on this day is done, or nil if the forecasts run out first. Grid is a room while the
+-- power grid is on (22 C).
 local function daysToFinish(days, first, target, rate, place)
+    local gridOn = place == "Grid" or nil
+    if gridOn then place = "Sheltered" end
     local season, ground = settled(days[first].month, days[first].offset)
     local done = 0
     for index = first, #days do
@@ -49,7 +52,7 @@ local function daysToFinish(days, first, target, rate, place)
             season = season + (temperature - season) / Weather.SEASON_HOURS
             ground = ground + (season - ground) / Weather.GROUND_HOURS
             done = done + rate(Weather.placeTemperature({ temperature = temperature, seasonTemperature = season,
-                groundTemperature = ground }, place))
+                groundTemperature = ground, gridOn = gridOn }, place))
             if done >= target then return index - first + hour / 24 end
         end
     end
@@ -73,9 +76,9 @@ end
 local days = readDays(arg[1] or "tools/climate_year.csv")
 settled = settle(days)
 -- Indoors and under an open roof read the same (the season's mean), so one column serves both.
-local PLACES = { "Open", "Sheltered", "Loft", "Basement" }
-print("| Month | Ferment, outdoors | Ferment, indoors | Ferment, loft | Ferment, basement | First cask, outdoors | First cask, indoors | First cask, loft | First cask, basement |")
-print("|---|---|---|---|---|---|---|---|---|")
+local PLACES = { "Open", "Sheltered", "Grid", "Loft", "Basement" }
+print("| Month | Ferment, outdoors | Ferment, indoors | Ferment, grid on | Ferment, loft | Ferment, basement | First cask, outdoors | First cask, indoors | First cask, grid on | First cask, loft | First cask, basement |")
+print("|---|---|---|---|---|---|---|---|---|---|---|")
 for month = 1, 12 do
     local cells = { MONTHS[month] }
     for _, place in ipairs(PLACES) do table.insert(cells, range(days, month, V.ALCOHOLIC_HOURS, V.alcoholicRate, place)) end
