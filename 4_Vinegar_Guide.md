@@ -16,11 +16,11 @@
 8. Stations Reference
 9. The Brewer's Almanac (Seasons & Places)
 10. Secrets & Hidden Features
-10½. The Brewer's Notebook
-11. Tips
-12. Troubleshooting
-13. Sandbox Settings
-14. Appendix: The Tester's Toolkit
+11. The Brewer's Notebook
+12. Tips
+13. Troubleshooting
+14. Sandbox Settings
+15. Appendix: The Tester's Toolkit
 
 ---
 
@@ -77,7 +77,7 @@ Vanilla vinegar is loot-only, and without it there's no pickling. This mod lets 
 
 **Mashing.** Malt + a metal bucket with exactly 10 L of water gives a **Bucket of Mash**. Heat it 1.5 hours to make **Prepared Mash**, then **Strain Mash** through a cloth. The bucket comes back holding **10 L of Wort**, plus a **Spent Grain**.
 
-**Fermenting.** Right-click the vessel and **Pour Wort**. Put **one full yeast packet** in its slot and press **Craft**. It takes **10 L or 20 L**, in whole buckets only, and gives back 95% as **Fermented Wort** after 10 days. Then **Draw Off** into empty containers, or pump it across with the hose.
+**Fermenting.** Right-click the vessel and **Pour Wort**. The vessel's window has a tank for the wort and one for what comes out, and says where it stands and how fast it is working. Put **one full yeast packet** in its slot and press **Craft**. It takes **10 L or 20 L**, in whole buckets only, and gives back 95% as **Fermented Wort** after 10 days. Then **Draw Off** into empty containers, or pump it across with the hose.
 
 **Souring.** Right-click the cask, **Orléans Vinegar Cask**, **Pour Fermented Wort**. Watch the status line: *"19.0 L, 40% soured, about 12 days left."* At 100% it reads **"ready to bottle"**. For the whole picture, just **click the cask** (or pick **Cask Info** in the submenu): bars for how full and how soured, time left, bottles ready, temperature, working rate, the mother and the hose, updating live until you walk away.
 
@@ -93,6 +93,7 @@ The cask isn't a batch machine. It's a **living pool**, kept going the way Frenc
 - **New fermented wort thins the pool.** 15 L at 100% plus 5 L of fresh wort is 20 L at 75%.
 - **Bottling only works at 100%.**
 - **Souring loses about a fifth to the air.** 19 L of fermented wort becomes about 15.5 L of vinegar.
+- **Empty Cask** (in the cask's menu) pours everything away and leaves the mother: for a pool gone wrong, not for every day.
 - **Never empty it.** The vinegar you leave behind is the *starter* that powers the mother (next section). Before topping up, keep at least a third as much vinegar in the cask as the fermented wort you're about to add: 6–7 L before a full 19 L batch. Then the mother's speed bonus works from the start.
 
 ---
@@ -116,10 +117,10 @@ The pale skin that grows on the pool, and the heart of the cask.
 
 Join the vessel to a cask with a **Rubber Hose**, and pump fermented wort across instead of carrying buckets.
 
-- **Attach Hose to Cask** (vessel's right-click menu): a cask within **2 squares of the vessel**, on the same floor; a Rubber Hose (used up); pliers (kept).
+- **Attach Hose to Cask** (vessel's right-click menu): a cask within **2 squares of the vessel**, on the same floor; a Rubber Hose (it comes back when you detach it); pliers (kept). With several casks in reach the menu lists them, nearest first.
 - **Pump to Cask** (either station's menu): **5 L**, **10 L**, **Up to the air line** (22.5 L, the fullest the cask sours at full speed) or **All that fits**. Greyed-out options say why.
 - Nothing pumps on its own. Top up the Orléans way: bottle some vinegar, then pump in a measured amount.
-- **Detach Hose** from either station gives the hose back. Neither station can be picked up while they're joined.
+- **Detach Hose** from either station gives the hose back, and wants the pliers again. Neither station can be picked up while they're joined.
 
 ---
 
@@ -159,12 +160,12 @@ Every station runs on real temperature, **even while you're away**.
 
 **First bottles, from the start of malting (two full batches, simulated on the game's weather, the grid off):**
 
-| Start | Open air | Indoors | Basement |
-|---|---|---|---|
-| January | day 170 | day 182 | day 230 |
-| April | day 84 | day 92 | day 147 |
-| July | day 65 | day 53 | day 88 |
-| October | day 247 | day 261 | day 289 |
+| Start | Open air | Indoors | Loft | Basement |
+|---|---|---|---|---|
+| January | day 170 | day 182 | day 177 | day 230 |
+| April | day 84 | day 92 | day 87 | day 147 |
+| July | day 65 | day 53 | day 52 | day 88 |
+| October | day 247 | day 261 | day 257 | day 289 |
 
 **By a fire**, any month: the vessel ferments in 11 days and a cask's first batch sours in 35, at 28 C. Banked embers (24 C) are as quick: 10 and 35. Don't malt there: sprouting grain wants it cool, and 28 C takes the floor 14 days instead of 5.
 
@@ -175,9 +176,9 @@ Every station runs on real temperature, **even while you're away**.
 ## 10. Secrets & Hidden Features
 
 - **Wort and Fermented Wort are drinkable.** Wort is sweet and filling. Fermented Wort is a flat 4% ale that'll cheer no one but works in a pinch.
-- **Spent Grain is animal feed.** Cows, sheep, pigs, chickens and turkeys eat it from a trough. Or compost it.
+- **Spent Grain is animal feed.** Cows, sheep, pigs, chickens and turkeys eat it from a trough. Or compost it. It is fresh 3 days and rotten at 6.
 - **Liquids stay pure.** Wort won't mix with other drinks, and Draw Off only offers *empty* containers.
-- ↩ **Cancel is free.** Cancelling a vessel run returns the wort and the yeast.
+- **Cancel is free.** Cancelling a vessel run returns the wort and the yeast.
 - **Chalk X = done.** A finished vessel shows a chalk cross and a sample cup with lees.
 - **Bottles pile up at the foot** of a fully soured cask, so you can see a ready cask from across the yard.
 - **Skill XP:** Cooking for steeping, mashing, straining, finished vessel runs and bottling; Farming for finished malting runs.
@@ -187,7 +188,7 @@ Every station runs on real temperature, **even while you're away**.
 
 ---
 
-## 10½. The Brewer's Notebook
+## 11. The Brewer's Notebook
 
 *Torn from the back of an old brewing ledger, with pencil notes in the margin.*
 
@@ -227,7 +228,7 @@ A sip scales down: half a litre of wort is 150 calories.
 
 ---
 
-## 11. Tips
+## 12. Tips
 
 - **Two buckets per run.** One yeast packet either way, and 2 buckets gives twice the vinegar.
 - **Malt the whole harvest in autumn.** Malt keeps forever, so brew whenever you like.
@@ -237,7 +238,7 @@ A sip scales down: half a litre of wort is 150 calories.
 
 ---
 
-## 12. Troubleshooting
+## 13. Troubleshooting
 
 | Problem | Why |
 |---|---|
@@ -250,7 +251,7 @@ A sip scales down: half a litre of wort is 150 calories.
 
 ---
 
-## 13. Sandbox Settings
+## 14. Sandbox Settings
 
 | Option | Default | Effect |
 |---|---|---|
@@ -263,7 +264,7 @@ A sip scales down: half a litre of wort is 150 calories.
 
 ---
 
-## 14. Appendix: The Tester's Toolkit
+## 15. Appendix: The Tester's Toolkit
 
 *For testers, modders and the curious. These commands exist only when the game is started in debug mode (Steam launch option `-debug`). Type them into the in-game **Command Console** and press Enter. `TPV.help()` lists them in the game.*
 
@@ -288,3 +289,13 @@ Debug mode also adds **[Debug] Fill with Wort** and **[Debug] Fill with Fermente
 **Typical check of the hose:** `TPV.give("Base.RubberHose")` and `TPV.give("Base.Pliers")`, attach the hose, then `TPV.fermented(19)` and `TPV.setCask(16, 100)`. Pump to Cask should offer 5 L, 10 L, the air line (6.5 L) and all that fits (14 L).
 
 **Typical check of the mother:** `TPV.setCask(10, 100)`, `TPV.mother(1)`, `TPV.fermented(19)`, pump it all in, then `TPV.age(840)` and `TPV.cask()`. The mother should have grown a second layer.
+
+---
+
+## Credits
+
+**Design and code:** alienPaco
+
+**Made for:** Project Zomboid, Build 42. Singleplayer.
+
+*Traditional Preservation is a fan-made modification. It is not made or endorsed by The Indie Stone.*

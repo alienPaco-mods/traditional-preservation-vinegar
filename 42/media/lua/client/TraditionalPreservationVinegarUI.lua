@@ -18,6 +18,7 @@ local UI = require "TraditionalPreservationCore/UI"
 local InfoWindow = require "TraditionalPreservationCore/InfoWindow"
 local StationInfo = require "TraditionalPreservationCore/StationInfo"
 local Weather = require "TraditionalPreservationCore/Weather"
+local Container = require "TraditionalPreservationCore/Container"
 
 local V = TraditionalPreservationVinegar
 local vanillaCreateChildren = ISCraftLogicPanel.createChildren
@@ -251,7 +252,7 @@ local function addPumpMenu(menu, playerObj, station, partner)
     local vessel, cask = station, partner
     if not V.isVessel(station) then vessel, cask = partner, station end
     local tank = V.vesselTank(vessel, ResourceIO.Output)
-    local available = tank and math.floor(V.litres(tank) * 1000 + 0.5) or 0
+    local available = tank and Container.ml(tank:getFluidContainer()) or 0
     local option = menu:addOption(getText("ContextMenu_TraditionalPreservationVinegar_PumpToCask"))
     option.iconTexture = getTexture(FERMENTED_ICON)
     local pumps = menu:getNew(menu)
@@ -341,10 +342,7 @@ local function addVesselMenu(context, playerObj, vessel)
     end
     if output and not output:isEmpty() then
         -- Only empty containers, so nothing is ever topped up into a mixture.
-        local empties = findItems(playerObj, function(item)
-            local fluid = item:getFluidContainer()
-            return fluid ~= nil and fluid:isEmpty() and fluid:getCapacity() > 0
-        end)
+        local empties = findItems(playerObj, Container.isEmptyVessel)
         addPourMenu(context, getText("ContextMenu_TraditionalPreservationVinegar_DrawOff"), playerObj, vessel, empties, "vesselOut", getText("IGUI_TraditionalPreservationVinegar_NoContainer"), FERMENTED_ICON)
     end
     addHoseMenu(context, playerObj, vessel)

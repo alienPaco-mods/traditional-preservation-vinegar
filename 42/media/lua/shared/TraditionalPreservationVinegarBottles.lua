@@ -2,8 +2,8 @@
 -- Bottling writes the bottle's type on the Vinegar. Hand crafts such as jarring give that same bottle
 -- back, emptied. Anything else that uses one up, and looted vinegar, leaves a plain Crafted Bottle, as
 -- vanilla's own replacement can only name one item and the other bottles spawn full of their drink.
-require "Entity/TimedActions/ISHandcraftAction"
 require "TraditionalPreservationVinegar"
+local Handcraft = require "TraditionalPreservationCore/Handcraft"
 
 local V = TraditionalPreservationVinegar
 V.VINEGAR_ITEM = "Base.Vinegar2"
@@ -56,19 +56,18 @@ local function newSpares(inventory, before)
     return spares
 end
 
--- Vanilla gives every used-up Vinegar back as a Crafted Bottle. Wraps ISHandcraftAction.performRecipe:
--- compare with vanilla after a game update. Salt wraps it too (for shakers); each passes through to the other.
-local performRecipe = ISHandcraftAction.performRecipe
-function ISHandcraftAction:performRecipe()
-    local inventory = self.character:getInventory()
+-- Vanilla gives every used-up Vinegar back as a Crafted Bottle, so after a hand craft (TP Core's Handcraft, the one
+-- wrap of ISHandcraftAction.performRecipe, which Salt uses for its shakers too) the right bottles are given: the
+-- Crafted Bottles the craft itself handed over are the ones not carried before it.
+Handcraft.around(function(action)
+    local inventory = action.character:getInventory()
     local before = {}
     local all = inventory:getAllTypeRecurse(V.SPARE_BOTTLE)
     for i = 0, all:size() - 1 do before[all:get(i)] = true end
-    performRecipe(self)
-    local recipeData = self.logic and self.logic:getRecipeData()
-    if not recipeData then return end
-    V.returnBottles(self.character, recipeData:getAllConsumedItems(), newSpares(inventory, before))
-end
+    return before
+end, function(action, recipeData, before)
+    V.returnBottles(action.character, recipeData:getAllConsumedItems(), newSpares(action.character:getInventory(), before))
+end)
 
 -- Vanilla Vinegar leaves nothing when used up. This covers every other way of using it up.
 function V.applyVinegarBottle()

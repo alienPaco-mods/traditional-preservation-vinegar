@@ -1,5 +1,16 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.14
+- **On TP Core's shared modules** (2026-11-12): bottles come back through Core's `Handcraft` (in place of the mod's
+  own wrap of `ISHandcraftAction.performRecipe`), a malting or fermenting run catches up through Core's
+  `Hearth.catchUpRun` and `Hearth.updateRun`, and casks and stations in reach are found with Core's `Station.near`.
+  One thing a player may see: **Bottle Vinegar from the crafting menu draws from the nearest ready cask**, where it
+  took the first one the search met. In-game steps 10 and 101 of `TESTING_GUIDE.md`.
+- Guide (2026-11-12): checked line by line against the code. The hose comes back on Detach (which wants the pliers
+  again); Empty Cask is described; the first-bottles table has a Loft column; Spent Grain's keeping; whole chapter
+  numbers (the Brewer's Notebook is chapter 11), a Credits page.
+
+
 ## 0.2.13
 - **TP Core's loft** (2026-11-12, consistency sweep step H): a floor, vessel or cask in the top storey reads the
   loft's temperature: the first cask sours 3 to 5 days sooner there, and the first bottles come 4 to 5 days sooner

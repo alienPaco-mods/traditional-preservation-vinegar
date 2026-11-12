@@ -171,7 +171,7 @@ local function catchUpRun(modData, kind)
     if not modData.done then return end
     -- A run from before basements kept its last totals in two fields.
     modData.last = modData.last or { Open = modData.lastOpen, Sheltered = modData.lastSheltered }
-    modData.done = modData.done + Hearth.catchUp(modData, modData.last, V.getLedger(), kind, runPlace(modData), KINDS[kind])
+    Hearth.catchUpRun(modData, V.getLedger(), kind, runPlace(modData), KINDS[kind])
 end
 
 -- Adds what the weather has given since the last update, at the place the station's World last told the run, so
@@ -179,8 +179,9 @@ end
 local function updateRun(craftRecipeData, kind, speed)
     local modData = craftRecipeData:getModData()
     if not modData.done then return end
-    catchUpRun(modData, kind)
-    Weather.showProgress(craftRecipeData, V.getLedger(), kind, runPlace(modData), speed, getGameTime():getWorldAgeHours(), KINDS[kind])
+    -- A run from before basements kept its last totals in two fields.
+    modData.last = modData.last or { Open = modData.lastOpen, Sheltered = modData.lastSheltered }
+    Hearth.updateRun(craftRecipeData, V.getLedger(), kind, runPlace(modData), KINDS[kind], speed)
 end
 
 -- Tells a running batch (kind "malting" or "alcoholic") where its station stands: the place, and the fire's fuel
@@ -501,27 +502,9 @@ end
 -- Every cask the vessel can reach with a hose (same floor, HOSE_REACH apart at most each way) that has none
 -- of its own, nearest first. The menu offers the choice when there are several.
 function V.casksForHose(vessel)
-    local here = squareOf(vessel)
-    local found = {}
-    for x = here.x - V.HOSE_REACH, here.x + V.HOSE_REACH do
-        for y = here.y - V.HOSE_REACH, here.y + V.HOSE_REACH do
-            local square = getCell():getGridSquare(x, y, here.z)
-            local objects = square and square:getObjects()
-            for i = 0, objects and objects:size() - 1 or -1 do
-                local object = objects:get(i)
-                if V.isCask(object) and not V.hoseLink(object) then
-                    table.insert(found, { cask = object, far = (x - here.x) ^ 2 + (y - here.y) ^ 2, order = #found })
-                end
-            end
-        end
-    end
-    table.sort(found, function(a, b)
-        if a.far ~= b.far then return a.far < b.far end
-        return a.order < b.order
+    return Station.near(vessel:getSquare(), V.HOSE_REACH, function(object)
+        return V.isCask(object) and not V.hoseLink(object)
     end)
-    local casks = {}
-    for index, entry in ipairs(found) do casks[index] = entry.cask end
-    return casks
 end
 
 -- Each end keeps the other's square in its modData, so the link survives either being unloaded.
@@ -545,8 +528,7 @@ V.PUMP_STEPS = { 5000, 10000 }
 -- Pumps up to ml of the vessel's fermented wort into the cask, as far as the tank and the cask's room allow.
 -- The player chooses how much, as Orléans vinegar makers topped up by hand.
 function V.pumpToCask(state, container, ml)
-    local available = math.floor(container:getAmount() * 1000 + 0.5)
-    ml = math.min(ml, available, V.caskRoom(state))
+    ml = math.min(ml, Container.ml(container), V.caskRoom(state))
     if ml < V.HOSE_MIN_ML then return 0 end
     local moved = V.pourIntoCask(state, ml)
     container:removeFluid(moved / 1000)
@@ -585,24 +567,10 @@ function V.findPliers(inventory)
     return inventory:getFirstTagEvalRecurse(ItemTag.PLIERS, function(item) return not item:isBroken() end)
 end
 
--- Calls test for each station in reach and returns the first it accepts.
+-- The nearest station in reach that test accepts, or nil.
 function V.findNear(character, test)
     local square = character and character:getCurrentSquare()
-    if not square then return nil end
-    local cell = getCell()
-    for x = square:getX() - V.REACH, square:getX() + V.REACH do
-        for y = square:getY() - V.REACH, square:getY() + V.REACH do
-            local near = cell:getGridSquare(x, y, square:getZ())
-            if near then
-                local objects = near:getObjects()
-                for i = 0, objects:size() - 1 do
-                    local object = objects:get(i)
-                    if test(object) then return object end
-                end
-            end
-        end
-    end
-    return nil
+    return square and Station.near(square, V.REACH, test)[1] or nil
 end
 
 local function hasVinegar(object)
