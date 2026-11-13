@@ -147,9 +147,11 @@ Every station runs on real temperature, **even while you're away**.
 
 | Stage | Best | Slow | Nearly stops |
 |---|---|---|---|
-| Malting Floor | 12–20 C | 5–12 C, above 20 C | below 5 C, 33 C+ |
-| Vessel | 18–25 C | 10–18 C, above 30 C | below 10 C |
-| Cask | 20–30 C | 10–20 C, above 30 C | below 10 C |
+| Malting Floor | 12–20 C | 5–12 C, above 20 C | below 5 C, 33 C+; stops at 0 C |
+| Vessel | 18–25 C | 10–18 C, above 30 C | below 10 C; stops at -3 C |
+| Cask | 20–30 C | 10–20 C, above 30 C | below 10 C; stops at -3 C |
+
+**Frozen work waits.** At its freezing point a station stops and says *Paused here (frozen)*. Nothing is killed: the batch picks up where it stopped when it thaws. A brew freezes a little under water, so the vessel and cask hold out to -3 C.
 
 **Where you build matters:**
 
@@ -159,7 +161,7 @@ Every station runs on real temperature, **even while you're away**.
 | **Under an open roof**, or **indoors** | The season: the average of the last 10 days. A room is 22 C while the power grid is on |
 | **Loft** (the top storey: a room upstairs with no room over it) | As indoors, plus three tenths of whatever the 10-day average is above 10 C: the sun on the roof (about 24 C in a 21 C July, no warmer than a room from October to April); 22 C while the power grid is on |
 | **Basement** (below ground) | Follows the ground, a month behind the season: about 5 C from January to March, 13 C from July to September |
-| **By a fire** (any lit fire within 2 tiles, same floor) | **28 C**, for as long as the fuel lasts; banked embers 24 C |
+| **By a fire** (any lit fire within 2 tiles, same floor) | **28 C** indoors, for as long as the fuel lasts; banked embers 24 C. Outside, under an open roof, the 10-day average +15 C; in the open, the day's weather +10 C; never past 28 C (TP Core's guide, chapter 7) |
 
 > *Margin note:* four walls with no roof are still open air. A porch or a lean-to is an open roof; a shed you build with walls and a whole roof is a room.
 
@@ -167,16 +169,25 @@ Every station runs on real temperature, **even while you're away**.
 
 | Start | Open air | Indoors | Loft | Basement |
 |---|---|---|---|---|
-| January | day 170 | day 182 | day 177 | day 230 |
-| April | day 84 | day 92 | day 87 | day 147 |
+| January | day 171 | day 177 | day 172 | day 230 |
+| April | day 84 | day 87 | day 82 | day 147 |
 | July | day 65 | day 53 | day 52 | day 88 |
-| October | day 247 | day 261 | day 257 | day 289 |
+| October | day 250 | day 250 | day 247 | day 289 |
 
-**By a fire**, any month: the vessel ferments in 11 days and a cask's first batch sours in 35, at 28 C. Banked embers (24 C) are as quick: 10 and 35. Don't malt there: sprouting grain wants it cool, and 28 C takes the floor 14 days instead of 5.
+**By a fire indoors**, any month: the vessel ferments in 11 days and a cask's first batch sours in 35, at 28 C. Banked embers (24 C) are as quick: 10 and 35. Don't malt there: sprouting grain wants it cool, and 28 C takes the floor 14 days instead of 5.
+
+**By a fire outside** the cold air takes the heat, so it helps most where the indoor fire is too hot. In January:
+
+| By a fire in January | Malting | Ferment | First cask |
+|---|---|---|---|
+| Under an open roof (a porch) | 5 to 7 days | 19 to 37 days | 56 to 78 days |
+| In the open (a campfire) | 7 to 16 days | 29 to 56 days | 77 to 105 days |
+
+> *Margin note:* a porch fire is the winter malting floor. The frost outside takes the fire down to the 12 to 20 C sprouting grain wants, where the kitchen hearth would cook it.
 
 **A powered room** (22 C while the grid is on), any month: the vessel ferments in 10 days and a cask's first batch sours in 35, as by banked embers.
 
-**The brewer's year:** malt in spring or autumn, brew and sour indoors from May to August. A batch started after the summer stalls under 10 C until spring, unless the vessel and cask stand by a fire. A basement is cooler than a room until August, but it holds the summer's warmth into the autumn: a vessel started there in September ferments in 16 to 20 days, while one upstairs can stall for months.
+**The brewer's year:** malt in spring or autumn, brew and sour indoors from May to August. A batch started after the summer stalls under 10 C until spring, and stops once it freezes, unless the vessel and cask stand by an indoor fire. A basement is cooler than a room until August, but it holds the summer's warmth into the autumn: a vessel started there in September ferments in 16 to 20 days, while one upstairs can stall for months.
 
 ---
 
@@ -276,15 +287,15 @@ A sip scales down: half a litre of wort is 150 calories.
 
 ## 15. The Yearly Plan
 
-Each process laid out as the game's planting seasons: the months it works unheated, its best and poor months, and the months it is out of season (then only by a fire, banked embers or in a powered room, below). The fermenting and cask days are the game's sampled weather with the grid off, from pouring (two batches); malting is at the month's average temperature, so it's marked "about". Malting in July gives first bottles about **day 52** in a loft; in April about day 85 to 92; in October or January day 170 and more.
+Each process laid out as the game's planting seasons: the months it works unheated, its best and poor months, and the months it is out of season (then only by a fire, banked embers or in a powered room, below). The fermenting and cask days are the game's sampled weather with the grid off, from pouring (two batches); malting is at the month's average temperature, so it's marked "about". Malting in July gives first bottles about **day 52** in a loft; in April about day 82 to 87; in October or January day 170 and more.
 
 | Process | Season | Best months | Poor months | Out of season | Where, at its best | Takes, at its best |
 |---|---|---|---|---|---|---|
 | **Malting** (Malt keeps; Green Malt must be kilned within 2 days) | April to October | May, June, July, August, September | April, October (about 8 to 9 days) | November to March | Indoors or the open air (12 to 20 C); a basement from May to November | About 5 days |
-| **Fermenting** | May to September | June, July, August | May (up to 22 days); September (upstairs it can stall for months: use a basement, 16 to 20) | October to April: 76 days and more | Indoors or a loft | 10 days |
-| **Souring** | May to August | June, July | May (38 to 54 days); August (pour early: a late pour can sour into March) | September to April: 200 days and more | A cask in a loft or indoors | 35 to 41 days (26 with the mother at work) |
+| **Fermenting** | May to September | June, July, August | May (up to 17 days); September (upstairs up to 20; use a basement, 16 to 20) | October to April: 17 to 43 days in April, 25 and more from October to March (usually months) | Indoors or a loft | 10 days |
+| **Souring** | May to August | June, July | May (38 to 50 days); August (pour early: a late pour can sour into March) | September to April: 50 to 77 days in April, 75 and more from September to March | A cask in a loft or indoors | 35 to 41 days (26 with the mother at work) |
 
-**Any month by a fire or a powered room:**
+**Any month by an indoor fire or a powered room:**
 
 | Where | Malt | Ferment | Sour |
 |---|---|---|---|

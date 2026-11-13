@@ -100,10 +100,10 @@ Wort and Fermented Wort are real liquids, added by this mod, not vanilla ones. T
 
 | Wort sours (days, `tools/season_report.lua`) | Outdoors | Indoors | Grid on (22 C) | Basement |
 |---|---|---|---|---|
-| January | 36-70 | 63-96 | 1.6 | 12-14 |
-| April | 3-12 | 7-13 | 1.6 | 8-11 |
+| January | 36-70 | 46-87 | 1.6 | 12-14 |
+| April | 3-12 | 6-9 | 1.6 | 8-11 |
 | July | 1.2-2.8 | 1.5-2.2 | 1.6 | 4.3-5.2 |
-| October | 7-31 | 5-12 | 1.6 | 5-6 |
+| October | 7-31 | 4-8 | 1.6 | 5-6 |
 
 **Spent Grain** weighs 0.8: a bucket's 24 grain weigh about 0.5 dry and soak up water in the mash. It rots in about 3 to 6 days. Put it in a composter, or feed it to farm animals from a trough: cows, sheep, pigs, chickens and turkeys all eat it.
 
@@ -253,36 +253,57 @@ Time counts by the game clock, at any Day Length, and keeps counting while the a
 | Vessel | below 10 C | 10–18 C | 18–25 C | 25–30 C (85% or more) | above 30 C, 10% by 40 C |
 | Cask | below 10 C | 10–20 C | 20–30 C | | above 30 C, 25% by 40 C |
 
+**Frozen work waits.** The malting floor stops at 0 C and below, the vessel and the cask at -3 C and below (a brew freezes a little under water): nothing is killed, the batch picks up where it stopped when it thaws, and the window says *Paused here (frozen)*. Temperature sensitivity Off ignores it.
+
 The places are TP Core's, from the game's own flags:
 
 - **Open air**: the day's weather.
 - **Under an open roof** (a porch, an open shed) or **indoors** (a room): an unheated building follows the average outdoor temperature of the last 10 days or so. A warm afternoon or a cold night makes no difference. A room is **22 C while the power grid is on**, as vanilla's are.
 - **In a loft** (the top storey: a room upstairs with no room over it): as indoors, plus three tenths of whatever the 10-day average is above 10 C: the sun on the roof (about 24 C in a 21 C July, no warmer than a room from October to April); 22 C while the power grid is on.
 - **In a basement** (any level below ground): the earth takes the edge off the seasons, running a month behind the season: about 5 C from January to March and 13 C from July to September. Cooler than a room until August, warmer in the autumn (a September vessel ferments in 16 to 20 days there), and under 10 C from December to May.
-- **By a fire**: any lit fire within 2 tiles on the same floor holds **28 C** (banked embers 24 C) for as long as the fuel lasts: the vessel takes 11 days and a fresh cask 35, in any month. Too warm for malting (14 days instead of 5).
+- **By a fire**: any lit fire within 2 tiles on the same floor holds an indoor station at **28 C** (banked embers 24 C) for as long as the fuel lasts: the vessel takes 11 days and a fresh cask 35, in any month. Too warm for malting (14 days instead of 5). Outside, the air carries the heat off: under an open roof the fire gives the 10-day average +15 C, in the open the day's weather +10 C, never past 28 C (banked embers +10 and +5, up to 24 C).
 
-That gives the year a shape: malt in spring or autumn, brew and sour indoors from May to August, and keep a cask going through winter by the fire. A batch that runs into the cold waits under 10 C until it warms again.
+That gives the year a shape: malt in spring or autumn, brew and sour indoors from May to August, and keep a cask going through winter by an indoor fire. A batch that runs into the cold waits under 10 C until it warms again, and stops altogether once it freezes.
 
 Hover a running batch in the floor's window for its progress, time left at today's temperature, the temperature and place, and its working rate.
 
-These are the days a run takes by the month it starts, on the game's forecasts for default weather, the grid off (`tools/season_report.lua`).
+These are the days a run takes by the month it starts, on the game's sampled weather for default settings, the grid off (`tools/season_report.lua`).
 
 | Month | Ferment, open air | Ferment, indoors | Ferment, loft | Ferment, basement | Cask from fresh, open air | Cask from fresh, indoors | Cask from fresh, loft | Cask from fresh, basement |
 |---|---|---|---|---|---|---|---|---|
-| Jan | 84–115 | 103–133 | 102–133 | 130–156 | 127–154 | 139–168 | 135–163 | 185–211 |
-| Feb | 58–87 | 76–106 | 75–105 | 104–130 | 98–126 | 111–139 | 107–135 | 157–184 |
-| Mar | 34–60 | 48–79 | 46–78 | 77–103 | 71–98 | 82–111 | 78–106 | 130–157 |
-| Apr | 16–36 | 22–51 | 20–50 | 50–76 | 50–72 | 55–82 | 50–78 | 102–129 |
-| May | 11–18 | 10–22 | 10–21 | 23–50 | 41–51 | 38–54 | 35–50 | 75–104 |
-| Jun | 11–12 | 10 | 10 | 17–23 | 39–43 | 35–39 | 35 | 66–75 |
+| Jan | 87–117 | 94–126 | 94–126 | 130–156 | 127–157 | 132–162 | 129–158 | 185–211 |
+| Feb | 58–88 | 67–99 | 67–99 | 104–130 | 98–128 | 104–134 | 101–130 | 157–184 |
+| Mar | 34–60 | 39–71 | 38–71 | 77–103 | 71–98 | 75–105 | 72–101 | 130–157 |
+| Apr | 16–36 | 17–43 | 16–43 | 50–76 | 50–72 | 50–77 | 46–73 | 102–129 |
+| May | 11–18 | 10–17 | 10–16 | 23–50 | 41–51 | 38–50 | 35–46 | 75–104 |
+| Jun | 11–12 | 10 | 10 | 17–23 | 39–43 | 35–38 | 35 | 66–75 |
 | Jul | 10–14 | 10 | 10 | 15–18 | 40–54 | 35–41 | 35–36 | 63–67 |
-| Aug | 11–17 | 10–12 | 10–11 | 15–16 | 48–230 | 39–244 | 36–187 | 67–151 |
-| Sep | 11–85 | 10–111 | 10–103 | 16–20 | 231–237 | 246–251 | 204–246 | 161–265 |
-| Oct | 87–158 | 124–200 | 117–200 | 20–143 | 210–231 | 224–248 | 221–245 | 262–266 |
-| Nov | 136–157 | 158–183 | 158–183 | 150–200 | 184–210 | 196–223 | 192–220 | 239–262 |
-| Dec | 110–135 | 130–157 | 130–157 | 156–181 | 155–183 | 167–195 | 164–191 | 212–238 |
+| Aug | 11–17 | 10–12 | 10 | 15–16 | 48–239 | 39–152 | 36–74 | 67–151 |
+| Sep | 11–137 | 10–20 | 10–20 | 16–20 | 236–241 | 169–235 | 92–233 | 161–265 |
+| Oct | 139–175 | 25–186 | 21–186 | 20–143 | 215–236 | 218–235 | 215–233 | 262–266 |
+| Nov | 142–168 | 149–175 | 149–175 | 150–200 | 186–214 | 189–217 | 186–214 | 239–262 |
+| Dec | 115–141 | 122–148 | 122–148 | 156–181 | 157–185 | 161–188 | 158–186 | 212–238 |
 
-While the grid is on, a room or a loft (22 C) ferments in 10 days and sours a fresh cask in 35, any month. By a fire (28 C): 11 and 35, malting 14; by banked embers (24 C): 10 and 35, malting 7.
+While the grid is on, a room or a loft (22 C) ferments in 10 days and sours a fresh cask in 35, any month. By a fire indoors (28 C): 11 and 35, malting 14; by banked embers indoors (24 C): 10 and 35, malting 7.
+
+By a fire outside, the same days for malting, fermenting and a fresh cask:
+
+| Month | Malting, fire under a roof | Malting, fire in the open | Ferment, fire under a roof | Ferment, fire in the open | Cask, fire under a roof | Cask, fire in the open |
+|---|---|---|---|---|---|---|
+| Jan | 5–7 | 7–16 | 19–37 | 29–56 | 56–78 | 77–105 |
+| Feb | 5–6 | 6–14 | 13–21 | 20–38 | 45–61 | 58–82 |
+| Mar | 5 | 5–9 | 10–16 | 12–22 | 35–45 | 42–58 |
+| Apr | 5–9 | 5–7 | 10 | 11–14 | 35 | 36–44 |
+| May | 8–14 | 6–12 | 10–11 | 10–11 | 35 | 35–36 |
+| Jun | 14 | 9–12 | 11 | 11 | 35 | 35 |
+| Jul | 14 | 9–14 | 11 | 10–11 | 35 | 35 |
+| Aug | 14 | 7–12 | 11 | 10–11 | 35 | 35–38 |
+| Sep | 11–14 | 6–11 | 11 | 10–12 | 35 | 38–83 |
+| Oct | 6–10 | 5–6 | 10 | 12–22 | 35–57 | 85–138 |
+| Nov | 5–6 | 6–14 | 10–21 | 26–66 | 58–88 | 126–138 |
+| Dec | 5–7 | 8–17 | 21–26 | 50–66 | 75–87 | 103–125 |
+
+A porch fire is the winter malting floor: the cold air takes the fire down to the grain's 12 to 20 C.
 
 ## Skills
 
@@ -403,7 +424,7 @@ Still to check in the game:
 4. A full vessel and a running vessel refuse to be picked up, with the red line.
 5. Spent Grain eaten from a trough, and taken by the composter.
 6. Wort refuses to mix with another drink in a vanilla container.
-7. "(Basement)" and its temperature on a station below ground; "(By a fire)" at 28 C within 2 tiles of a lit fire.
+7. "(Basement)" and its temperature on a station below ground; "(By a fire)" at 28 C within 2 tiles of a lit fire indoors, "(By a fire, under a roof)" and "(By a fire, in the open)" outside; *Paused here (frozen)* on a vessel or cask at -3 C and below.
 8. A run with real timers and temperature on, in a cold month and a hot month, indoors, outdoors, in a basement and by a fire.
 9. The hose: attach; Pump to Cask from both stations, with 5 L, 10 L, the air line and all that fits each moving what it says; greyed options giving their reasons (empty vessel, short tank, no room, already at the air line); detach; and a destroyed station dropping the hose.
 10. Cask Info: opens from the cask's submenu, fills its bars, counts down while souring, shows bottles once ready and the hose when joined, and closes past 6 squares or when the cask is picked up.
