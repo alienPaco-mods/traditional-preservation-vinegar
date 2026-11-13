@@ -1,5 +1,8 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.18
+- **Frozen stages pause** (realism pass L6 and L7, user 2026-11-13): the malting floor's wet grain stops at 0 C and below, the vessel's ferment and the cask's souring at -3 C and below (`V.FREEZE_C`: alcohol and acid keep them liquid a little longer), through TP Core's `Weather.frozen`, on Forgiving, Normal and Harsh alike; Off still ignores the weather. Paused, not killed: they go on once thawed. The 0.02 floor holds above freezing only. January malting outdoors takes about 83 days to the malt (was 69); first bottles from a January start move a day or so. The popups, the info block and the cask's window say *Paused here (frozen)* instead of a time left (`V.caskStatus` gives no hours while frozen). Goldens re-recorded (season report, simulate). Tests in `test_vinegar.lua`. In-game step 118 of `TESTING_GUIDE.md`.
+
 ## 0.2.17
 - **The realism pass's Core part reaches the floor, vessel and cask** (TP Core, 2026-11-13): an unheated room or loft is 2 C warmer in the cold months; a fire under an open roof or in the open warms the air it stands in instead of holding 28 C (indoors unchanged). `tools/season_report.lua` gains a by-month table for fires outside (a January ferment: 19 to 37 days by a porch fire, 29 to 56 by a campfire; 11 indoors). Tests in `test_vinegar.lua` follow the warmer room. The guide's tables wait for the vessel's and cask's frozen stop (ROADMAP, the curve edits), to be regenerated once.
 

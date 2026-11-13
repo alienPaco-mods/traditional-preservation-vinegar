@@ -48,14 +48,18 @@ check("acetic: reduced above 30 C", V.aceticRate(33) < 1)
 V.SENSITIVITY = 0
 check("sensitivity off runs at full speed", V.alcoholicRate(-20) == 1 and V.aceticRate(45) == 1)
 V.SENSITIVITY = 1.5
-check("harsh never stops a batch", V.aceticRate(-20) >= V.MIN_RATE)
+check("harsh never stops a batch above freezing", V.aceticRate(-2) >= V.MIN_RATE and V.alcoholicRate(-2) >= V.MIN_RATE
+    and V.maltingRate(1) >= V.MIN_RATE)
+check("wort and vinegar pause frozen, at -3 C", V.alcoholicRate(-3) == 0 and V.aceticRate(-20) == 0)
 V.SENSITIVITY = 1
 local Weather = require "TraditionalPreservationCore/Weather"
 check("a room is the season's mean, a little warmer in a cool one", Weather.placeTemperature({ temperature = 30, seasonTemperature = 12 }, "Sheltered") == Weather.roomTemperature(12)
     and Weather.roomTemperature(12) > 12)
 
 check("malting: best at 12 to 20 C", V.maltingRate(12) == 1 and V.maltingRate(20) == 1)
-check("malting: stalls in frost", V.maltingRate(0) < 0.051)
+check("malting: stalls in frost", V.maltingRate(1) < 0.051)
+check("malting: wet grain pauses frozen at 0 C", V.maltingRate(0) == 0)
+check("a frozen cask has no time left, it waits", V.caskStatus({ ml = 1000, strength = 0.5 }, { temperature = -10, seasonTemperature = -10 }, "Open").hoursLeft == nil)
 check("malting: suffers in heat", V.maltingRate(30) < 0.35)
 
 -- Timers

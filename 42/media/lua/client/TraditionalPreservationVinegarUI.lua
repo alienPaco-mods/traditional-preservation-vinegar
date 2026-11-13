@@ -467,6 +467,7 @@ end
 
 -- Whole days, or hours under a day, as the test timers and a nearly soured pool need them.
 local function leftText(hours)
+    if not hours then return getText("IGUI_TraditionalPreservationCore_Paused") end
     if hours >= 24 then return say("IGUI_TraditionalPreservationVinegar_DaysLeft", tostring(math.ceil(hours / 24))) end
     if hours <= 1 then return getText("IGUI_TraditionalPreservationVinegar_UnderHour") end
     return say("IGUI_TraditionalPreservationVinegar_HoursLeft", tostring(math.ceil(hours)))

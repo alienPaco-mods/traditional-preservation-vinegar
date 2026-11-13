@@ -43,6 +43,9 @@ local COOK_MINUTES = { ["TraditionalPreservationVinegar.GreenMalt"] = 120, ["Tra
 local CRAFT_TIMES = { SteepGrain = 120, MashMalt = 300, StrainMash = 200 }
 V.SENSITIVITY = 1
 V.MIN_RATE = 0.02
+-- Wort and vinegar freeze below water, as their alcohol and acid keep them liquid a little longer: the vessel and
+-- the cask pause at this, the malting floor's wet grain at 0 C.
+V.FREEZE_C = -3
 
 -- All volumes are whole millilitres, so bottling can't drift.
 -- The vanilla jarring recipe takes 2 uses of vinegar for a 1 L jar, and a real jar takes about
@@ -111,16 +114,20 @@ local function scaled(rate)
     return Weather.scaled(rate, V.SENSITIVITY, V.MIN_RATE)
 end
 
--- Each stage's speed at a temperature, 0 to 1, after the sandbox's sensitivity.
+-- Each stage's speed at a temperature, 0 to 1, after the sandbox's sensitivity. Frozen a stage pauses (TP Core's
+-- Weather.frozen); the floor holds above freezing only.
 function V.maltingRate(celsius)
+    if Weather.frozen(celsius, V.SENSITIVITY) then return 0 end
     return scaled(Weather.curve(MALTING_CURVE, celsius))
 end
 
 function V.alcoholicRate(celsius)
+    if Weather.frozen(celsius, V.SENSITIVITY, V.FREEZE_C) then return 0 end
     return scaled(Weather.curve(ALCOHOLIC_CURVE, celsius))
 end
 
 function V.aceticRate(celsius)
+    if Weather.frozen(celsius, V.SENSITIVITY, V.FREEZE_C) then return 0 end
     return scaled(Weather.curve(ACETIC_CURVE, celsius))
 end
 
@@ -475,7 +482,7 @@ function V.updateCaskAt(state, ledger, cask)
     return place
 end
 
--- For the menus. hoursLeft is to fully soured and assumes the temperature holds.
+-- For the menus. hoursLeft is to fully soured and assumes the temperature holds; nil while frozen.
 function V.caskStatus(state, ledger, place)
     local temperature = Weather.placeTemperature(ledger, place)
     local rate = V.aceticRate(temperature)
@@ -483,7 +490,7 @@ function V.caskStatus(state, ledger, place)
         temperature = temperature,
         place = place,
         rate = rate,
-        hoursLeft = (1 - state.strength) * V.ACETIC_HOURS / (V.caskSpeed(state) * rate),
+        hoursLeft = rate > 0 and (1 - state.strength) * V.ACETIC_HOURS / (V.caskSpeed(state) * rate) or nil,
     }
 end
 
