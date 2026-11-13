@@ -1,5 +1,8 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.17
+- **The realism pass's Core part reaches the floor, vessel and cask** (TP Core, 2026-11-13): an unheated room or loft is 2 C warmer in the cold months; a fire under an open roof or in the open warms the air it stands in instead of holding 28 C (indoors unchanged). `tools/season_report.lua` gains a by-month table for fires outside (a January ferment: 19 to 37 days by a porch fire, 29 to 56 by a campfire; 11 indoors). Tests in `test_vinegar.lua` follow the warmer room. The guide's tables wait for the vessel's and cask's frozen stop (ROADMAP, the curve edits), to be regenerated once.
+
 ## 0.2.16
 - **Wort that sours** (user, 2026-11-13; from the realism pass): wort waiting for the yeast becomes **Sour Wort**
   (new fluid `MaltSourWort`, drinkable, a little unhappiness) in 2 days at 20 C, 1 at 30 C, about 5 in a cool cellar,

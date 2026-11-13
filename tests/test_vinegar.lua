@@ -51,7 +51,8 @@ V.SENSITIVITY = 1.5
 check("harsh never stops a batch", V.aceticRate(-20) >= V.MIN_RATE)
 V.SENSITIVITY = 1
 local Weather = require "TraditionalPreservationCore/Weather"
-check("a room is the season's mean", Weather.placeTemperature({ temperature = 30, seasonTemperature = 12 }, "Sheltered") == 12)
+check("a room is the season's mean, a little warmer in a cool one", Weather.placeTemperature({ temperature = 30, seasonTemperature = 12 }, "Sheltered") == Weather.roomTemperature(12)
+    and Weather.roomTemperature(12) > 12)
 
 check("malting: best at 12 to 20 C", V.maltingRate(12) == 1 and V.maltingRate(20) == 1)
 check("malting: stalls in frost", V.maltingRate(0) < 0.051)
@@ -134,7 +135,7 @@ ledger.temperature = 5
 status = V.batchStatus("alcoholic", { done = 120 }, 240, ledger)
 check("the cold stretches the time left", status.hoursLeft > 2000 and status.temperature == 5)
 status = V.batchStatus("alcoholic", { done = 120, sheltered = true }, 240, ledger)
-check("a sheltered batch goes by the season", status.temperature == 15 and status.place == "Sheltered")
+check("a sheltered batch goes by the season, a room's", status.temperature == Weather.roomTemperature(15) and status.place == "Sheltered")
 ledger.temperature = 25
 check("the floor goes by its own temperature range", V.batchStatus("malting", { done = 60 }, 120, ledger).rate < 0.7)
 check("a run saved with heat hours loses nothing (heat harm is gone, 0.2.10)", V.fermentedMl(20000) == math.floor(20000 * V.FERMENT_YIELD + 0.5)

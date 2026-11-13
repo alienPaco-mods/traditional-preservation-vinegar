@@ -75,7 +75,8 @@ end
 
 local days = readDays(arg[1] or "tools/climate_year.csv")
 settled = settle(days)
--- Indoors and under an open roof read the same (the season's mean), so one column serves both.
+-- Under an open roof reads the season's mean, as indoors does but for a room's winter lift (Weather.roomTemperature):
+-- within 2 C of the indoors column, so it has none of its own.
 local PLACES = { "Open", "Sheltered", "Grid", "Loft", "Basement" }
 print("| Month | Ferment, outdoors | Ferment, indoors | Ferment, grid on | Ferment, loft | Ferment, basement | First cask, outdoors | First cask, indoors | First cask, grid on | First cask, loft | First cask, basement |")
 print("|---|---|---|---|---|---|---|---|---|---|---|")
@@ -96,12 +97,24 @@ for month = 1, 12 do
     end
     print("| " .. table.concat(cells, " | ") .. " |")
 end
--- By a fire the temperature holds while the fuel lasts, whatever the month.
+-- By a fire indoors the temperature holds while the fuel lasts, whatever the month; under an open roof and in the
+-- open it is the air's plus the fire's lift (Hearth.FIRE_LIFT), never past the indoor heat.
 local Hearth = require "TraditionalPreservationCore/Hearth"
+local FIRES = { Hearth.PLACE .. "Covered", Hearth.PLACE .. "Open" }
+print("")
+print("| Month | Malting by a fire, under a roof | in the open | Ferment by a fire, under a roof | in the open | First cask by a fire, under a roof | in the open |")
+print("|---|---|---|---|---|---|---|")
+for month = 1, 12 do
+    local cells = { MONTHS[month] }
+    for _, kind in ipairs({ { V.MALTING_HOURS, V.maltingRate }, { V.ALCOHOLIC_HOURS, V.alcoholicRate }, { V.ACETIC_HOURS, V.aceticRate } }) do
+        for _, place in ipairs(FIRES) do table.insert(cells, range(days, month, kind[1], kind[2], place, "%.1f-%.1f")) end
+    end
+    print("| " .. table.concat(cells, " | ") .. " |")
+end
 print("")
 for _, place in ipairs({ Hearth.PLACE, Hearth.EMBERS }) do
     local celsius = Hearth.fireC(place)
-    print(string.format("%s (%d C), any month: malting %.1f days, ferment %.1f, first cask %.1f", place, celsius,
+    print(string.format("%s indoors (%d C), any month: malting %.1f days, ferment %.1f, first cask %.1f", place, celsius,
         V.MALTING_HOURS / V.maltingRate(celsius) / 24, V.ALCOHOLIC_HOURS / V.alcoholicRate(celsius) / 24,
         V.ACETIC_HOURS / V.aceticRate(celsius) / 24))
 end
