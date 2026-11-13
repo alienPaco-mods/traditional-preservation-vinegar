@@ -13,6 +13,9 @@ local Tiles = require "TraditionalPreservationVinegar/Tiles"
 V.MOD_DATA_KEY = "TraditionalPreservationVinegar"
 V.SPRITE_PREFIX = Tiles.PREFIX
 
+-- The mash is heated in its bucket on the hob (Core's Stone Hearth sets its pot in the hole for it).
+Hearth.cooksOn(Hearth.STOVE, "TraditionalPreservationVinegar.BucketMash")
+
 -- Tile numbers, from the Tiles.lua that tools/build_tileset.py writes. Each sprite is the east facing,
 -- and the next one is the south facing.
 local OVERLAYS = Tiles.OVERLAYS

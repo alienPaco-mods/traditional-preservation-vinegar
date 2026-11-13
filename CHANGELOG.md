@@ -1,5 +1,8 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.19
+The Bucket of Mash is TP Core's stove food (`Hearth.cooksOn`): the Stone Hearth sets its pot in the hole while it heats. Needs this TP Core (the Stone Hearth hub, step ii).
+
 ## 0.2.18
 - **Docs regenerated** (2026-11-13): the README's season, wort and fire-outside tables, the Brewer's Almanac (first bottles from `tools/simulate.lua`), the Yearly Plan and the Workshop text from `tools/season_report.lua`; the fire's 28 C is indoors only; the floor stops at 0 C, the vessel and cask at -3 C (*Paused here (frozen)*).
 - **Frozen stages pause** (realism pass L6 and L7, user 2026-11-13): the malting floor's wet grain stops at 0 C and below, the vessel's ferment and the cask's souring at -3 C and below (`V.FREEZE_C`: alcohol and acid keep them liquid a little longer), through TP Core's `Weather.frozen`, on Forgiving, Normal and Harsh alike; Off still ignores the weather. Paused, not killed: they go on once thawed. The 0.02 floor holds above freezing only. January malting outdoors takes about 83 days to the malt (was 69); first bottles from a January start move a day or so. The popups, the info block and the cask's window say *Paused here (frozen)* instead of a time left (`V.caskStatus` gives no hours while frozen). Goldens re-recorded (season report, simulate). Tests in `test_vinegar.lua`. In-game step 118 of `TESTING_GUIDE.md`.
