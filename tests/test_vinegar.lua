@@ -167,7 +167,7 @@ local function bucketItem(fullType)
     function item:getFullType() return fullType end
     function item:getModData() return self.modData end
     function item:getFluidContainer() self.fluid = self.fluid or container(nil, 0); return self.fluid end
-    function item:getContainer() return { DoRemoveItem = function() item.removed = true end } end
+    function item:getContainer() return { Remove = function() item.removed = true end } end
     function item:getWorldItem() return nil end
     return item
 end
@@ -454,7 +454,7 @@ check("a bottle only comes back once", #given == 2)
 -- The engine's own Crafted Bottle (ReplaceOnDeplete), handed over during the craft.
 local function engineSpare()
     local spare = { removed = false }
-    spare.container = { DoRemoveItem = function(_, item) item.removed = true end }
+    spare.container = { Remove = function(_, item) item.removed = true end }
     function spare:getContainer() return self.container end
     return spare
 end

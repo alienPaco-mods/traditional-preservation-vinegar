@@ -2,6 +2,7 @@
 -- Bottling writes the bottle's type on the Vinegar. Hand crafts such as jarring give that same bottle
 -- back, emptied. Anything else that uses one up, and looted vinegar, leaves a plain Crafted Bottle, as
 -- vanilla's own replacement can only name one item and the other bottles spawn full of their drink.
+local Action = require "TraditionalPreservationCore/Action"
 require "TraditionalPreservationVinegar"
 local Handcraft = require "TraditionalPreservationCore/Handcraft"
 
@@ -35,7 +36,7 @@ function V.returnBottles(character, usedItems, spares)
             local spare = table.remove(spares)
             local bottleType = V.bottleBack(item)
             if not (spare and bottleType == V.SPARE_BOTTLE) then
-                if spare then spare:getContainer():DoRemoveItem(spare) end
+                if spare then Action.removeItem(spare) end
                 local bottle = instanceItem(bottleType)
                 local fluid = bottle and bottle:getFluidContainer()
                 if fluid then fluid:Empty() end

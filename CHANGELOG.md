@@ -1,5 +1,8 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.24
+A spare Crafted Bottle taken back leaves the hands (user, 2026-11-14): `V.returnBottles` takes it out through TP Core's `Action.removeItem` (vanilla's `Remove`, which also empties the hands; was `DoRemoveItem`). test_vinegar's stand-ins have `Remove`. In-game step 158h of TP Core's `TESTING_GUIDE.md`.
+
 ## 0.2.23
 Refactor with TP Core's Weather.lua tidy (2026-11-14): the malting, alcoholic and acetic rates are `Weather.rate` (the local `scaled` is gone). Nothing changes in game; tests and golden results unchanged.
 
