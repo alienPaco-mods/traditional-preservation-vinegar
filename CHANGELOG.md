@@ -1,5 +1,8 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.20
+Guide: the Bucket of Mash heats on any stove or fire, and shows as the pot in TP Core's Stone Hearth (2026-11-14).
+
 ## 0.2.19
 The Bucket of Mash is TP Core's stove food (`Hearth.cooksOn`): the Stone Hearth sets its pot in the hole while it heats. Needs this TP Core (the Stone Hearth hub, step ii).
 

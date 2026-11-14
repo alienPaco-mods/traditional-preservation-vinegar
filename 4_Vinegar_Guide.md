@@ -76,7 +76,7 @@ Vanilla vinegar is loot-only, and without it there's no pickling. This mod lets 
 
 **Kilning.** Put Green Malt on a fire or in an oven. It dries into **Malt** in about 3 hours. Don't leave it a day or it burns. **Don't leave it waiting either:** Green Malt is fresh for 2 days and rotten after 5, counted from when the floor finishes. Stale malt still kilns fine, but rotten Green Malt never turns into Malt. Compost it.
 
-**Mashing.** Malt + a metal bucket with exactly 10 L of water gives a **Bucket of Mash**. Heat it 1.5 hours to make **Prepared Mash**, then **Strain Mash** through a cloth. The bucket comes back holding **10 L of Wort**, plus a **Spent Grain**.
+**Mashing.** Malt + a metal bucket with exactly 10 L of water gives a **Bucket of Mash**. Heat it 1.5 hours on any stove or fire (in TP Core's Stone Hearth it shows as the pot set in the hole) to make **Prepared Mash**, then **Strain Mash** through a cloth. The bucket comes back holding **10 L of Wort**, plus a **Spent Grain**.
 
 **Don't let the wort wait.** Wort left for the yeast **sours**: in 2 days in a 20 C room, 1 day at 30 C, about 5 in a cool cellar, never while frozen. It turns to **Sour Wort**, which you can drink but the vessel won't take. That goes for a bucket, any container, and the vessel's own Wort tank. Mash on the day the vessel is free, and keep your grain as Malt, which never spoils.
 
