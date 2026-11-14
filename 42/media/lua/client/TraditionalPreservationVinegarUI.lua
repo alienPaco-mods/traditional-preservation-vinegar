@@ -88,6 +88,8 @@ end
 
 -- Picking up can break a station, and a broken one would lose what it holds.
 UI.keepInPlace(holdsLiquid)
+-- No station is put down in front of a door (TP Core's Doors).
+UI.keepDoorsFree(require("TraditionalPreservationVinegar/Tiles").STATIONS)
 
 local TANK_TITLES = { [ResourceIO.Input] = "IGUI_TraditionalPreservationVinegar_TankWort", [ResourceIO.Output] = "IGUI_TraditionalPreservationVinegar_TankFermented" }
 

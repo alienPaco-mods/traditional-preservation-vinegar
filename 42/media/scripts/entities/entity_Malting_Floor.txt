@@ -29,6 +29,7 @@ module TraditionalPreservationVinegar
         }
         component SpriteConfig
         {
+            OnIsValid = TraditionalPreservationCore.doorFits,
             isThumpable = false,
             face S
             {
