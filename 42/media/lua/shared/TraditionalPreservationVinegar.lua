@@ -113,25 +113,18 @@ local WORT_CURVE = { { 0, 0 }, { 5, 0.15 }, { 13, 0.4 }, { 20, 1 }, { 30, 2 }, {
 -- Sprouting grain likes it cool: best from 12 to 20 C, and it stalls in frost or heat.
 local MALTING_CURVE = { { 4.9, 0.05 }, { 5, 0.3 }, { 12, 1 }, { 20, 1 }, { 28, 0.35 }, { 33, 0.05 } }
 
-local function scaled(rate)
-    return Weather.scaled(rate, V.SENSITIVITY, V.MIN_RATE)
-end
-
 -- Each stage's speed at a temperature, 0 to 1, after the sandbox's sensitivity. Frozen a stage pauses (TP Core's
 -- Weather.frozen); the floor holds above freezing only.
 function V.maltingRate(celsius)
-    if Weather.frozen(celsius, V.SENSITIVITY) then return 0 end
-    return scaled(Weather.curve(MALTING_CURVE, celsius))
+    return Weather.rate(MALTING_CURVE, celsius, V.SENSITIVITY, V.MIN_RATE)
 end
 
 function V.alcoholicRate(celsius)
-    if Weather.frozen(celsius, V.SENSITIVITY, V.FREEZE_C) then return 0 end
-    return scaled(Weather.curve(ALCOHOLIC_CURVE, celsius))
+    return Weather.rate(ALCOHOLIC_CURVE, celsius, V.SENSITIVITY, V.MIN_RATE, V.FREEZE_C)
 end
 
 function V.aceticRate(celsius)
-    if Weather.frozen(celsius, V.SENSITIVITY, V.FREEZE_C) then return 0 end
-    return scaled(Weather.curve(ACETIC_CURVE, celsius))
+    return Weather.rate(ACETIC_CURVE, celsius, V.SENSITIVITY, V.MIN_RATE, V.FREEZE_C)
 end
 
 -- Not scaled by the sensitivity: that setting is for the brewer's own stages.

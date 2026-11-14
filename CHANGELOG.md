@@ -1,5 +1,8 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.23
+Refactor with TP Core's Weather.lua tidy (2026-11-14): the malting, alcoholic and acetic rates are `Weather.rate` (the local `scaled` is gone). Nothing changes in game; tests and golden results unchanged.
+
 ## 0.2.22
 **No station in front of a door** (user's pick, 2026-11-14, after TP Core's in-game step 146b, where an Orleans cask went up in front of a Stone Hearth's mouth): the Fermentation Vessel, the Malting Floor and the Vinegar Cask can't be built or put down on the tile in front of a door (TP Core's `Doors`): their build recipes ask `TraditionalPreservationCore.doorFits`, and `UI.keepDoorsFree(Tiles.STATIONS)`. In-game step 147 of TP Core's `TESTING_GUIDE.md` passed (INGAME_PASS 146).
 
