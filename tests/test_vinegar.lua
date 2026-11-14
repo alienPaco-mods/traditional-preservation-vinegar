@@ -168,6 +168,7 @@ local function bucketItem(fullType)
     function item:getModData() return self.modData end
     function item:getFluidContainer() self.fluid = self.fluid or container(nil, 0); return self.fluid end
     function item:getContainer() return { DoRemoveItem = function() item.removed = true end } end
+    function item:getWorldItem() return nil end
     return item
 end
 local bucketOut = bucketItem("Base.BucketEmpty")
