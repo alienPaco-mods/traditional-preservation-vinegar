@@ -1,5 +1,8 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.21
+Refactor with TP Core's Hearth.lua split (2026-11-14): `V.placeTemperature` is `Weather.placeTemperature` (TP Core dropped the `Hearth.placeTemperature` alias). Nothing changes in game; tests and golden results unchanged.
+
 ## 0.2.20
 Guide: the Bucket of Mash heats on any stove or fire, and shows as the pot in TP Core's Stone Hearth (2026-11-14).
 

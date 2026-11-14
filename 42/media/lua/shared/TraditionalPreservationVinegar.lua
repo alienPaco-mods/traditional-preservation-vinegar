@@ -145,7 +145,7 @@ end
 -- ledger keeps totals for; by a fire counts by the clock.
 V.PLACES = Weather.PLACES
 V.placeOf = Hearth.placeOf
-V.placeTemperature = Hearth.placeTemperature
+V.placeTemperature = Weather.placeTemperature
 
 -- Ledger keys are kind .. place ("aceticBasement"), as in every save so far.
 local KINDS = {
