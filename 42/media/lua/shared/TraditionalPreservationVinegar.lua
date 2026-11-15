@@ -5,6 +5,7 @@ TraditionalPreservationVinegar = TraditionalPreservationVinegar or {}
 local V = TraditionalPreservationVinegar
 local Weather = require "TraditionalPreservationCore/Weather"
 local Fire = require "TraditionalPreservationCore/Fire"
+local StoneHearth = require "TraditionalPreservationCore/StoneHearth"
 local Station = require "TraditionalPreservationCore/Station"
 local Container = require "TraditionalPreservationCore/Container"
 local FluidAgeing = require "TraditionalPreservationCore/FluidAgeing"
@@ -14,7 +15,7 @@ V.MOD_DATA_KEY = "TraditionalPreservationVinegar"
 V.SPRITE_PREFIX = Tiles.PREFIX
 
 -- The mash is heated in its bucket on the hob (Core's Stone Hearth sets its pot in the hole for it).
-Fire.cooksOn(Fire.STOVE, "TraditionalPreservationVinegar.BucketMash")
+StoneHearth.cooksOn(StoneHearth.STOVE, "TraditionalPreservationVinegar.BucketMash")
 
 -- Tile numbers, from the Tiles.lua that tools/build_tileset.py writes. Each sprite is the east facing,
 -- and the next one is the south facing.

@@ -1,5 +1,8 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.28
+Refactor with TP Core's Stone Hearth split (2026-11-15): the mash bucket is stove food through `StoneHearth.cooksOn`. Nothing changes in game.
+
 ## 0.2.27
 Refactor with TP Core's names (2026-11-15): TP Core's `Hearth` is `Fire`; the place by a fire is `Fireside` (the season report's line reads Fireside indoors). Nothing changes in game.
 
