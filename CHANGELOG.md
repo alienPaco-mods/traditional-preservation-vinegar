@@ -1,6 +1,7 @@
 # Changelog: Traditional Preservation (Vinegar)
 
 ## 0.2.28
+- **Docs** (2026-11-15): decisions in this CHANGELOG are stated plainly, without attributions. Nothing changes in game.
 - **README** (2026-11-15): its heading names 0.2.28 (was 0.2.16), as mod.info does.
 Refactor with TP Core's Stone Hearth split (2026-11-15): the mash bucket is stove food through `StoneHearth.cooksOn`. Nothing changes in game.
 
@@ -11,16 +12,16 @@ Refactor with TP Core's names (2026-11-15): TP Core's `Hearth` is `Fire`; the pl
 Refactor with Yeast's (2026-11-15): the popups and the info block read a batch's recipe hours through TP Core's `Weather.recipeHours` (each wrote `getRecipe():getTime() / 3600`). Nothing changes in game; tests and golden results unchanged.
 
 ## 0.2.25
-Refactor (user, 2026-11-15; refactor pass step c, Vinegar): nothing changes in game. **TP Core's helpers:** every greyed menu row with its reason goes through `UI.disable` (`disableWith` and eight hand-set rows gone); the bottle, the hose and the jar leave through `Action.removeItem` (TPBottleVinegar, TPVinegarHose, TPVinegarMother's `swap`); litres are written by `UI.litres` directly (the local `litresText` is gone); `Container.ml` rounds the tank's and a poured container's millilitres; the debug fill menu picks its item with `UI.firstSelected`. **Say it once:** the cask's notes (crowded, starter), its status where it stands, the carried-fluid search and the World's track are each one local helper in the UI; the Bottles file's Crafted Bottle walk is one. `KINDS` names the rate functions directly. **Named:** `V.STRAINED_BUCKET`, the strained wort from `V.BUCKET_ML`, `V.VINEGAR_ITEM` in TPBottleVinegar, the mother's `PLAIN_JAR`, `V.POUR_MOST_LITRES` (pour and pump), `MOTHER_ICON`. A run's place before its World first sees it is TP Core's `Weather.NEW_RUN_PLACE` (the open air, as before). **Pre-release leftovers gone:** a run's `sheltered`, `mother`, `lastOpen` and `lastSheltered`, a cask's `vinegarMl`, `lastOpen` and `lastSheltered`, and their tests; `V.onBottled` no longer guards for a test's missing recipe data (the test gives one). **New console command `TPV.kit(kind)`** (user, 2026-11-15): `build` (all three stations), `malt`, `ferment`, `cask`, or `all`; `TPV.kit()` lists them. The console requires the Bottles file it uses. test_console checks the kits. Tests and golden results otherwise unchanged. In-game step 160 of TP Core's `TESTING_GUIDE.md` (INGAME_PASS 159).
+Refactor (refactor pass step c, Vinegar): nothing changes in game. **TP Core's helpers:** every greyed menu row with its reason goes through `UI.disable` (`disableWith` and eight hand-set rows gone); the bottle, the hose and the jar leave through `Action.removeItem` (TPBottleVinegar, TPVinegarHose, TPVinegarMother's `swap`); litres are written by `UI.litres` directly (the local `litresText` is gone); `Container.ml` rounds the tank's and a poured container's millilitres; the debug fill menu picks its item with `UI.firstSelected`. **Say it once:** the cask's notes (crowded, starter), its status where it stands, the carried-fluid search and the World's track are each one local helper in the UI; the Bottles file's Crafted Bottle walk is one. `KINDS` names the rate functions directly. **Named:** `V.STRAINED_BUCKET`, the strained wort from `V.BUCKET_ML`, `V.VINEGAR_ITEM` in TPBottleVinegar, the mother's `PLAIN_JAR`, `V.POUR_MOST_LITRES` (pour and pump), `MOTHER_ICON`. A run's place before its World first sees it is TP Core's `Weather.NEW_RUN_PLACE` (the open air, as before). **Pre-release leftovers gone:** a run's `sheltered`, `mother`, `lastOpen` and `lastSheltered`, a cask's `vinegarMl`, `lastOpen` and `lastSheltered`, and their tests; `V.onBottled` no longer guards for a test's missing recipe data (the test gives one). **New console command `TPV.kit(kind)`**: `build` (all three stations), `malt`, `ferment`, `cask`, or `all`; `TPV.kit()` lists them. The console requires the Bottles file it uses. test_console checks the kits. Tests and golden results otherwise unchanged. In-game step 160 of TP Core's `TESTING_GUIDE.md` (INGAME_PASS 159).
 
 ## 0.2.24
-A spare Crafted Bottle taken back leaves the hands (user, 2026-11-14): `V.returnBottles` takes it out through TP Core's `Action.removeItem` (vanilla's `Remove`, which also empties the hands; was `DoRemoveItem`). test_vinegar's stand-ins have `Remove`. In-game step 158h of TP Core's `TESTING_GUIDE.md`.
+A spare Crafted Bottle taken back leaves the hands: `V.returnBottles` takes it out through TP Core's `Action.removeItem` (vanilla's `Remove`, which also empties the hands; was `DoRemoveItem`). test_vinegar's stand-ins have `Remove`. In-game step 158h of TP Core's `TESTING_GUIDE.md`.
 
 ## 0.2.23
 Refactor with TP Core's Weather.lua tidy (2026-11-14): the malting, alcoholic and acetic rates are `Weather.rate` (the local `scaled` is gone). Nothing changes in game; tests and golden results unchanged.
 
 ## 0.2.22
-**No station in front of a door** (user's pick, 2026-11-14, after TP Core's in-game step 146b, where an Orleans cask went up in front of a Stone Hearth's mouth): the Fermentation Vessel, the Malting Floor and the Vinegar Cask can't be built or put down on the tile in front of a door (TP Core's `Doors`): their build recipes ask `TraditionalPreservationCore.doorFits`, and `UI.keepDoorsFree(Tiles.STATIONS)`. In-game step 147 of TP Core's `TESTING_GUIDE.md` passed (INGAME_PASS 146).
+**No station in front of a door** (after TP Core's in-game step 146b, where an Orleans cask went up in front of a Stone Hearth's mouth): the Fermentation Vessel, the Malting Floor and the Vinegar Cask can't be built or put down on the tile in front of a door (TP Core's `Doors`): their build recipes ask `TraditionalPreservationCore.doorFits`, and `UI.keepDoorsFree(Tiles.STATIONS)`. In-game step 147 of TP Core's `TESTING_GUIDE.md` passed (INGAME_PASS 146).
 
 ## 0.2.21
 Refactor with TP Core's Hearth.lua split (2026-11-14): `V.placeTemperature` is `Weather.placeTemperature` (TP Core dropped the `Hearth.placeTemperature` alias). Nothing changes in game; tests and golden results unchanged.
@@ -33,13 +34,13 @@ The Bucket of Mash is TP Core's stove food (`Hearth.cooksOn`): the Stone Hearth 
 
 ## 0.2.18
 - **Docs regenerated** (2026-11-13): the README's season, wort and fire-outside tables, the Brewer's Almanac (first bottles from `tools/simulate.lua`), the Yearly Plan and the Workshop text from `tools/season_report.lua`; the fire's 28 C is indoors only; the floor stops at 0 C, the vessel and cask at -3 C (*Paused here (frozen)*).
-- **Frozen stages pause** (realism pass L6 and L7, user 2026-11-13): the malting floor's wet grain stops at 0 C and below, the vessel's ferment and the cask's souring at -3 C and below (`V.FREEZE_C`: alcohol and acid keep them liquid a little longer), through TP Core's `Weather.frozen`, on Forgiving, Normal and Harsh alike; Off still ignores the weather. Paused, not killed: they go on once thawed. The 0.02 floor holds above freezing only. January malting outdoors takes about 83 days to the malt (was 69); first bottles from a January start move a day or so. The popups, the info block and the cask's window say *Paused here (frozen)* instead of a time left (`V.caskStatus` gives no hours while frozen). Goldens re-recorded (season report, simulate). Tests in `test_vinegar.lua`. In-game step 118 of `TESTING_GUIDE.md`.
+- **Frozen stages pause** (realism pass L6 and L7): the malting floor's wet grain stops at 0 C and below, the vessel's ferment and the cask's souring at -3 C and below (`V.FREEZE_C`: alcohol and acid keep them liquid a little longer), through TP Core's `Weather.frozen`, on Forgiving, Normal and Harsh alike; Off still ignores the weather. Paused, not killed: they go on once thawed. The 0.02 floor holds above freezing only. January malting outdoors takes about 83 days to the malt (was 69); first bottles from a January start move a day or so. The popups, the info block and the cask's window say *Paused here (frozen)* instead of a time left (`V.caskStatus` gives no hours while frozen). Goldens re-recorded (season report, simulate). Tests in `test_vinegar.lua`. In-game step 118 of `TESTING_GUIDE.md`.
 
 ## 0.2.17
 - **The realism pass's Core part reaches the floor, vessel and cask** (TP Core, 2026-11-13): an unheated room or loft is 2 C warmer in the cold months; a fire under an open roof or in the open warms the air it stands in instead of holding 28 C (indoors unchanged). `tools/season_report.lua` gains a by-month table for fires outside (a January ferment: 19 to 37 days by a porch fire, 29 to 56 by a campfire; 11 indoors). Tests in `test_vinegar.lua` follow the warmer room. The guide's tables wait for the vessel's and cask's frozen stop (ROADMAP, the curve edits), to be regenerated once.
 
 ## 0.2.16
-- **Wort that sours** (user, 2026-11-13; from the realism pass): wort waiting for the yeast becomes **Sour Wort**
+- **Wort that sours** (from the realism pass): wort waiting for the yeast becomes **Sour Wort**
   (new fluid `MaltSourWort`, drinkable, a little unhappiness) in 2 days at 20 C, 1 at 30 C, about 5 in a cool cellar,
   never while frozen (`WORT_CURVE`, `V.WORT_SOUR_HOURS` 48). Buckets and containers age through TP Core's
   `FluidAgeing` (`V.WORT_SPEC`); the vessel's Wort tank keeps its record on the vessel (`V.ageTank`, `V.tankAge`).
@@ -50,11 +51,11 @@ The Bucket of Mash is TP Core's stove food (`Hearth.cooksOn`): the Stone Hearth 
   fifth: now a tenth, as 0.2.15 made it.
 
 ## 0.2.15
-- **The Yearly Plan** (guide chapter 15, user 2026-11-13): malting, fermenting and souring as the game's planting seasons: season, best and poor months, out of season, where and how long at best (fermenting and souring from `tools/season_report.lua`; malting at the month's mean, marked "about"), and the fire, embers and powered room for any month. The Tester's Toolkit is now chapter 16.
+- **The Yearly Plan** (guide chapter 15): malting, fermenting and souring as the game's planting seasons: season, best and poor months, out of season, where and how long at best (fermenting and souring from `tools/season_report.lua`; malting at the month's mean, marked "about"), and the fire, embers and powered room for any month. The Tester's Toolkit is now chapter 16.
 - **Docs pass, sweep step G** (2026-11-12): the guide describes the Malting Floor's window; `TPV.weather()` lists the loft and *In a shed*; README season table from the tool with Loft columns, the grid, a fire and embers; the room-heating caveat (README, Workshop text) says the grid and a fire count; Workshop text names Fish & Meat.
 - Needs Build 42.22 or newer (`versionMin`, was 42.20: everything is checked on 42.22). Workshop text (sweep step F). The guide gives a powered room's times (22 C: ferment 10 days, first
   cask 35).
-- **Souring loses a tenth to the air, not a fifth** (2026-11-12; user, after the realism pass: a breathing cask
+- **Souring loses a tenth to the air, not a fifth** (2026-11-12, after the realism pass: a breathing cask
   loses a few percent to a tenth). `V.ACETIC_LOSS` 0.1: 19 L of fermented wort gives about 17.2 L, 17 bottles, 85
   jars' worth (was 15.5 L, 15 bottles, 75 jars). The days to the first bottles are unchanged. Test, simulation
   golden re-recorded, guide, Collection guide, README, Workshop text.
