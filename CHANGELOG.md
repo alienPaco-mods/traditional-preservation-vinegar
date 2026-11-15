@@ -1,6 +1,7 @@
 # Changelog: Traditional Preservation (Vinegar)
 
 ## 0.2.28
+- **Guide shortened** (2026-11-15): the loft points to TP Core's guide; repeated tips, a secret and margin notes cut; `TPV.fast` no longer names `V.TEST_HOURS`. Nothing changes in game.
 - **README says what is** (2026-11-15): no version tags or dev-machine paths; the 0.2.8 mash bucket note dropped (no such code). Nothing changes in game.
 - **Docs** (2026-11-15): decisions in this CHANGELOG are stated plainly, without attributions. Nothing changes in game.
 - **README** (2026-11-15): its heading names 0.2.28 (was 0.2.16), as mod.info does.

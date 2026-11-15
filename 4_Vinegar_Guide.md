@@ -159,11 +159,9 @@ Every station runs on real temperature, **even while you're away**.
 |---|---|
 | **Open air** | The day's weather |
 | **Under an open roof**, or **indoors** | The season: the average of the last 10 days. A room is 22 C while the power grid is on |
-| **Loft** (the top storey: a room upstairs with no room over it) | As indoors, plus three tenths of whatever the 10-day average is above 10 C: the sun on the roof (about 24 C in a 21 C July, no warmer than a room from October to April); 22 C while the power grid is on |
+| **Loft** (the top storey: a room upstairs with no room over it) | The sun on the roof: about 24 C in a 21 C July, as a room from October to April (TP Core's guide, chapter 8) |
 | **Basement** (below ground) | Follows the ground, a month behind the season: about 5 C from January to March, 13 C from July to September |
 | **By a fire** (any lit fire within 2 tiles, same floor) | **28 C** indoors, for as long as the fuel lasts; banked embers 24 C. Outside, under an open roof, the 10-day average +15 C; in the open, the day's weather +10 C; never past 28 C (TP Core's guide, chapter 7) |
-
-> *Margin note:* four walls with no roof are still open air. A porch or a lean-to is an open roof; a shed you build with walls and a whole roof is a room.
 
 **First bottles, from the start of malting (two full batches, simulated on the game's weather, the grid off):**
 
@@ -201,7 +199,6 @@ Every station runs on real temperature, **even while you're away**.
 - **Bottles pile up at the foot** of a fully soured cask, so you can see a ready cask from across the yard.
 - **Skill XP:** Cooking for steeping, mashing, straining, finished vessel runs and bottling; Farming for finished malting runs.
 - **Bottles = uses.** One vanilla Vinegar is 10 uses = 1 L. Vanilla jarring takes 2 uses, so **one bottle pickles 5 jars**. The litre is a bookkeeping convention: the bottle keeps vanilla's light weight (0.2), so vinegar is easy to carry once it's bottled. The bulky part is the cask.
-- **Leftovers aren't wasted.** Anything under a full litre after bottling stays as starter for the next top-up.
 - **Bottles come back.** Use up a Vinegar while pickling and you get its original bottle back, empty (a Water Bottle stays a Water Bottle). Used up any other way, or looted, it leaves an empty Crafted Bottle.
 
 ---
@@ -250,7 +247,6 @@ A sip scales down: half a litre of wort is 150 calories.
 
 - **Two buckets per run.** One yeast packet either way, and 2 buckets gives twice the vinegar.
 - **Malt the whole harvest in autumn.** Malt keeps forever, so brew whenever you like.
-- **Mash only what the vessel takes that day.** Wort sours in about 2 days in a warm room (5 in a cellar), so strain 10 or 20 L on the day the vessel is free, not a week's worth.
 - **Hose the vessel to the cask** and pump instead of carrying buckets. **Up to the air line** gives the fastest souring.
 - **Before topping up, keep a third as much vinegar in the cask as the wort you're adding.** That's about **6–7 L before a full 19 L batch** (about 21 days to 100% instead of 28) and **3–4 L before a half batch**. Much more than a third overfills the cask, and it slows for lack of air.
 - **One cask can keep a household pickling all year.** A second cask (via Split Mother) is for big families or trade.
@@ -303,7 +299,7 @@ Each process laid out as the game's planting seasons: the months it works unheat
 | By a lit fire (28 C) | 14 days | 11 days | 35 days |
 | A powered room (22 C) | 5 days | 10 days | 35 days |
 
-> *Margin note:* malt in spring and autumn, brew and sour indoors from May to August, and leave the winter to the hearth, as the Brewer's Almanac says (chapter 9). Keep a jarred mother in a fridge over the winter: it is fresh for 30 days, longer in the cold.
+> *Margin note:* keep a jarred mother in a fridge over the winter: it is fresh for 30 days, longer in the cold.
 
 ---
 
@@ -318,7 +314,7 @@ Each process laid out as the game's planting seasons: the months it works unheat
 | `TPV.weather()` | The temperature in each place (open air, under an open roof, indoors, a loft, a basement, in a shed, by a fire, by banked embers), and how fast malting, fermenting, souring and wort's own souring (`wort`) work there. |
 | `TPV.here()` | Which kind of place you're standing in. |
 | `TPV.age(hours)` | Gives every floor, vessel and cask this many hours of perfect weather. `TPV.age(120)` finishes a malting run, 240 a vessel run, 840 a cask from fresh. |
-| `TPV.fast(hours)` | Test timers: every floor, vessel and cask run takes this many hours, with temperature ignored. `TPV.fast()` turns them off again. It replaces editing `V.TEST_HOURS`. |
+| `TPV.fast(hours)` | Test timers: every floor, vessel and cask run takes this many hours, with temperature ignored. `TPV.fast()` turns them off again. |
 | `TPV.timers()` | The hours each stage takes right now, the brewing effort and the temperature sensitivity. |
 | `TPV.cask()` | The nearest cask (within 2 squares): litres, souring, bottles ready, mother, layers, litres to the next layer, starter bonus and hose. |
 | `TPV.setCask(litres, percent)` | Sets the nearest cask's pool, e.g. `TPV.setCask(16, 100)` for a ready cask. |
