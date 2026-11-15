@@ -1,5 +1,8 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.27
+Refactor with TP Core's names (2026-11-15): TP Core's `Hearth` is `Fire`; the place by a fire is `Fireside` (the season report's line reads Fireside indoors). Nothing changes in game.
+
 ## 0.2.26
 Refactor with Yeast's (2026-11-15): the popups and the info block read a batch's recipe hours through TP Core's `Weather.recipeHours` (each wrote `getRecipe():getTime() / 3600`). Nothing changes in game; tests and golden results unchanged.
 

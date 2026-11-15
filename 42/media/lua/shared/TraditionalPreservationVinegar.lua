@@ -4,7 +4,7 @@
 TraditionalPreservationVinegar = TraditionalPreservationVinegar or {}
 local V = TraditionalPreservationVinegar
 local Weather = require "TraditionalPreservationCore/Weather"
-local Hearth = require "TraditionalPreservationCore/Hearth"
+local Fire = require "TraditionalPreservationCore/Fire"
 local Station = require "TraditionalPreservationCore/Station"
 local Container = require "TraditionalPreservationCore/Container"
 local FluidAgeing = require "TraditionalPreservationCore/FluidAgeing"
@@ -14,7 +14,7 @@ V.MOD_DATA_KEY = "TraditionalPreservationVinegar"
 V.SPRITE_PREFIX = Tiles.PREFIX
 
 -- The mash is heated in its bucket on the hob (Core's Stone Hearth sets its pot in the hole for it).
-Hearth.cooksOn(Hearth.STOVE, "TraditionalPreservationVinegar.BucketMash")
+Fire.cooksOn(Fire.STOVE, "TraditionalPreservationVinegar.BucketMash")
 
 -- Tile numbers, from the Tiles.lua that tools/build_tileset.py writes. Each sprite is the east facing,
 -- and the next one is the south facing.
@@ -135,11 +135,11 @@ function V.wortRate(celsius)
 end
 
 -- Places and their temperatures are shared with the other Traditional Preservation mods (TP Core's Weather):
--- open air, an open roof, indoors, a basement, and by a fire or by banked embers (TP Core's Hearth). These are the
+-- open air, an open roof, indoors, a basement, and by a fire or by banked embers (TP Core's Fire). These are the
 -- mod's public names, used by the actions, the Dev console and the tools. PLACES are the weather's, which the
 -- ledger keeps totals for; by a fire counts by the clock.
 V.PLACES = Weather.PLACES
-V.placeOf = Hearth.placeOf
+V.placeOf = Fire.placeOf
 V.placeTemperature = Weather.placeTemperature
 
 -- Ledger keys are kind .. place ("aceticBasement"), as in every save so far.
@@ -199,7 +199,7 @@ end
 -- Brings a run up to now at the place it was last told (V.notePlace), by a fire by the clock.
 local function catchUpRun(modData, kind)
     if not modData.done then return end
-    Hearth.catchUpRun(modData, V.getLedger(), kind, runPlace(modData), KINDS[kind])
+    Fire.catchUpRun(modData, V.getLedger(), kind, runPlace(modData), KINDS[kind])
 end
 
 -- Adds what the weather has given since the last update, at the place the station's World last told the run, so
@@ -207,13 +207,13 @@ end
 local function updateRun(craftRecipeData, kind, speed)
     local modData = craftRecipeData:getModData()
     if not modData.done then return end
-    Hearth.updateRun(craftRecipeData, V.getLedger(), kind, runPlace(modData), KINDS[kind], speed)
+    Fire.updateRun(craftRecipeData, V.getLedger(), kind, runPlace(modData), KINDS[kind], speed)
 end
 
 -- Tells a running batch (kind "malting" or "alcoholic") where its station stands: the place, and the fire's fuel
 -- when it is by one. A move first brings the run up to now where it was. Returns the place.
 function V.notePlace(modData, station, kind, now)
-    return Hearth.notePlace(modData, station, now, function(state) catchUpRun(state, kind) end)
+    return Fire.notePlace(modData, station, now, function(state) catchUpRun(state, kind) end)
 end
 
 -- OnStart and OnUpdate hooks the recipe scripts name, one pair per weather-timed stage.
@@ -453,7 +453,7 @@ end
 -- fuel noted in state ran out).
 function V.updateCask(state, ledger, place)
     if state.last then
-        V.sour(state, Hearth.catchUp(state, state.last, ledger, "acetic", place, V.aceticRate))
+        V.sour(state, Fire.catchUp(state, state.last, ledger, "acetic", place, V.aceticRate))
     else
         state.last = Weather.mark({}, ledger, "acetic")
     end
@@ -463,7 +463,7 @@ end
 -- place.
 function V.updateCaskAt(state, ledger, cask)
     local now = getGameTime():getWorldAgeHours()
-    local place = Hearth.notePlace(state, cask, now, function(was) V.updateCask(was, ledger, was.place) end)
+    local place = Fire.notePlace(state, cask, now, function(was) V.updateCask(was, ledger, was.place) end)
     V.updateCask(state, ledger, place)
     return place
 end

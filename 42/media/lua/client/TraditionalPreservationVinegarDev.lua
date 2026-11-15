@@ -4,7 +4,7 @@ if not isDebugEnabled() then return end
 
 require "TraditionalPreservationVinegarBottles"
 local V = TraditionalPreservationVinegar
-local Hearth = require "TraditionalPreservationCore/Hearth"
+local Fire = require "TraditionalPreservationCore/Fire"
 local FluidAgeing = require "TraditionalPreservationCore/FluidAgeing"
 TPV = {}
 
@@ -46,12 +46,12 @@ function TPV.weather()
         end
         say(string.format("%-9s %.1f C: %s", place, V.placeTemperature(ledger, place), table.concat(speeds, ", ")))
     end
-    for _, place in ipairs({ Hearth.PLACE, Hearth.EMBERS }) do
+    for _, place in ipairs({ Fire.PLACE, Fire.EMBERS }) do
         local speeds = {}
         for _, kind in ipairs(KINDS) do
-            table.insert(speeds, string.format("%s %.0f%%", kind, V[kind .. "Rate"](Hearth.fireC(place)) * 100))
+            table.insert(speeds, string.format("%s %.0f%%", kind, V[kind .. "Rate"](Fire.fireC(place)) * 100))
         end
-        say(string.format("%-9s %.1f C: %s (by the clock: TPV.age skips it)", place, Hearth.fireC(place), table.concat(speeds, ", ")))
+        say(string.format("%-9s %.1f C: %s (by the clock: TPV.age skips it)", place, Fire.fireC(place), table.concat(speeds, ", ")))
     end
 end
 

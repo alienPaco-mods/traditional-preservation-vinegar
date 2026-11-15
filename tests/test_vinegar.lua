@@ -124,7 +124,7 @@ runHours(-5, 10, roofed, V.onFermentUpdate)
 check("a sheltered vessel goes by the season, not the frost", roofed.elapsed > 10 * 3600 * 0.5)
 
 local pooled = recipeData(ALCOHOL_TIME)
-pooled.modData = { done = 500, place = "Hearth", fireUntil = 9, under = "Open" }
+pooled.modData = { done = 500, place = "Fireside", fireUntil = 9, under = "Open" }
 V.onFermentStart(pooled)
 check("a reused recipe object starts clean", pooled.modData.done == 0
     and pooled.modData.place == nil and pooled.modData.fireUntil == nil and pooled.modData.under == nil)
@@ -277,13 +277,13 @@ check("a room is sheltered", V.placeOf(stationAt(0, false)) == "Sheltered")
 check("and the yard is open", V.placeOf(stationAt(0, true)) == "Open")
 
 -- A cask by a fire sours at 28 C by the clock until the fire's noted fuel runs out, then as the place under it.
-local Hearth = require "TraditionalPreservationCore/Hearth"
+local Fire = require "TraditionalPreservationCore/Fire"
 local hearthside = { ml = 10000, strength = 0 }
 V.updateCask(hearthside, V.getLedger(), "Open")
 hearthside.fireUntil, hearthside.under = hours + 12, "Open"
-sourHours(hearthside, 24, -15, Hearth.PLACE)
+sourHours(hearthside, 24, -15, Fire.PLACE)
 check("a cask by a fire in a frost sours 12 hours at 28 C, then barely",
-    math.abs(hearthside.strength - 12 * V.aceticRate(Hearth.FIRE_C) / V.ACETIC_HOURS) < 0.002)
+    math.abs(hearthside.strength - 12 * V.aceticRate(Fire.FIRE_C) / V.ACETIC_HOURS) < 0.002)
 local downstairs = recipeData(ALCOHOL_TIME)
 V.onFermentStart(downstairs)
 downstairs.modData.place = "Basement"

@@ -98,9 +98,9 @@ for month = 1, 12 do
     print("| " .. table.concat(cells, " | ") .. " |")
 end
 -- By a fire indoors the temperature holds while the fuel lasts, whatever the month; under an open roof and in the
--- open it is the air's plus the fire's lift (Hearth.FIRE_LIFT), never past the indoor heat.
-local Hearth = require "TraditionalPreservationCore/Hearth"
-local FIRES = { Hearth.PLACE .. "Covered", Hearth.PLACE .. "Open" }
+-- open it is the air's plus the fire's lift (Fire.FIRE_LIFT), never past the indoor heat.
+local Fire = require "TraditionalPreservationCore/Fire"
+local FIRES = { Fire.PLACE .. "Covered", Fire.PLACE .. "Open" }
 print("")
 print("| Month | Malting by a fire, under a roof | in the open | Ferment by a fire, under a roof | in the open | First cask by a fire, under a roof | in the open |")
 print("|---|---|---|---|---|---|---|")
@@ -112,8 +112,8 @@ for month = 1, 12 do
     print("| " .. table.concat(cells, " | ") .. " |")
 end
 print("")
-for _, place in ipairs({ Hearth.PLACE, Hearth.EMBERS }) do
-    local celsius = Hearth.fireC(place)
+for _, place in ipairs({ Fire.PLACE, Fire.EMBERS }) do
+    local celsius = Fire.fireC(place)
     print(string.format("%s indoors (%d C), any month: malting %.1f days, ferment %.1f, first cask %.1f", place, celsius,
         V.MALTING_HOURS / V.maltingRate(celsius) / 24, V.ALCOHOLIC_HOURS / V.alcoholicRate(celsius) / 24,
         V.ACETIC_HOURS / V.aceticRate(celsius) / 24))
