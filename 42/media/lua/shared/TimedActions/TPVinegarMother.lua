@@ -9,6 +9,8 @@ TPVinegarMother = ISBaseTimedAction:derive("TPVinegarMother")
 local V = TraditionalPreservationVinegar
 local Action = require "TraditionalPreservationCore/Action"
 local DURATION = 120
+-- A mother looted or spawned in a jar was never noted with one, so it gives back a plain glass jar.
+local PLAIN_JAR = "Base.EmptyJar"
 
 function TPVinegarMother:isValid()
     if not self.cask:getSquare() or not self.character:getInventory():containsRecursive(self.item) then return false end
@@ -31,10 +33,9 @@ function TPVinegarMother:start()
 end
 
 -- Swaps the item in hand for another in the same container, keeping the jar's kind on the mother.
-local function swap(character, item, fullType)
+local function swap(item, fullType)
     local container = item:getContainer()
-    character:removeFromHands(item)
-    container:Remove(item)
+    Action.removeItem(item)
     return container:AddItem(fullType)
 end
 
@@ -42,14 +43,14 @@ function TPVinegarMother:complete()
     local state = V.caskState(self.cask)
     if self.mode == "add" then
         if V.addMother(state) then
-            swap(self.character, self.item, self.item:getModData().jarType or "Base.EmptyJar")
+            swap(self.item, self.item:getModData().jarType or PLAIN_JAR)
         end
         return true
     end
     local moved = self.mode == "split" and V.splitMother(state) or self.mode == "take" and V.takeMother(state)
     if moved then
         local jarType = self.item:getFullType()
-        local mother = swap(self.character, self.item, V.MOTHER_ITEM)
+        local mother = swap(self.item, V.MOTHER_ITEM)
         if mother then mother:getModData().jarType = jarType end
     end
     return true

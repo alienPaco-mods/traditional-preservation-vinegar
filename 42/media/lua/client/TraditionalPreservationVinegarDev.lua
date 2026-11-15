@@ -2,6 +2,7 @@
 -- Type TPV.help() in the console for the list. See DEVHELP.md in the mod folder.
 if not isDebugEnabled() then return end
 
+require "TraditionalPreservationVinegarBottles"
 local V = TraditionalPreservationVinegar
 local Hearth = require "TraditionalPreservationCore/Hearth"
 local FluidAgeing = require "TraditionalPreservationCore/FluidAgeing"
@@ -31,6 +32,7 @@ function TPV.help()
     say("TPV.fermented(litres)     fill the nearest vessel's Fermented tank")
     say("TPV.ageWort(hours)        age the wort you carry and the nearest vessel's tank by hours at 20 C. TPV.ageWort(48) sours it")
     say("TPV.give(name, n)         spawn mod items. TPV.give() lists the names")
+    say("TPV.kit(kind)             the things a test needs: \"build\" (all three stations), \"malt\", \"ferment\", \"cask\" or \"all\". TPV.kit() lists them")
     say("Stations must be within " .. V.REACH .. " squares. Right-click a container in debug mode to fill it with wort.")
 end
 
@@ -158,6 +160,84 @@ function TPV.give(name, count)
     local inventory = getPlayer():getInventory()
     for _ = 1, count or 1 do inventory:AddItem(fullType) end
     say(string.format("Gave %d %s.", count or 1, fullType))
+end
+
+-- A container of this type, filled to the brim with the fluid.
+local function addFilled(inventory, fullType, fluid)
+    local container = inventory:AddItem(fullType):getFluidContainer()
+    container:Empty()
+    container:addFluid(fluid, container:getCapacity())
+end
+
+local function addEmpty(inventory, fullType, count)
+    for _ = 1, count do
+        inventory:AddItem(fullType):getFluidContainer():Empty()
+    end
+end
+
+local function addItems(inventory, counts)
+    for fullType, count in pairs(counts) do
+        for _ = 1, count do inventory:AddItem(fullType) end
+    end
+end
+
+-- One kit per part of the chain, each enough on its own; "all" is every kit.
+local KITS = {
+    build = {
+        about = "a hammer, a saw, 24 planks, 36 nails, 10 twine, a jar and ripped sheets, to build the Malting Floor "
+            .. "(Woodwork 2), the Fermentation Vessel (Woodwork 3) and the Vinegar Cask (Woodwork 4)",
+        give = function(inventory)
+            addItems(inventory, { ["Base.Hammer"] = 1, ["Base.Saw"] = 1, ["Base.Plank"] = 24, ["Base.Nails"] = 36,
+                ["Base.Twine"] = 10, ["Base.EmptyJar"] = 1, ["Base.RippedSheets"] = 1 })
+        end,
+    },
+    malt = {
+        about = "24 barley seeds and a bucket of water to steep them, an empty bucket for the mash and ripped sheets "
+            .. "to strain it",
+        give = function(inventory)
+            addItems(inventory, { ["Base.BarleySeed"] = 24, ["Base.RippedSheets"] = 1 })
+            addFilled(inventory, "Base.BucketEmpty", "Water")
+            addEmpty(inventory, "Base.BucketEmpty", 1)
+        end,
+    },
+    ferment = {
+        about = "a bucket of wort and 2 yeast, for the vessel",
+        give = function(inventory)
+            addItems(inventory, { ["Base.Yeast"] = 2 })
+            addFilled(inventory, "Base.BucketEmpty", V.WORT)
+        end,
+    },
+    cask = {
+        about = "a rubber hose and pliers, a Mother of Vinegar, an empty jar and 3 empty Crafted Bottles; "
+            .. "TPV.setCask(16, 100) fills the nearest cask",
+        give = function(inventory)
+            addItems(inventory, { [V.HOSE_ITEM] = 1, ["Base.Pliers"] = 1, [V.MOTHER_ITEM] = 1, ["Base.EmptyJar"] = 1 })
+            addEmpty(inventory, V.SPARE_BOTTLE, 3)
+        end,
+    },
+}
+
+local KIT_NAMES = {}
+for name in pairs(KITS) do table.insert(KIT_NAMES, name) end
+table.sort(KIT_NAMES)
+
+local PARTS = { unpack(KIT_NAMES) }
+KITS.all = {
+    about = "every kit (" .. table.concat(PARTS, ", ") .. ")",
+    give = function(inventory)
+        for _, name in ipairs(PARTS) do KITS[name].give(inventory) end
+    end,
+}
+table.insert(KIT_NAMES, 1, "all")
+
+function TPV.kit(kind)
+    local kit = KITS[kind]
+    if not kit then
+        for _, name in ipairs(KIT_NAMES) do say("TPV.kit(\"" .. name .. "\"): " .. KITS[name].about) end
+        return
+    end
+    kit.give(getPlayer():getInventory())
+    say("Gave " .. kit.about .. ".")
 end
 
 say("Debug commands loaded. Type TPV.help() in the Lua console.")

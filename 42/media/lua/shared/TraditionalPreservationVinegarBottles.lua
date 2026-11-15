@@ -46,14 +46,18 @@ function V.returnBottles(character, usedItems, spares)
     end
 end
 
+-- Each Crafted Bottle the inventory holds, in its bags too.
+local function eachSpare(inventory, fn)
+    local all = inventory:getAllTypeRecurse(V.SPARE_BOTTLE)
+    for i = 0, all:size() - 1 do fn(all:get(i)) end
+end
+
 -- The Crafted Bottles in the inventory that aren't in before (a set of items).
 local function newSpares(inventory, before)
     local spares = {}
-    local all = inventory:getAllTypeRecurse(V.SPARE_BOTTLE)
-    for i = 0, all:size() - 1 do
-        local bottle = all:get(i)
+    eachSpare(inventory, function(bottle)
         if not before[bottle] then table.insert(spares, bottle) end
-    end
+    end)
     return spares
 end
 
@@ -61,10 +65,8 @@ end
 -- wrap of ISHandcraftAction.performRecipe, which Salt uses for its shakers too) the right bottles are given: the
 -- Crafted Bottles the craft itself handed over are the ones not carried before it.
 Handcraft.around(function(action)
-    local inventory = action.character:getInventory()
     local before = {}
-    local all = inventory:getAllTypeRecurse(V.SPARE_BOTTLE)
-    for i = 0, all:size() - 1 do before[all:get(i)] = true end
+    eachSpare(action.character:getInventory(), function(bottle) before[bottle] = true end)
     return before
 end, function(action, recipeData, before)
     V.returnBottles(action.character, recipeData:getAllConsumedItems(), newSpares(action.character:getInventory(), before))

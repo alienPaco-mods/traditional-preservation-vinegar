@@ -47,7 +47,7 @@ function TPPumpVinegarWort:perform()
 end
 
 function TPPumpVinegarWort:getDuration()
-    return Action.pourDuration(self.character, self.ml / 1000, 20)
+    return Action.pourDuration(self.character, self.ml / 1000, V.POUR_MOST_LITRES)
 end
 
 function TPPumpVinegarWort:new(character, vessel, cask, ml)

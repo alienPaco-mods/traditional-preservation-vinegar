@@ -118,15 +118,15 @@ check("cold barely moves a batch", chilled.elapsed <= 100 * 3600 * 0.06)
 
 local roofed = recipeData(ALCOHOL_TIME)
 V.onFermentStart(roofed)
-roofed.modData.sheltered = true
+roofed.modData.place = "Sheltered"
 V.getLedger().seasonTemperature = 20
 runHours(-5, 10, roofed, V.onFermentUpdate)
 check("a sheltered vessel goes by the season, not the frost", roofed.elapsed > 10 * 3600 * 0.5)
 
 local pooled = recipeData(ALCOHOL_TIME)
-pooled.modData = { done = 500, sheltered = true, place = "Hearth", fireUntil = 9, under = "Open" }
+pooled.modData = { done = 500, place = "Hearth", fireUntil = 9, under = "Open" }
 V.onFermentStart(pooled)
-check("a reused recipe object starts clean", pooled.modData.done == 0 and pooled.modData.sheltered == nil
+check("a reused recipe object starts clean", pooled.modData.done == 0
     and pooled.modData.place == nil and pooled.modData.fireUntil == nil and pooled.modData.under == nil)
 
 -- The popup
@@ -138,7 +138,7 @@ check("and the time left at the best temperature", status.hoursLeft == 120 and s
 ledger.temperature = 5
 status = V.batchStatus("alcoholic", { done = 120 }, 240, ledger)
 check("the cold stretches the time left", status.hoursLeft > 2000 and status.temperature == 5)
-status = V.batchStatus("alcoholic", { done = 120, sheltered = true }, 240, ledger)
+status = V.batchStatus("alcoholic", { done = 120, place = "Sheltered" }, 240, ledger)
 check("a sheltered batch goes by the season, a room's", status.temperature == Weather.roomTemperature(15) and status.place == "Sheltered")
 ledger.temperature = 25
 check("the floor goes by its own temperature range", V.batchStatus("malting", { done = 60 }, 120, ledger).rate < 0.7)
@@ -292,13 +292,6 @@ runHours(-10, 10, downstairs, V.onFermentUpdate)
 check("a basement vessel in summer works through a cold snap",
     downstairs.elapsed >= 10 * 3600 * V.alcoholicRate(V.placeTemperature(V.getLedger(), "Basement")) - 1
     and downstairs.elapsed > 2 * 10 * 3600 * V.alcoholicRate(-10))
-local oldRun = recipeData(ALCOHOL_TIME)
-oldRun.modData = { done = 5, lastOpen = V.getLedger().alcoholicOpen, lastSheltered = V.getLedger().alcoholicSheltered, lastHeat = V.getLedger().heat, heat = 0, sheltered = true }
-runHours(22, 1, oldRun, V.onFermentUpdate)
-check("a run saved before basements carries on under its roof", oldRun.modData.done > 5 and oldRun.modData.last.Basement ~= nil)
-local oldCask = { ml = 10000, strength = 0, lastOpen = V.getLedger().aceticOpen, lastSheltered = V.getLedger().aceticSheltered }
-sourHours(oldCask, 1, 25, true)
-check("and so does a cask", oldCask.strength > 0 and oldCask.lastSheltered == nil)
 
 local caskStatus = V.caskStatus({ ml = 20000, strength = 0.5 }, { temperature = 25 }, "Open")
 check("the menu says how long to full strength", math.abs(caskStatus.hoursLeft - V.ACETIC_HOURS / 2) < 0.001)
@@ -308,10 +301,6 @@ V.emptyCask(poured)
 check("emptying a cask pours it all away", poured.ml == 0 and poured.strength == 0 and V.bottlesLeft(poured) == 0)
 check("and keeps the mother", poured.mother == true)
 
-local old = { vinegarMl = 3000, mother = true }
-local oldCask = { modData = { movableData = old }, getModData = function(self) return self.modData end }
-local migrated = V.caskState(oldCask)
-check("a cask from before the pool keeps its vinegar at full strength", migrated.ml == 3000 and migrated.strength == 1 and migrated.vinegarMl == nil)
 
 -- The mother
 local grown = { ml = 0, strength = 0 }
@@ -494,9 +483,12 @@ local player = { getCurrentSquare = function() return { getX = function() return
 check("an empty bottle near vinegar can be filled", V.canBottle(bottle(true), player))
 check("a bottle of water can't", not V.canBottle(bottle(false), player))
 check("nor something that isn't a bottle", not V.canBottle(bottle(nil), player))
-V.onBottled(nil, player)
+-- The recipe's own data: nothing used or made that needs a bottle mark.
+local bottling = recipeData(0)
+bottling.used, bottling.created = {}, {}
+V.onBottled(bottling, player)
 check("bottling takes exactly one bottle's worth", caskObject.modData.movableData.ml == 1000)
-V.onBottled(nil, player)
+V.onBottled(bottling, player)
 check("an empty cask stops bottling", not V.canBottle(bottle(true), player))
 caskObject.modData.movableData = { ml = 5000, strength = 0.9 }
 check("a cask short of full strength can't be bottled", not V.canBottle(bottle(true), player))

@@ -29,9 +29,8 @@ function TPBottleVinegar:complete()
     local state = V.caskState(self.cask)
     if V.takeBottle(state) then
         log("TPV", "bottled 1 L, %.2f L left in the cask", state.ml / 1000)
-        self.character:removeFromHands(self.bottle)
-        self.bottle:getContainer():Remove(self.bottle)
-        V.markBottle(self.character:getInventory():AddItem("Base.Vinegar2"), self.bottle:getFullType())
+        Action.removeItem(self.bottle)
+        V.markBottle(self.character:getInventory():AddItem(V.VINEGAR_ITEM), self.bottle:getFullType())
         self.character:getXp():AddXP(Perks.Cooking, V.BOTTLE_XP)
     end
     return true

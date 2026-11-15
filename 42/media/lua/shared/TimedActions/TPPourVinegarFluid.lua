@@ -8,6 +8,7 @@ TPPourVinegarFluid = ISBaseTimedAction:derive("TPPourVinegarFluid")
 
 local V = TraditionalPreservationVinegar
 local Action = require "TraditionalPreservationCore/Action"
+local Container = require "TraditionalPreservationCore/Container"
 
 local function tankFor(self)
     local input = self.mode == "vesselIn" or self.mode == "vesselDump"
@@ -58,7 +59,7 @@ function TPPourVinegarFluid:complete()
         -- The cask catches up on its own souring first, so the new wort doesn't count time before it arrived.
         local state = V.caskState(self.station)
         V.updateCaskAt(state, V.getLedger(), self.station)
-        local poured = V.pourIntoCask(state, math.floor(container:getAmount() * 1000 + 0.5))
+        local poured = V.pourIntoCask(state, Container.ml(container))
         container:removeFluid(poured / 1000)
     end
     return true
@@ -69,11 +70,11 @@ function TPPourVinegarFluid:perform()
 end
 
 function TPPourVinegarFluid:getDuration()
-    if self.mode == "vesselDump" then return Action.pourDuration(self.character, V.litres(tankFor(self)), 20) end
+    if self.mode == "vesselDump" then return Action.pourDuration(self.character, V.litres(tankFor(self)), V.POUR_MOST_LITRES) end
     local container = self.item:getFluidContainer()
     local amount = container and container:getAmount() or 0
     if self.mode == "vesselOut" then amount = container and container:getCapacity() or 0 end
-    return Action.pourDuration(self.character, amount, 20)
+    return Action.pourDuration(self.character, amount, V.POUR_MOST_LITRES)
 end
 
 function TPPourVinegarFluid:new(character, station, item, mode)

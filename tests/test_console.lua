@@ -67,4 +67,30 @@ run("give", "Base.Yeast")
 check("give takes a mod item's short name or a full type", #player.given == 3
     and player.given[1] == "TraditionalPreservationVinegar.Malt" and player.given[3] == "Base.Yeast")
 
+-- Buckets and bottles come with a fluid container the kits fill or empty.
+local filled = {}
+function inventory:AddItem(fullType)
+    table.insert(player.given, fullType)
+    return { getFluidContainer = function()
+        return { Empty = function() end, getCapacity = function() return 10 end,
+            addFluid = function(_, fluid, litres) filled[fluid] = (filled[fluid] or 0) + litres end }
+    end }
+end
+local function counted(fullType)
+    local count = 0
+    for _, given in ipairs(player.given) do if given == fullType then count = count + 1 end end
+    return count
+end
+player.given = {}
+check("kit with no kind lists every kit", run("kit"):find("TPV.kit(\"all\")", 1, true) ~= nil
+    and run("kit"):find("TPV.kit(\"cask\")", 1, true) ~= nil and #player.given == 0)
+run("kit", "build")
+check("the build kit has the three stations' planks and nails", counted("Base.Plank") == 24 and counted("Base.Nails") == 36)
+run("kit", "ferment")
+check("the ferment kit brings a bucket of wort", filled[V.WORT] == 10 and counted("Base.Yeast") == 2)
+player.given = {}
+run("kit", "all")
+check("all gives every kit", counted("Base.Plank") == 24 and counted(V.MOTHER_ITEM) == 1 and counted("Base.BarleySeed") == 24
+    and filled.Water == 10 and counted(V.SPARE_BOTTLE) == 3)
+
 H.done()

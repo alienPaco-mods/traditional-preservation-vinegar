@@ -17,10 +17,11 @@ These console commands load only when the game runs in **debug mode** (launch op
 | `TPV.wort(litres)` | Fills the nearest vessel's Wort tank (20 if you leave the litres out). |
 | `TPV.fermented(litres)` | Fills the nearest vessel's Fermented tank, to test drawing off and the hose. |
 | `TPV.ageWort(hours)` | Adds this many hours at 20 C to every wort you carry and to the nearest vessel's Wort tank. `TPV.ageWort(48)` (the default) sours it: carried wort turns to Sour Wort at once, and the vessel then refuses to start. |
+| `TPV.kit(kind)` | The things a test needs: `"build"` (hammer, saw, planks, nails, twine, a jar and ripped sheets for all three stations), `"malt"` (24 barley seeds, a bucket of water, an empty bucket, ripped sheets), `"ferment"` (a bucket of wort and 2 yeast), `"cask"` (hose, pliers, a Mother of Vinegar, an empty jar, 3 empty Crafted Bottles), or `"all"`. `TPV.kit()` lists them. |
 | `TPV.give(name, n)` | Spawns mod items such as `Malt` or `MotherOfVinegar`, or any full type such as `Base.Yeast` or `Base.RubberHose`. `TPV.give()` lists the names. |
 
 Debug mode also adds **[Debug] Fill with Wort** and **[Debug] Fill with Fermented Wort** to a container's right-click menu.
 
-**Typical check of the hose:** `TPV.give("Base.RubberHose")` and `TPV.give("Base.Pliers")`, attach the hose, then `TPV.fermented(19)` and `TPV.setCask(16, 100)`. Pump to Cask should offer 5 L, 10 L, the air line (6.5 L) and all that fits (14 L).
+**Typical check of the hose:** `TPV.kit("cask")`, attach the hose, then `TPV.fermented(19)` and `TPV.setCask(16, 100)`. Pump to Cask should offer 5 L, 10 L, the air line (6.5 L) and all that fits (14 L).
 
 **Typical check of the mother:** `TPV.setCask(10, 100)`, `TPV.mother(1)`, `TPV.fermented(19)`, pump it all in, then `TPV.age(840)` and `TPV.cask()`. The mother should have grown a second layer.

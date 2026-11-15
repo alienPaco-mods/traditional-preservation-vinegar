@@ -37,7 +37,7 @@ function TPVinegarHose:complete()
     local inventory = self.character:getInventory()
     if self.cask then
         V.connectHose(self.station, self.cask)
-        self.hose:getContainer():Remove(self.hose)
+        Action.removeItem(self.hose)
     else
         V.disconnectHose(self.station)
         inventory:AddItem(V.HOSE_ITEM)

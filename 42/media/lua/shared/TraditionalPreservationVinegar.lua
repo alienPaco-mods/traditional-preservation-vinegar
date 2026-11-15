@@ -94,6 +94,8 @@ V.HOSE_REACH = 2
 
 -- How many squares away a cask can be for bottling, pouring or moving its mother.
 V.REACH = 2
+-- Pouring or pumping takes no longer past this many litres.
+V.POUR_MOST_LITRES = 20
 
 local RECIPE_MODULE = "TraditionalPreservationVinegar."
 
@@ -142,14 +144,13 @@ V.placeTemperature = Weather.placeTemperature
 
 -- Ledger keys are kind .. place ("aceticBasement"), as in every save so far.
 local KINDS = {
-    malting = function(celsius) return V.maltingRate(celsius) end,
-    alcoholic = function(celsius) return V.alcoholicRate(celsius) end,
-    acetic = function(celsius) return V.aceticRate(celsius) end,
-    [V.WORT_KIND] = function(celsius) return V.wortRate(celsius) end,
+    malting = V.maltingRate,
+    alcoholic = V.alcoholicRate,
+    acetic = V.aceticRate,
+    [V.WORT_KIND] = V.wortRate,
 }
 
--- One total per stage and place. Saves from before 0.2.10 also keep ledger.heat, the hours too hot for an open
--- vessel; nothing reads it now.
+-- One total per stage and place.
 function V.newLedger(now)
     return Weather.newLedger(now, KINDS)
 end
@@ -164,7 +165,7 @@ function V.getLedger()
     return Weather.getLedger(V.MOD_DATA_KEY, V.newLedger)
 end
 
--- A save from before malting or basements has no totals for them. Filled once as the save loads,
+-- A ledger saved before a kind or place was added has no totals for it. Filled once as the save loads,
 -- not on every getLedger: running batches, casks and popups ask for it many times a second.
 function V.fillLedger()
     Weather.fillLedger(V.getLedger(), KINDS)
@@ -185,25 +186,19 @@ V.WORT_SPEC = FluidAgeing.register({
     enabled = function() return V.WORT_SOURS end,
 })
 
--- A run's place, from a run saved before basements too.
+-- A run's place, as the station's World last told it (V.notePlace); the open air before then.
 local function runPlace(modData)
-    return modData.place or (modData.sheltered and "Sheltered") or "Open"
+    return modData.place or Weather.NEW_RUN_PLACE
 end
 
 -- The engine pools recipe data without clearing its ModData, so every run must set all of this.
 local function startRun(craftRecipeData, kind)
-    local ledger = V.getLedger()
-    local modData = craftRecipeData:getModData()
-    Weather.startRun(modData, ledger, kind)
-    modData.sheltered = nil
-    modData.mother = nil
+    Weather.startRun(craftRecipeData:getModData(), V.getLedger(), kind)
 end
 
 -- Brings a run up to now at the place it was last told (V.notePlace), by a fire by the clock.
 local function catchUpRun(modData, kind)
     if not modData.done then return end
-    -- A run from before basements kept its last totals in two fields.
-    modData.last = modData.last or { Open = modData.lastOpen, Sheltered = modData.lastSheltered }
     Hearth.catchUpRun(modData, V.getLedger(), kind, runPlace(modData), KINDS[kind])
 end
 
@@ -212,8 +207,6 @@ end
 local function updateRun(craftRecipeData, kind, speed)
     local modData = craftRecipeData:getModData()
     if not modData.done then return end
-    -- A run from before basements kept its last totals in two fields.
-    modData.last = modData.last or { Open = modData.lastOpen, Sheltered = modData.lastSheltered }
     Hearth.updateRun(craftRecipeData, V.getLedger(), kind, runPlace(modData), KINDS[kind], speed)
 end
 
@@ -251,15 +244,18 @@ function V.onMashed(craftRecipeData)
     Container.note(craftRecipeData, "TraditionalPreservationVinegar.BucketMash")
 end
 
--- Strain Mash gives back the bucket that went in, and this pours the wort into it.
+-- Strain Mash gives back the bucket that went in (the script's output is a plain one), and this pours a bucket of
+-- wort into it.
+V.STRAINED_BUCKET = "Base.BucketEmpty"
+
 function V.onStrained(craftRecipeData, character)
-    local bucket = Container.giveBack(craftRecipeData, character, "Base.BucketEmpty")
+    local bucket = Container.giveBack(craftRecipeData, character, V.STRAINED_BUCKET)
     local container = bucket and bucket:getFluidContainer()
     if container then
         container:Empty()
         -- New wort starts its own age, whatever the bucket held before.
         bucket:getModData()[FluidAgeing.KEY] = nil
-        container:addFluid(V.WORT, math.min(10, container:getCapacity()))
+        container:addFluid(V.WORT, math.min(V.BUCKET_ML / 1000, container:getCapacity()))
     end
 end
 
@@ -363,7 +359,8 @@ end
 -- The vessel's tank record, brought up to now where the vessel stands. Items age by the weather's place, so the
 -- tank does too (a fire counts as the room it warms).
 function V.tankAge(vessel, now)
-    local ml = math.floor(V.litres(V.vesselTank(vessel, ResourceIO.Input)) * 1000 + 0.5)
+    local tank = V.vesselTank(vessel, ResourceIO.Input)
+    local ml = tank and Container.ml(tank:getFluidContainer()) or 0
     return V.ageTank(vessel:getModData(), ml, Weather.placeOf(vessel), now or getGameTime():getWorldAgeHours())
 end
 
@@ -399,10 +396,6 @@ end
 -- and there is only ever one of each.
 function V.caskState(cask)
     local state = Station.movableData(cask)
-    -- A cask from before the continuous pool held only finished vinegar.
-    if state.vinegarMl then
-        state.ml, state.strength, state.vinegarMl = state.vinegarMl, state.vinegarMl > 0 and 1 or 0, nil
-    end
     state.ml = state.ml or 0
     state.strength = state.strength or 0
     return state
@@ -459,18 +452,15 @@ end
 -- Brings a cask up to date with the weather since it was last seen, at place (by a fire by the clock, until the
 -- fuel noted in state ran out).
 function V.updateCask(state, ledger, place)
-    -- A cask from before basements kept its last totals in two fields.
-    if state.lastOpen and not state.last then state.last = { Open = state.lastOpen, Sheltered = state.lastSheltered } end
     if state.last then
         V.sour(state, Hearth.catchUp(state, state.last, ledger, "acetic", place, V.aceticRate))
     else
         state.last = Weather.mark({}, ledger, "acetic")
     end
-    state.lastOpen, state.lastSheltered = nil, nil
 end
 
--- Brings a cask up to date where it stands: a move first catches it up where it was (state.place, kept from 0.2.10;
--- an older cask goes by its place now). Returns the place.
+-- Brings a cask up to date where it stands: a move first catches it up where it was (state.place). Returns the
+-- place.
 function V.updateCaskAt(state, ledger, cask)
     local now = getGameTime():getWorldAgeHours()
     local place = Hearth.notePlace(state, cask, now, function(was) V.updateCask(was, ledger, was.place) end)
@@ -713,7 +703,6 @@ end
 function V.onBottled(craftRecipeData, character)
     local cask = V.findCaskWithVinegar(character)
     if cask then V.takeBottle(V.caskState(cask)) end
-    if not (craftRecipeData and V.markBottle) then return end
     local used, made = craftRecipeData:getAllConsumedItems(), craftRecipeData:getAllCreatedItems()
     if used:size() > 0 and made:size() > 0 then V.markBottle(made:get(0), used:get(0):getFullType()) end
 end
