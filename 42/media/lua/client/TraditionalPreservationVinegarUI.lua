@@ -154,7 +154,7 @@ end
 local function drawBatchTooltip(slot, tooltip, name, station)
     local kind = BATCH_RECIPES[name]
     local data = slot.craftRecipeData
-    local status = V.batchStatus(kind, data:getModData(), data:getRecipe():getTime() / 3600, V.getLedger())
+    local status = V.batchStatus(kind, data:getModData(), Weather.recipeHours(data), V.getLedger())
     UI.drawTooltip(tooltip, function(layout)
         UI.addLine(layout, "IGUI_TraditionalPreservationVinegar_Progress", percent(status.progress))
         -- The run holds its wort, so the vessel's Wort tank reads empty while it ferments.
@@ -193,7 +193,7 @@ local function stationInfo(entity)
     local run = entity:getModData().vinegarRun
     local batches = {}
     for _, batch in ipairs(contents.batches) do
-        local status = V.batchStatus(stage, batch.data:getModData(), batch.data:getRecipe():getTime() / 3600, ledger)
+        local status = V.batchStatus(stage, batch.data:getModData(), Weather.recipeHours(batch.data), ledger)
         local name = stage == "malting" and say("IGUI_TraditionalPreservationVinegar_InfoGrain", tostring(batch.count))
             or say("IGUI_TraditionalPreservationVinegar_InfoWort", UI.litres(run and run.ml or 0))
         table.insert(batches, { name = name, progress = status.progress, hoursLeft = status.hoursLeft })
