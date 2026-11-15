@@ -1,6 +1,7 @@
 # Changelog: Traditional Preservation (Vinegar)
 
 ## 0.2.28
+- **README** (2026-11-15): its heading names 0.2.28 (was 0.2.16), as mod.info does.
 Refactor with TP Core's Stone Hearth split (2026-11-15): the mash bucket is stove food through `StoneHearth.cooksOn`. Nothing changes in game.
 
 ## 0.2.27
