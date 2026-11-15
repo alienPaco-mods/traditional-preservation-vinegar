@@ -1,6 +1,7 @@
 # Changelog: Traditional Preservation (Vinegar)
 
 ## 0.2.28
+- **README says what is** (2026-11-15): no version tags or dev-machine paths; the 0.2.8 mash bucket note dropped (no such code). Nothing changes in game.
 - **Docs** (2026-11-15): decisions in this CHANGELOG are stated plainly, without attributions. Nothing changes in game.
 - **README** (2026-11-15): its heading names 0.2.28 (was 0.2.16), as mod.info does.
 Refactor with TP Core's Stone Hearth split (2026-11-15): the mash bucket is stove food through `StoneHearth.cooksOn`. Nothing changes in game.

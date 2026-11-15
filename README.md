@@ -138,7 +138,7 @@ The cask is one continuous pool of up to **30 L**, not a batch station, so it ha
 - **Pour Fermented Wort**: pick a container holding nothing but fermented wort. It goes in up to the cask's room, and anything over stays in the container.
 - The pool has a **souring** value from 0 to 100%. New fermented wort thins it by its share: 15 L at 100% topped up with 5 L becomes 20 L at 75%.
 - Souring takes **35 days** from nothing to 100% at the best temperature (20 to 30 C). A well-kept cask with a mother gives about 21 bottles a month in summer.
-- Souring loses about **a tenth of the liquid to the air** (`V.ACETIC_LOSS`, 0.1 since 0.2.15; a fifth before), so 19 L of fermented wort becomes about 17.2 L of vinegar.
+- Souring loses about **a tenth of the liquid to the air** (`V.ACETIC_LOSS`, 0.1), so 19 L of fermented wort becomes about 17.2 L of vinegar.
 - The culture works on the surface and needs air. Above **22.5 L** it slows, down to half speed when brimming at 30 L.
 - **Bottle Vinegar** appears once the pool is 100% soured.
 
@@ -333,7 +333,7 @@ Under Traditional Preservation (Vinegar):
 | Established-culture speed bonus (percent) | 25 | How much quicker a mother with a starter makes the cask |
 | Temperature sensitivity | Normal | Off, Forgiving, Normal or Harsh |
 | Brewing effort | Normal | How long the hands-on work takes, below |
-| Wort sours | On | Wort waiting for the yeast sours (2 days at 20 C); off, it keeps for ever as before 0.2.16 |
+| Wort sours | On | Wort waiting for the yeast sours (2 days at 20 C); off, it keeps for ever |
 
 | Brewing effort | Light | Normal | Hard |
 |---|---|---|---|
@@ -383,7 +383,7 @@ The real-world claims the design rests on, and the simplifications made for play
 - The cask slows above 22.5 L of 30 L (three quarters), down to half speed when full.
 - One vanilla Vinegar counts as 1 L (10 uses at 0.1 L each, from the jarring recipe), although vanilla gives it the weight of about 0.2 L. That mismatch is accepted so the output stays exactly vanilla.
 - A room or an open roof uses the 10-day mean temperature (22 C while the grid is on); a basement follows the ground (the 10-day mean's own 30-day mean, a month behind) two fifths as far from 10 C. Room heating isn't modelled beyond a fire within 2 tiles.
-- No heat harm: the sampled climate never passes 35 C (heat harm was dropped in 0.2.10).
+- No heat harm: the sampled climate never passes 35 C.
 - Hops, boiling the wort, and clarifying or pasteurising the vinegar are left out.
 - Barley, wheat and rye are interchangeable.
 
@@ -395,7 +395,7 @@ The real-world claims the design rests on, and the simplifications made for play
 - The cask's pool, souring, mother and layers live in the cask's `movableData`, which vanilla copies onto the item when a station is picked up and back when it's placed. So the mother moves with the cask and can't be duplicated.
 - Weather is kept as running totals in global ModData, per stage and place, so stations catch up exactly when their area loads again.
 - Station sprites are layered by the mod rather than with `SpriteOverlayConfig`, which can only show one overlay for a first batch.
-- The shared core (weather, places, station tracking, popups) is the required TP Core mod (`~/MODS/TraditionalPreservationCore`, id `TraditionalPreservationCore`), loaded as `require "TraditionalPreservationCore/Weather"`. Edit it there. The rate curves, heat damage, the cask, the hose and the old-save migrations stay in this mod's own files.
+- The shared core (weather, places, station tracking, popups) is the required TP Core mod (id `TraditionalPreservationCore`), loaded as `require "TraditionalPreservationCore/Weather"`. Edit it there. The rate curves, heat damage, the cask, the hose and the old-save migrations stay in this mod's own files.
 
 ## Debug commands
 
@@ -405,7 +405,7 @@ In debug mode, `TPV.help()` in the Lua console lists commands for testing this m
 
 - **Temperature hasn't been seen in play.** The in-game runs so far used test timers (`TPV.fast`), which ignore temperature. Check a cold and a hot month with real timers before relying on the season table.
 - A room is warmed only by the power grid (22 C, as vanilla keeps it) or a fire within 2 tiles; a generator or a heater doesn't change a station's temperature.
-- Mash Malt takes a metal bucket, plain or forged (not a wooden one), and Strain Mash gives back the kind that went in. Mash made before 0.2.8 gives a plain metal bucket.
+- Mash Malt takes a metal bucket, plain or forged (not a wooden one), and Strain Mash gives back the kind that went in.
 - The bottle list is written out, as no tag covers plastic bottles, so bottles from other mods aren't accepted.
 - Apples, grapes and other fruit aren't used, as vanilla can't grow apples or grapes.
 - Several vanilla UI functions are wrapped (the station window, slot adds, the Craft button, the pick-up cursor and the station's right-click entry), so compare them with vanilla after a game update.
@@ -429,5 +429,5 @@ Still to check in the game:
 9. The hose: attach; Pump to Cask from both stations, with 5 L, 10 L, the air line and all that fits each moving what it says; greyed options giving their reasons (empty vessel, short tank, no room, already at the air line); detach; and a destroyed station dropping the hose.
 10. Cask Info: opens from the cask's submenu, fills its bars, counts down while souring, shows bottles once ready and the hose when joined, and closes past 6 squares or when the cask is picked up.
 11. Green Malt: fresh for 2 days and rotten after 5. Stale Green Malt still kilns into Malt; rotten Green Malt stays rotten on the fire, and the composter takes it.
-12. Wort that sours (0.2.16): `TPV.ageWort(48)` turns carried wort into Sour Wort and the tank's wort to soured; Craft refuses with the reason, Pour Wort is greyed with "Sour wort won't ferment", Pour Away the Wort empties the tank; the info block's "sours in about"; a cancelled run gives back wort with its age.
+12. Wort that sours: `TPV.ageWort(48)` turns carried wort into Sour Wort and the tank's wort to soured; Craft refuses with the reason, Pour Wort is greyed with "Sour wort won't ferment", Pour Away the Wort empties the tank; the info block's "sours in about"; a cancelled run gives back wort with its age.
 13. `console.txt` shows no repeating Lua errors after an hour of play, including with the other Traditional Preservation mods on.
