@@ -1,6 +1,7 @@
 # Changelog: Traditional Preservation (Vinegar)
 
 ## 0.2.28
+- **Guide** (2026-11-15): the starter before a full batch is 7 L (6 L falls just short of the mother's 25%), about 23 days to 100% (was 6-7 L, 21 days), 4 L and about 19 days before a half batch; the Yearly Plan malts best in October indoors, in a loft or a basement, poorly in April (8 to 12 days) and in October's open air (7 to 9). Nothing changes in game.
 - **Guide shortened** (2026-11-15): the loft points to TP Core's guide; repeated tips, a secret and margin notes cut; `TPV.fast` no longer names `V.TEST_HOURS`. Nothing changes in game.
 - **README says what is** (2026-11-15): no version tags or dev-machine paths; the 0.2.8 mash bucket note dropped (no such code). Nothing changes in game.
 - **Docs** (2026-11-15): decisions in this CHANGELOG are stated plainly, without attributions. Nothing changes in game.

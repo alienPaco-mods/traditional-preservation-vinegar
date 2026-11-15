@@ -99,7 +99,7 @@ The cask isn't a batch machine. It's a **living pool**, kept going the way Frenc
 - **Bottling only works at 100%.**
 - **Souring loses about a tenth to the air.** 19 L of fermented wort becomes about 17 L of vinegar.
 - **Empty Cask** (in the cask's menu) pours everything away and leaves the mother: for a pool gone wrong, not for every day.
-- **Never empty it.** The vinegar you leave behind is the *starter* that powers the mother (next section). Before topping up, keep at least a third as much vinegar in the cask as the fermented wort you're about to add: 6–7 L before a full 19 L batch. Then the mother's speed bonus works from the start.
+- **Never empty it.** The vinegar you leave behind is the *starter* that powers the mother (next section). Before topping up, keep at least a third as much vinegar in the cask as the fermented wort you're about to add: 7 L before a full 19 L batch (6 L is just short). Then the mother's speed bonus works from the start.
 
 ---
 
@@ -248,7 +248,7 @@ A sip scales down: half a litre of wort is 150 calories.
 - **Two buckets per run.** One yeast packet either way, and 2 buckets gives twice the vinegar.
 - **Malt the whole harvest in autumn.** Malt keeps forever, so brew whenever you like.
 - **Hose the vessel to the cask** and pump instead of carrying buckets. **Up to the air line** gives the fastest souring.
-- **Before topping up, keep a third as much vinegar in the cask as the wort you're adding.** That's about **6–7 L before a full 19 L batch** (about 21 days to 100% instead of 28) and **3–4 L before a half batch**. Much more than a third overfills the cask, and it slows for lack of air.
+- **Before topping up, keep a third as much vinegar in the cask as the wort you're adding.** That's **7 L before a full 19 L batch** (about 23 days to 100% instead of 28) and **4 L before a half batch** (about 19 days). More only crowds the cask: past 22.5 L it slows for lack of air.
 - **One cask can keep a household pickling all year.** A second cask (via Split Mother) is for big families or trade.
 
 ---
@@ -287,7 +287,7 @@ Each process laid out as the game's planting seasons: the months it works unheat
 
 | Process | Season | Best months | Poor months | Out of season | Where, at its best | Takes, at its best |
 |---|---|---|---|---|---|---|
-| **Malting** (Malt keeps; Green Malt must be kilned within 2 days) | April to October | May, June, July, August, September | April, October (about 8 to 9 days) | November to March | Indoors or the open air (12 to 20 C); a basement from May to November | About 5 days |
+| **Malting** (Malt keeps; Green Malt must be kilned within 2 days) | April to October | May to September; October indoors, in a loft or a basement | April (about 8 to 12 days); October in the open air (about 7 to 9) | November to March | Indoors or the open air (12 to 20 C); a basement from May to November | About 5 days |
 | **Fermenting** | May to September | June, July, August | May (up to 17 days); September (upstairs up to 20; use a basement, 16 to 20) | October to April: 17 to 43 days in April, 25 and more from October to March (usually months) | Indoors or a loft | 10 days |
 | **Souring** | May to August | June, July | May (38 to 50 days); August (pour early: a late pour can sour into March) | September to April: 50 to 77 days in April, 75 and more from September to March | A cask in a loft or indoors | 35 to 41 days (26 with the mother at work) |
 
