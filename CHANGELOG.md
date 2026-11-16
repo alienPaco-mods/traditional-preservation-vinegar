@@ -1,5 +1,8 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.33
+- **Grain's season in the guide** (2026-11-16): Quick Start, the intro and Tips now say grain is sown August to October (best in September), that looted seed packets are grain too (5 each; 48 for a full batch is about 10 packets), and to malt while malting is in season; were "Autumn: grow barley" and "Malt the whole harvest in autumn" (vanilla 42.22 sows grain August to October). Guide 4 only; nothing changes in game.
+
 ## 0.2.32
 - **Wort (Fresh) and Wort (Soured)** (2026-11-16): anything that goes off shows *(Fresh)* in its good state, as milk does, and soured wort reads as soured milk does; were Wort and Sour Wort. Fluid names only (`MaltWort`, `MaltSourWort` unchanged). README, guide 4.
 

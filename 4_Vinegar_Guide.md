@@ -27,7 +27,7 @@
 
 ## 1. What This Mod Does
 
-Vanilla vinegar is loot-only, and without it there's no pickling. This mod lets you brew **malt vinegar** from grain you grow, the old English way: malt the grain, mash it, ferment it into a weak ale, and sour that ale in a cask with a living **Mother of Vinegar**. It ends as ordinary **vanilla Vinegar**, so it works in every jarring recipe.
+Vanilla vinegar is loot-only, and without it there's no pickling. This mod lets you brew **malt vinegar** from grain you grow or find, the old English way: malt the grain, mash it, ferment it into a weak ale, and sour that ale in a cask with a living **Mother of Vinegar**. It ends as ordinary **vanilla Vinegar**, so it works in every jarring recipe.
 
 **One full batch gives about 17 bottles: roughly 85 jars of pickles.**
 
@@ -37,12 +37,12 @@ Vanilla vinegar is loot-only, and without it there's no pickling. This mod lets 
 
 > **Requires Traditional Preservation (Core)**, the series' shared mod (TP Core for short). Enable it alongside this one; it loads first.
 
-**Autumn:** grow barley, wheat or rye → **Steep** → **Malting Floor** → **kiln** on a fire. Malt keeps forever.
+**Grain:** sow barley, wheat or rye from August to October (best in September), or open looted seed packets (5 grain each) → **Steep** → **Malting Floor** (April to October) → **kiln** on a fire. Malt keeps forever.
 **Spring to autumn:** **Mash** → heat → **Strain** → **Fermentation Vessel** (with a packet of yeast) → **Orléans Vinegar Cask** → **Bottle**.
 
 | You need for a full batch | |
 |---|---|
-| Grain | 48 (about 16 barley plants) |
+| Grain | 48 (about 16 barley plants, or 10 seed packets) |
 | Water | 28 L |
 | Yeast | 1 full packet |
 | Cloth | 1 Ripped Sheet or Cheesecloth (kept) |
@@ -246,7 +246,7 @@ A sip scales down: half a litre of wort is 150 calories.
 ## 12. Tips
 
 - **Two buckets per run.** One yeast packet either way, and 2 buckets gives twice the vinegar.
-- **Malt the whole harvest in autumn.** Malt keeps forever, so brew whenever you like.
+- **Malt the whole harvest while malting is in season** (April to October, or by a porch fire in winter). Malt keeps forever, so brew whenever you like. Grain sown in autumn ripens over the winter.
 - **Hose the vessel to the cask** and pump instead of carrying buckets. **Up to the air line** gives the fastest souring.
 - **Before topping up, keep a third as much vinegar in the cask as the wort you're adding.** That's **7 L before a full 19 L batch** (about 23 days to 100% instead of 28) and **4 L before a half batch** (about 19 days). More only crowds the cask: past 22.5 L it slows for lack of air.
 - **One cask can keep a household pickling all year.** A second cask (via Split Mother) is for big families or trade.
