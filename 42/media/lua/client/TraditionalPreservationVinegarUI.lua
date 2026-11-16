@@ -19,11 +19,9 @@ local InfoWindow = require "TraditionalPreservationCore/InfoWindow"
 local StationInfo = require "TraditionalPreservationCore/StationInfo"
 local Weather = require "TraditionalPreservationCore/Weather"
 local Container = require "TraditionalPreservationCore/Container"
+local Wrap = require "TraditionalPreservationCore/Wrap"
 
 local V = TraditionalPreservationVinegar
-local vanillaCreateChildren = ISCraftLogicPanel.createChildren
-local vanillaStartCraft = ISWidgetCraftLogicControl.startCraft
-local vanillaOutputTeaser = ISWidgetCraftLogicInputControl.updateOutputItems
 
 local BATCH_RECIPES = { MaltGrain = "malting", FermentWort = "alcoholic" }
 local VINEGAR_ICON = "Item_Vinegar"
@@ -99,8 +97,9 @@ UI.keepDoorsFree(require("TraditionalPreservationVinegar/Tiles").STATIONS)
 local TANK_TITLES = { [ResourceIO.Input] = "IGUI_TraditionalPreservationVinegar_TankWort", [ResourceIO.Output] = "IGUI_TraditionalPreservationVinegar_TankFermented" }
 
 -- Vanilla never shows a station's fluid tanks, so the vessel's window gets a column for each, named
--- for what it holds. The title has to be set before the panel builds its label.
-function ISCraftLogicPanel:createChildren()
+-- for what it holds. The title has to be set before the panel builds its label. Wraps ISCraftLogicPanel.createChildren
+-- through TP Core's Wrap: compare with vanilla after a game update.
+Wrap.method("ISCraftLogicPanel", "createChildren", function(vanillaCreateChildren, self)
     vanillaCreateChildren(self)
     if not (self.tableLayout and V.isVessel(self.entity)) then return end
     for _, io in ipairs({ ResourceIO.Input, ResourceIO.Output }) do
@@ -115,40 +114,34 @@ function ISCraftLogicPanel:createChildren()
             self.tableLayout:setElement(column:index(), 0, panel)
         end
     end
-end
+end)
 
 -- The vessel's recipe gives a marker item that the world code turns into fermented wort, so the window's
--- output preview would show the marker. The box stays, empty: the Fermented tank shows what comes out.
-function ISWidgetCraftLogicInputControl:updateOutputItems()
+-- output preview would show the marker. The box stays, empty: the Fermented tank shows what comes out. Wraps
+-- ISWidgetCraftLogicInputControl.updateOutputItems through TP Core's Wrap.
+Wrap.method("ISWidgetCraftLogicInputControl", "updateOutputItems", function(vanillaOutputTeaser, self)
     vanillaOutputTeaser(self)
     if self.outputItems and V.isVessel(self.entity) then
         self.outputItems:removeAllSlots()
         self.outputItems:addDisplayEmptySlot("S_ItemSlot_OutputAux")
     end
-end
+end)
 
 -- Vanilla leaves Craft enabled when the vessel can't run and then does nothing, and each press asks for
--- one more run even with one going, so this checks first and says why.
-function ISWidgetCraftLogicControl:startCraft()
-    if V.isVessel(self.entity) then
-        local logic = self.entity:getComponent(ComponentType.CraftLogic)
-        local reason
-        if logic and logic:isRunning() then
-            reason = "IGUI_TraditionalPreservationVinegar_InUse"
-        elseif V.batchMl(V.litres(V.vesselTank(self.entity, ResourceIO.Input)) * 1000) <= 0 then
-            reason = "IGUI_TraditionalPreservationVinegar_NeedsWort"
-        elseif V.isSour(V.peekTank(self.entity)) then
-            reason = "IGUI_TraditionalPreservationVinegar_WortSour"
-        elseif V.litres(V.vesselTank(self.entity, ResourceIO.Output)) > 0 then
-            reason = "IGUI_TraditionalPreservationVinegar_DrawOffFirst"
-        end
-        if reason then
-            HaloTextHelper.addBadText(self.player, getText(reason))
-            return
-        end
+-- one more run even with one going, so this checks first and says why (TP Core's UI.craftRefusal).
+UI.craftRefusal(function(control)
+    if not V.isVessel(control.entity) then return nil end
+    local logic = control.entity:getComponent(ComponentType.CraftLogic)
+    if logic and logic:isRunning() then return "IGUI_TraditionalPreservationVinegar_InUse" end
+    if V.batchMl(V.litres(V.vesselTank(control.entity, ResourceIO.Input)) * 1000) <= 0 then
+        return "IGUI_TraditionalPreservationVinegar_NeedsWort"
     end
-    return vanillaStartCraft(self)
-end
+    if V.isSour(V.peekTank(control.entity)) then return "IGUI_TraditionalPreservationVinegar_WortSour" end
+    if V.litres(V.vesselTank(control.entity, ResourceIO.Output)) > 0 then
+        return "IGUI_TraditionalPreservationVinegar_DrawOffFirst"
+    end
+    return nil
+end)
 
 -- Vanilla's popup goes by the recipe's time alone, so a running batch gets this instead.
 local function drawBatchTooltip(slot, tooltip, name, station)
@@ -609,10 +602,9 @@ end
 
 Events.OnFillWorldObjectContextMenu.Add(onFillContextMenu)
 
--- Vanilla adds the option that opens a station's window with no icon, so this gives ours theirs.
-local vanillaContextEntity = ISWorldMenuElements.ContextEntity
-
-function ISWorldMenuElements.ContextEntity()
+-- Vanilla adds the option that opens a station's window with no icon, so this gives ours theirs. Wraps
+-- ISWorldMenuElements.ContextEntity through TP Core's Wrap.
+Wrap.method("ISWorldMenuElements", "ContextEntity", function(vanillaContextEntity)
     local element = vanillaContextEntity()
     local vanillaCreateMenu = element.createMenu
 
@@ -629,4 +621,4 @@ function ISWorldMenuElements.ContextEntity()
     end
 
     return element
-end
+end)

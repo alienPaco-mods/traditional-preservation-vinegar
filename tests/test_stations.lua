@@ -151,7 +151,8 @@ check("a hose to a station that is gone comes off", V.hoseLink(vessel) == nil an
 
 -- Popup
 ISCraftLogicPanel = { ItemSlotAddItems = noop, createChildren = noop }
-ISWidgetCraftLogicControl = { startCraft = noop }
+local crafted = 0
+ISWidgetCraftLogicControl = { startCraft = function() crafted = crafted + 1 end }
 ISWidgetCraftLogicInputControl = { updateOutputItems = noop }
 ISItemSlot = { defaultVerifyItem = noop, onMouseUp = noop }
 ISMoveableSpriteProps = { canPickUpMoveable = noop, getInfoPanelFlagsPerTile = noop }
@@ -244,5 +245,13 @@ function batch:getRecipe() return nil end
 lines = {}
 slot.drawTooltip(slot, tooltip)
 check("a batch that has just finished draws nothing", #lines == 0)
+
+-- Craft on the vessel says why it can't run (TP Core's UI.craftRefusal, a layer on the one wrap of startCraft).
+local halos = {}
+HaloTextHelper = { addBadText = function(_, text) table.insert(halos, text) end }
+ISWidgetCraftLogicControl.startCraft({ entity = vessel, player = "player" })
+check("Craft on a vessel with no wort says so and doesn't start", halos[1] == getText("IGUI_TraditionalPreservationVinegar_NeedsWort") and crafted == 0)
+ISWidgetCraftLogicControl.startCraft({ entity = floor, player = "player" })
+check("any other station crafts as vanilla does", crafted == 1 and #halos == 1)
 
 H.done()

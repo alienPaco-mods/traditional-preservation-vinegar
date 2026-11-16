@@ -1,5 +1,8 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.30
+- **Wraps through TP Core's `Wrap`** (2026-11-16): the vessel's tank columns, output preview and station icons go in late and guarded; Craft's refusal on the vessel is a TP Core `UI.craftRefusal` layer (it shared `startCraft` with TP Core's slot rules). Same refusals, nothing changes in game. test_stations checks it.
+
 ## 0.2.29
 - **Pump refusal keys as constants** (2026-11-16): `V.PUMP_REFUSALS` (TP Core's DEVGUIDE "Translation keys"). Same keys, nothing changes in game.
 
