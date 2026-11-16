@@ -27,7 +27,7 @@ Fluid = { Get = function() return nil end }
 function getPlayer() return {} end
 local temperature = 25
 function getClimateManager()
-    return { getTemperature = function() return temperature end, getHumidity = function() return 50 end }
+    return { isUpdated = function() return true end, getTemperature = function() return temperature end, getHumidity = function() return 50 end }
 end
 local loaders = {}
 MapObjects = { OnLoadWithSprite = function(name, handler) loaders[name] = handler end }

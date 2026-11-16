@@ -8,7 +8,7 @@ H.installEvents()
 
 -- Engine stand-ins
 function getClimateManager()
-    return { getTemperature = function() return 25 end, getHumidity = function() return 50 end }
+    return { isUpdated = function() return true end, getTemperature = function() return 25 end, getHumidity = function() return 50 end }
 end
 local loaded = {}
 ScriptManager = { instance = {} }
