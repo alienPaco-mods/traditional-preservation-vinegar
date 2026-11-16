@@ -613,6 +613,14 @@ function V.pumpToCask(state, container, ml)
     return moved
 end
 
+-- Why a Pump to Cask preset can't run, as translation keys (V.pumpChoices).
+V.PUMP_REFUSALS = {
+    pumpEmpty = "IGUI_TraditionalPreservationVinegar_PumpEmpty",
+    pumpNoRoom = "IGUI_TraditionalPreservationVinegar_PumpNoRoom",
+    pumpAtAirLine = "IGUI_TraditionalPreservationVinegar_PumpAtAirLine",
+    pumpNotEnough = "IGUI_TraditionalPreservationVinegar_PumpNotEnough",
+}
+
 -- The Pump to Cask presets: a few fixed amounts, up to the air line (the fullest the cask sours at full
 -- speed), and all that fits. Each has the litres it would move, or a reason it can't, with the litres
 -- the reason names.
@@ -622,15 +630,15 @@ function V.pumpChoices(state, availableMl)
     local function choice(kind, ml, wanted)
         local entry = { kind = kind, ml = ml, wanted = wanted }
         if availableMl < V.HOSE_MIN_ML then
-            entry.reason = "IGUI_TraditionalPreservationVinegar_PumpEmpty"
+            entry.reason = V.PUMP_REFUSALS.pumpEmpty
         elseif room < V.HOSE_MIN_ML then
-            entry.reason, entry.reasonMl = "IGUI_TraditionalPreservationVinegar_PumpNoRoom", room
+            entry.reason, entry.reasonMl = V.PUMP_REFUSALS.pumpNoRoom, room
         elseif kind == "air" and ml < V.HOSE_MIN_ML then
-            entry.reason, entry.reasonMl = "IGUI_TraditionalPreservationVinegar_PumpAtAirLine", V.AIR_ML
+            entry.reason, entry.reasonMl = V.PUMP_REFUSALS.pumpAtAirLine, V.AIR_ML
         elseif wanted and availableMl < wanted then
-            entry.reason, entry.reasonMl = "IGUI_TraditionalPreservationVinegar_PumpNotEnough", availableMl
+            entry.reason, entry.reasonMl = V.PUMP_REFUSALS.pumpNotEnough, availableMl
         elseif wanted and room < wanted then
-            entry.reason, entry.reasonMl = "IGUI_TraditionalPreservationVinegar_PumpNoRoom", room
+            entry.reason, entry.reasonMl = V.PUMP_REFUSALS.pumpNoRoom, room
         end
         table.insert(choices, entry)
     end
