@@ -9,7 +9,7 @@ local Action = require "TraditionalPreservationCore/Action"
 local DURATION = 150
 
 function TPEmptyVinegarCask:isValid()
-    return self.cask:getSquare() ~= nil and V.caskState(self.cask).ml > 0
+    return self.cask:getSquare() ~= nil and V.caskModData(self.cask).ml > 0
 end
 
 function TPEmptyVinegarCask:waitToStart()
@@ -22,7 +22,7 @@ function TPEmptyVinegarCask:start()
 end
 
 function TPEmptyVinegarCask:complete()
-    V.emptyCask(V.caskState(self.cask))
+    V.emptyCask(V.caskModData(self.cask))
     return true
 end
 

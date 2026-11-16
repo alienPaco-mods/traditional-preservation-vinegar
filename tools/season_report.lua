@@ -14,7 +14,7 @@ local function readDays(path)
     local days = {}
     for line in io.lines(path) do
         local f = {}
-        for value in line:gmatch("%S+") do table.insert(f, value) end
+        for field in line:gmatch("%S+") do table.insert(f, field) end
         -- Each month's forecast also holds the 10 days before it (offset below 0): skipped, so a month is 30 days.
         if #f >= 6 and tonumber(f[3]) >= 0 then
             table.insert(days, { world = tonumber(f[1]), offset = tonumber(f[3]), month = tonumber(f[2]), low = tonumber(f[4]), mean = tonumber(f[5]), high = tonumber(f[6]) })
@@ -106,8 +106,8 @@ print("| Month | Malting by a fire, under a roof | in the open | Ferment by a fi
 print("|---|---|---|---|---|---|---|")
 for month = 1, 12 do
     local cells = { MONTHS[month] }
-    for _, kind in ipairs({ { V.MALTING_HOURS, V.maltingRate }, { V.ALCOHOLIC_HOURS, V.alcoholicRate }, { V.ACETIC_HOURS, V.aceticRate } }) do
-        for _, place in ipairs(FIRES) do table.insert(cells, range(days, month, kind[1], kind[2], place, "%.1f-%.1f")) end
+    for _, stage in ipairs({ { V.MALTING_HOURS, V.maltingRate }, { V.ALCOHOLIC_HOURS, V.alcoholicRate }, { V.ACETIC_HOURS, V.aceticRate } }) do
+        for _, place in ipairs(FIRES) do table.insert(cells, range(days, month, stage[1], stage[2], place, "%.1f-%.1f")) end
     end
     print("| " .. table.concat(cells, " | ") .. " |")
 end

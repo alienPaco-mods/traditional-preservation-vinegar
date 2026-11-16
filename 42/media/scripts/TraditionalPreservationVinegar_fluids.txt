@@ -28,7 +28,7 @@ module Base
     }
 
     /* Wort left too long before the yeast: wild lactic bacteria have soured it. Safe to drink, but the
-       vessel refuses it (TP Core's FluidAgeing renames wort to this; see V.WORT_SPEC). */
+       vessel refuses it (TP Core's FluidAgeing renames wort to this; see V.WORT_FLUID_KIND). */
     fluid MaltSourWort
     {
         ColorReference = Peru,

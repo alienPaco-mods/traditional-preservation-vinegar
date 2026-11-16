@@ -30,7 +30,7 @@ function TPPourVinegarFluid:isValid()
         local tank = tankFor(self)
         return tank ~= nil and not tank:isEmpty() and container:isEmpty()
     end
-    return V.holdsOnly(container, V.FERMENTED) and V.caskRoom(V.caskState(self.station)) > 0
+    return V.holdsOnly(container, V.FERMENTED) and V.caskRoom(V.caskModData(self.station)) > 0
 end
 
 function TPPourVinegarFluid:waitToStart()
@@ -57,9 +57,9 @@ function TPPourVinegarFluid:complete()
         tankFor(self):drainToItem(self.item)
     else
         -- The cask catches up on its own souring first, so the new wort doesn't count time before it arrived.
-        local state = V.caskState(self.station)
-        V.updateCaskAt(state, V.getLedger(), self.station)
-        local poured = V.pourIntoCask(state, Container.ml(container))
+        local caskModData = V.caskModData(self.station)
+        V.updateCaskAt(caskModData, V.getLedger(), self.station)
+        local poured = V.pourIntoCask(caskModData, Container.ml(container))
         container:removeFluid(poured / 1000)
     end
     return true

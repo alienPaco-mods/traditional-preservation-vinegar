@@ -29,12 +29,12 @@ local function restrictTank(tank, name)
 end
 
 -- A progress of 0 to 1, or nil with nothing running. Tells the run where it stands.
-local function readRun(station, logic, entry, kind)
-    local uiLogic = Station.uiLogic(station, entry, logic)
+local function readRun(station, logic, sessionState, process)
+    local uiLogic = Station.uiLogic(station, sessionState, logic)
     if not uiLogic then return nil end
     local craftData = V.runningBatch(station, logic, uiLogic)
     if not craftData then return nil end
-    V.notePlace(craftData:getModData(), station, kind, getGameTime():getWorldAgeHours())
+    V.notePlace(craftData:getModData(), station, process, getGameTime():getWorldAgeHours())
     return logic:getProgress(craftData), craftData
 end
 
@@ -59,14 +59,14 @@ function World.vesselSprite(waiting, progress, finished)
 end
 
 -- Fresh wort shows bare, the skin thickens as the pool sours, and a mother is a whole skin at once.
-function World.caskSprite(state)
-    if state.ml <= 0 then
-        return state.mother and V.CASK_MOTHER or nil
+function World.caskSprite(caskModData)
+    if caskModData.ml <= 0 then
+        return caskModData.mother and V.CASK_MOTHER or nil
     end
-    if state.strength >= 1 then return V.CASK_FINISHED end
-    if state.mother then return V.CASK_FILM[#V.CASK_FILM] end
-    if state.strength <= 0 then return V.CASK_FILLED end
-    return V.CASK_FILM[math.min(math.floor(state.strength * #V.CASK_FILM) + 1, #V.CASK_FILM)]
+    if caskModData.strength >= 1 then return V.CASK_FINISHED end
+    if caskModData.mother then return V.CASK_FILM[#V.CASK_FILM] end
+    if caskModData.strength <= 0 then return V.CASK_FILLED end
+    return V.CASK_FILM[math.min(math.floor(caskModData.strength * #V.CASK_FILM) + 1, #V.CASK_FILM)]
 end
 
 -- Singleplayer: the station's work goes to the player.
@@ -129,23 +129,23 @@ local function settleRun(vessel, resources, logic, craftData, input, output)
     end
 end
 
-local function stationSprite(station, entry)
-    if entry.base == V.CASK_SPRITE then
-        local state = V.caskState(station)
-        local before = state.strength
-        V.updateCaskAt(state, V.getLedger(), station)
-        if before < 1 and state.strength >= 1 then
-            log("TPV", "cask fully soured: %.2f L, mother layers %d", state.ml / 1000, V.motherLayers(state))
+local function stationSprite(station, sessionState)
+    if sessionState.base == V.CASK_SPRITE then
+        local caskModData = V.caskModData(station)
+        local before = caskModData.strength
+        V.updateCaskAt(caskModData, V.getLedger(), station)
+        if before < 1 and caskModData.strength >= 1 then
+            log("TPV", "cask fully soured: %.2f L, mother layers %d", caskModData.ml / 1000, V.motherLayers(caskModData))
         end
-        return World.caskSprite(state)
+        return World.caskSprite(caskModData)
     end
 
     local resources = station:getComponent(ComponentType.Resources)
     local logic = station:getComponent(ComponentType.CraftLogic)
-    if not resources or not logic then return entry.sprite end
-    local progress, craftData = readRun(station, logic, entry, entry.base == V.FLOOR_SPRITE and "malting" or "alcoholic")
+    if not resources or not logic then return sessionState.sprite end
+    local progress, craftData = readRun(station, logic, sessionState, sessionState.base == V.FLOOR_SPRITE and "malting" or "alcoholic")
 
-    if entry.base == V.FLOOR_SPRITE then
+    if sessionState.base == V.FLOOR_SPRITE then
         local waiting = countItems(resources, logic:getInputsGroupName(), ResourceIO.Input)
         local finished = countItems(resources, logic:getOutputsGroupName(), ResourceIO.Output)
         -- A run that ended with more malt to collect than it started with finished; a cancelled one didn't.
@@ -162,10 +162,10 @@ local function stationSprite(station, entry)
     end
 
     local input, output = V.vesselTank(station, ResourceIO.Input), V.vesselTank(station, ResourceIO.Output)
-    if not entry.restricted then
+    if not sessionState.restricted then
         restrictTank(input, V.WORT)
         restrictTank(output, V.FERMENTED)
-        entry.restricted = true
+        sessionState.restricted = true
     end
     settleRun(station, resources, logic, craftData, input, output)
     V.tankAge(station)
@@ -190,34 +190,34 @@ end
 
 local HOSE_SPRITES = { [V.VESSEL_SPRITE] = V.VESSEL_HOSE, [V.CASK_SPRITE] = V.CASK_HOSE }
 
-local function refresh(station, entry)
-    local sprite = stationSprite(station, entry)
-    local hosed = HOSE_SPRITES[entry.base] ~= nil and tendHose(station)
-    entry.sprite = sprite
+local function refresh(station, sessionState)
+    local sprite = stationSprite(station, sessionState)
+    local hosed = HOSE_SPRITES[sessionState.base] ~= nil and tendHose(station)
+    sessionState.sprite = sprite
     local names = {}
-    if sprite then table.insert(names, V.spriteName(sprite + entry.faceIndex)) end
-    if hosed then table.insert(names, V.spriteName(HOSE_SPRITES[entry.base] + entry.faceIndex)) end
-    Station.showSprites(station, entry, tostring(sprite) .. ":" .. tostring(hosed), names)
+    if sprite then table.insert(names, V.spriteName(sprite + sessionState.faceIndex)) end
+    if hosed then table.insert(names, V.spriteName(HOSE_SPRITES[sessionState.base] + sessionState.faceIndex)) end
+    Station.showSprites(station, sessionState, tostring(sprite) .. ":" .. tostring(hosed), names)
 end
 
 -- Only this mod's stations: the base sprite and which way it faces.
-local function newEntry(station)
+local function newSessionState(station)
     local kind, face = V.stationKind(station)
     if not kind then return nil end
     return { base = V.STATION_SPRITES[kind], faceIndex = face }
 end
 
-local tracker = Station.tracker({ sprites = Tiles.STATIONS, entry = newEntry, refresh = refresh })
+local tracker = Station.tracker({ sprites = Tiles.STATIONS, newSessionState = newSessionState, refresh = refresh })
 
 World.track = tracker.track
 
 -- Redraws a tracked station now, without waiting for the next tick, e.g. after a pour.
 function World.refresh(station)
-    local entry = tracker.entry(station)
-    if entry then refresh(station, entry) end
+    local sessionState = tracker.sessionStateOf(station)
+    if sessionState then refresh(station, sessionState) end
 end
 
-Weather.record(function(now, climate)
+Weather.onReading(function(now, climate)
     V.advance(V.getLedger(), now, climate:getTemperature())
 end)
 

@@ -25,15 +25,15 @@ local check = H.check
 local list = H.list
 
 local function recipeData(time)
-    local data = { modData = {}, elapsed = 0 }
-    function data:getModData() return self.modData end
-    function data:getElapsedTime() return self.elapsed end
-    function data:setElapsedTime(value) self.elapsed = value end
-    function data:getRecipe() return { getTime = function() return time end } end
-    function data:getAllInputItemsWithFlag() return list(self.inputs) end
-    function data:getAllCreatedItems() return list(self.created) end
-    function data:getAllConsumedItems() return list(self.used or {}) end
-    return data
+    local craftRecipeData = { modData = {}, elapsed = 0 }
+    function craftRecipeData:getModData() return self.modData end
+    function craftRecipeData:getElapsedTime() return self.elapsed end
+    function craftRecipeData:setElapsedTime(elapsedTime) self.elapsed = elapsedTime end
+    function craftRecipeData:getRecipe() return { getTime = function() return time end } end
+    function craftRecipeData:getAllInputItemsWithFlag() return list(self.inputs) end
+    function craftRecipeData:getAllCreatedItems() return list(self.created) end
+    function craftRecipeData:getAllConsumedItems() return list(self.used or {}) end
+    return craftRecipeData
 end
 
 -- Temperature
@@ -63,11 +63,11 @@ check("a frozen cask has no time left, it waits", V.caskStatus({ ml = 1000, stre
 check("malting: suffers in heat", V.maltingRate(30) < 0.35)
 
 -- Timers
-local function runHours(temperature, count, data, update)
+local function runHours(temperature, count, craftRecipeData, update)
     for _ = 1, count do
         hours = hours + 1
         V.advance(V.getLedger(), hours, temperature)
-        update(data)
+        update(craftRecipeData)
     end
 end
 
@@ -102,10 +102,10 @@ local atRecord = smooth.elapsed
 hours = hours + 0.1
 V.onFermentUpdate(smooth)
 check("the bar keeps moving between weather records", math.abs(smooth.elapsed - atRecord - 360) < 0.01)
-local doneBefore = smooth.modData.done
+local doneBefore = smooth.modData.workHours
 hours = hours + 0.1
 V.onFermentUpdate(smooth)
-check("without counting that time twice", smooth.modData.done == doneBefore)
+check("without counting that time twice", smooth.modData.workHours == doneBefore)
 hours = hours + 0.8
 V.advance(V.getLedger(), hours, 22)
 V.onFermentUpdate(smooth)
@@ -124,26 +124,26 @@ runHours(-5, 10, roofed, V.onFermentUpdate)
 check("a sheltered vessel goes by the season, not the frost", roofed.elapsed > 10 * 3600 * 0.5)
 
 local pooled = recipeData(ALCOHOL_TIME)
-pooled.modData = { done = 500, place = "Fireside", fireUntil = 9, under = "Open" }
+pooled.modData = { workHours = 500, place = "Fireside", fireUntil = 9, placeWithoutFire = "Open" }
 V.onFermentStart(pooled)
-check("a reused recipe object starts clean", pooled.modData.done == 0
-    and pooled.modData.place == nil and pooled.modData.fireUntil == nil and pooled.modData.under == nil)
+check("a reused recipe object starts clean", pooled.modData.workHours == 0
+    and pooled.modData.place == nil and pooled.modData.fireUntil == nil and pooled.modData.placeWithoutFire == nil)
 
 -- The popup
 local ledger = V.newLedger(0)
 ledger.temperature, ledger.seasonTemperature = 22, 15
-local status = V.batchStatus("alcoholic", { done = 120 }, 240, ledger)
+local status = V.batchStatus("alcoholic", { workHours = 120 }, 240, ledger)
 check("the popup shows progress", status.progress == 0.5)
 check("and the time left at the best temperature", status.hoursLeft == 120 and status.rate == 1)
 ledger.temperature = 5
-status = V.batchStatus("alcoholic", { done = 120 }, 240, ledger)
+status = V.batchStatus("alcoholic", { workHours = 120 }, 240, ledger)
 check("the cold stretches the time left", status.hoursLeft > 2000 and status.temperature == 5)
-status = V.batchStatus("alcoholic", { done = 120, place = "Sheltered" }, 240, ledger)
+status = V.batchStatus("alcoholic", { workHours = 120, place = "Sheltered" }, 240, ledger)
 check("a sheltered batch goes by the season, a room's", status.temperature == Weather.roomTemperature(15) and status.place == "Sheltered")
 ledger.temperature = 25
-check("the floor goes by its own temperature range", V.batchStatus("malting", { done = 60 }, 120, ledger).rate < 0.7)
+check("the floor goes by its own temperature range", V.batchStatus("malting", { workHours = 60 }, 120, ledger).rate < 0.7)
 check("a run saved with heat hours loses nothing (heat harm is gone, 0.2.10)", V.fermentedMl(20000) == math.floor(20000 * V.FERMENT_YIELD + 0.5)
-    and V.batchStatus("alcoholic", { done = 0, heat = 10 }, 240, ledger).heatLoss == nil)
+    and V.batchStatus("alcoholic", { workHours = 0, heat = 10 }, 240, ledger).heatLoss == nil)
 
 -- Liquids
 local function container(name, amount, capacity, other)
@@ -205,11 +205,11 @@ check("a full vessel run goes in", V.pourIntoCask(cask, 19000) == 19000 and cask
 check("no bottles before full strength", V.bottlesLeft(cask) == 0 and not V.takeBottle(cask))
 
 V.getLedger().seasonTemperature = 25
-local function sourHours(state, count, temperature, sheltered)
+local function sourHours(caskModData, count, temperature, sheltered)
     for _ = 1, count do
         hours = hours + 1
         V.advance(V.getLedger(), hours, temperature)
-        V.updateCask(state, V.getLedger(), type(sheltered) == "string" and sheltered or sheltered and "Sheltered" or "Open")
+        V.updateCask(caskModData, V.getLedger(), type(sheltered) == "string" and sheltered or sheltered and "Sheltered" or "Open")
     end
 end
 V.updateCask(cask, V.getLedger(), "Open")
@@ -280,7 +280,7 @@ check("and the yard is open", V.placeOf(stationAt(0, true)) == "Open")
 local Fire = require "TraditionalPreservationCore/Fire"
 local hearthside = { ml = 10000, strength = 0 }
 V.updateCask(hearthside, V.getLedger(), "Open")
-hearthside.fireUntil, hearthside.under = hours + 12, "Open"
+hearthside.fireUntil, hearthside.placeWithoutFire = hours + 12, "Open"
 sourHours(hearthside, 24, -15, Fire.PLACE)
 check("a cask by a fire in a frost sours 12 hours at 28 C, then barely",
     math.abs(hearthside.strength - 12 * V.aceticRate(Fire.FIRE_C) / V.ACETIC_HOURS) < 0.002)
@@ -337,10 +337,10 @@ check("then it can be split", V.canSplitMother(young) and V.nextLayerMl(young) =
 
 -- The hose
 local function tank(litres)
-    local t = { litres = litres }
-    function t:getAmount() return self.litres end
-    function t:removeFluid(amount) self.litres = self.litres - amount end
-    return t
+    local tank = { litres = litres }
+    function tank:getAmount() return self.litres end
+    function tank:removeFluid(amount) self.litres = self.litres - amount end
+    return tank
 end
 local roomy, out = { ml = 5000, strength = 1, mother = true }, tank(19)
 check("the hose pumps the amount asked for", V.pumpToCask(roomy, out, 10000) == 10000 and roomy.ml == 15000 and math.abs(out.litres - 9) < 1e-9)
@@ -351,9 +351,9 @@ check("no more than the cask has room for", V.pumpToCask(nearlyFull, rest, 19000
 check("an empty tank pumps nothing", V.pumpToCask({ ml = 0, strength = 0 }, tank(0), 5000) == 0)
 check("nor do dregs", V.pumpToCask({ ml = 0, strength = 0 }, tank(0.03), 5000) == 0)
 local function choices(caskMl, available)
-    local byKind = {}
-    for _, choice in ipairs(V.pumpChoices({ ml = caskMl, strength = 1 }, available)) do byKind[choice.kind .. (choice.wanted or "")] = choice end
-    return byKind
+    local byFill = {}
+    for _, choice in ipairs(V.pumpChoices({ ml = caskMl, strength = 1 }, available)) do byFill[choice.fill .. (choice.wanted or "")] = choice end
+    return byFill
 end
 local c = choices(16400, 19000)
 check("with 13.6 L of room, 5 and 10 L can be pumped", not c.step5000.reason and not c.step10000.reason and c.step10000.ml == 10000)
@@ -371,11 +371,11 @@ c = choices(5000, 0)
 check("an empty vessel refuses everything", c.all.reason == "IGUI_TraditionalPreservationVinegar_PumpEmpty" and c.step5000.reason == "IGUI_TraditionalPreservationVinegar_PumpEmpty")
 
 local function station(x, y, z, kindIndex)
-    local object = { modData = {}, square = { getX = function() return x end, getY = function() return y end, getZ = function() return z end } }
-    function object:getModData() return self.modData end
-    function object:getSquare() return self.square end
-    function object:getSprite() return { getName = function() return V.spriteName(kindIndex) end } end
-    return object
+    local station = { modData = {}, square = { getX = function() return x end, getY = function() return y end, getZ = function() return z end } }
+    function station:getModData() return self.modData end
+    function station:getSquare() return self.square end
+    function station:getSprite() return { getName = function() return V.spriteName(kindIndex) end } end
+    return station
 end
 local vesselObject, caskNear, caskFar = station(10, 10, 0, V.VESSEL_SPRITE), station(11, 12, 0, V.CASK_SPRITE), station(14, 10, 0, V.CASK_SPRITE)
 local caskNext, caskCorner, caskAbove = station(10, 11, 0, V.CASK_SPRITE), station(12, 8, 0, V.CASK_SPRITE), station(10, 11, 1, V.CASK_SPRITE)
@@ -518,7 +518,7 @@ check("wort: about 5 days in a summer cellar", math.abs(V.WORT_SOUR_HOURS / V.wo
 check("wort: never while frozen", V.wortRate(0) == 0 and V.wortRate(-10) == 0)
 check("wort: not scaled by the sensitivity", (function() local was = V.SENSITIVITY; V.SENSITIVITY = 0
     local rate = V.wortRate(0); V.SENSITIVITY = was; return rate == 0 end)())
-check("sour wort is both stages", V.WORT_SPEC.fresh[V.WORT] == V.SOUR_WORT and V.WORT_SPEC.spoiled[V.WORT] == V.SOUR_WORT)
+check("sour wort is both stages", V.WORT_FLUID_KIND.fresh[V.WORT] == V.SOUR_WORT and V.WORT_FLUID_KIND.spoiled[V.WORT] == V.SOUR_WORT)
 
 local function wortHours(span, temperature, tank)
     for _ = 1, span do
@@ -528,21 +528,21 @@ local function wortHours(span, temperature, tank)
     return V.ageTank(tank, 10000, "Open", hours)
 end
 local tank = {}
-local record = V.ageTank(tank, 10000, "Open", hours)
-check("a filled tank starts a record", record and record.age == 0 and tank.tpFluidAge == record)
-record = wortHours(47, 20, tank)
-check("47 hours at 20 C: still wort", not V.isSour(record) and math.abs(V.hoursToSour(record, 20) - 1) < 0.01)
-record = wortHours(1, 20, tank)
-check("48 hours at 20 C: soured", V.isSour(record) and V.hoursToSour(record, 20) == nil)
+local fluidAge = V.ageTank(tank, 10000, "Open", hours)
+check("a filled tank starts a fluidAge", fluidAge and fluidAge.age == 0 and tank.tpFluidAge == fluidAge)
+fluidAge = wortHours(47, 20, tank)
+check("47 hours at 20 C: still wort", not V.isSour(fluidAge) and math.abs(V.hoursToSour(fluidAge, 20) - 1) < 0.01)
+fluidAge = wortHours(1, 20, tank)
+check("48 hours at 20 C: soured", V.isSour(fluidAge) and V.hoursToSour(fluidAge, 20) == nil)
 tank = {}
 V.ageTank(tank, 10000, "Open", hours)
-record = wortHours(100, -5, tank)
-check("frozen wort waits", record.age == 0 and V.hoursToSour(record, -5) == nil)
-record = wortHours(24, 30, tank)
-check("a day at 30 C sours it", V.isSour(record))
-check("an empty tank forgets its record", V.ageTank(tank, 0, "Open", hours) == nil and tank.tpFluidAge == nil)
+fluidAge = wortHours(100, -5, tank)
+check("frozen wort waits", fluidAge.age == 0 and V.hoursToSour(fluidAge, -5) == nil)
+fluidAge = wortHours(24, 30, tank)
+check("a day at 30 C sours it", V.isSour(fluidAge))
+check("an empty tank forgets its fluidAge", V.ageTank(tank, 0, "Open", hours) == nil and tank.tpFluidAge == nil)
 V.WORT_SOURS = false
-check("souring off keeps no record", V.ageTank(tank, 10000, "Open", hours) == nil and tank.tpFluidAge == nil)
+check("souring off keeps no fluidAge", V.ageTank(tank, 10000, "Open", hours) == nil and tank.tpFluidAge == nil)
 V.WORT_SOURS = true
 
 SandboxVars = { TraditionalPreservationVinegar = { MaltingDays = 3, AlcoholicDays = 5, AceticDays = 14, CultureBonus = 50, TemperatureSensitivity = 1, WortSours = false } }

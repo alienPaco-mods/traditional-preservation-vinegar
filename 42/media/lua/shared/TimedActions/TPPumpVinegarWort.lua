@@ -13,7 +13,7 @@ function TPPumpVinegarWort:isValid()
     if not self.vessel:getSquare() or not self.cask:getSquare() then return false end
     if not V.hoseLink(self.vessel) or not V.hoseLink(self.cask) then return false end
     local tank = V.vesselTank(self.vessel, ResourceIO.Output)
-    return tank ~= nil and not tank:isEmpty() and V.caskRoom(V.caskState(self.cask)) >= V.HOSE_MIN_ML
+    return tank ~= nil and not tank:isEmpty() and V.caskRoom(V.caskModData(self.cask)) >= V.HOSE_MIN_ML
 end
 
 function TPPumpVinegarWort:waitToStart()
@@ -35,9 +35,9 @@ function TPPumpVinegarWort:complete()
         TraditionalPreservationVinegarWorld.track(self.cask)
     end
     -- The cask catches up on its own souring first, so the new wort doesn't count time before it arrived.
-    local state = V.caskState(self.cask)
-    V.updateCaskAt(state, V.getLedger(), self.cask)
-    local moved = V.pumpToCask(state, V.vesselTank(self.vessel, ResourceIO.Output):getFluidContainer(), self.ml)
+    local caskModData = V.caskModData(self.cask)
+    V.updateCaskAt(caskModData, V.getLedger(), self.cask)
+    local moved = V.pumpToCask(caskModData, V.vesselTank(self.vessel, ResourceIO.Output):getFluidContainer(), self.ml)
     log("TPV", "hose pumped %.2f L of fermented wort into the cask", moved / 1000)
     return true
 end

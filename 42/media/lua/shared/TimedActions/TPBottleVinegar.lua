@@ -13,7 +13,7 @@ local DURATION = 40
 
 function TPBottleVinegar:isValid()
     if not self.cask:getSquare() or not self.character:getInventory():containsRecursive(self.bottle) then return false end
-    return V.isEmptyBottle(self.bottle) and V.bottlesLeft(V.caskState(self.cask)) > 0
+    return V.isEmptyBottle(self.bottle) and V.bottlesLeft(V.caskModData(self.cask)) > 0
 end
 
 function TPBottleVinegar:waitToStart()
@@ -26,9 +26,9 @@ function TPBottleVinegar:start()
 end
 
 function TPBottleVinegar:complete()
-    local state = V.caskState(self.cask)
-    if V.takeBottle(state) then
-        log("TPV", "bottled 1 L, %.2f L left in the cask", state.ml / 1000)
+    local caskModData = V.caskModData(self.cask)
+    if V.takeBottle(caskModData) then
+        log("TPV", "bottled 1 L, %.2f L left in the cask", caskModData.ml / 1000)
         Action.removeItem(self.bottle)
         V.markBottle(self.character:getInventory():AddItem(V.VINEGAR_ITEM), self.bottle:getFullType())
         self.character:getXp():AddXP(Perks.Cooking, V.BOTTLE_XP)

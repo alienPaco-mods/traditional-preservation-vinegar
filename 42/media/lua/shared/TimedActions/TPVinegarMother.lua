@@ -14,13 +14,13 @@ local PLAIN_JAR = "Base.EmptyJar"
 
 function TPVinegarMother:isValid()
     if not self.cask:getSquare() or not self.character:getInventory():containsRecursive(self.item) then return false end
-    local state = V.caskState(self.cask)
+    local caskModData = V.caskModData(self.cask)
     if self.mode == "add" then
-        return not state.mother and self.item:getFullType() == V.MOTHER_ITEM and not self.item:isRotten()
+        return not caskModData.mother and self.item:getFullType() == V.MOTHER_ITEM and not self.item:isRotten()
     end
     if not V.isEmptyJar(self.item) then return false end
-    if self.mode == "split" then return V.canSplitMother(state) end
-    return state.mother == true
+    if self.mode == "split" then return V.canSplitMother(caskModData) end
+    return caskModData.mother == true
 end
 
 function TPVinegarMother:waitToStart()
@@ -40,14 +40,14 @@ local function swap(item, fullType)
 end
 
 function TPVinegarMother:complete()
-    local state = V.caskState(self.cask)
+    local caskModData = V.caskModData(self.cask)
     if self.mode == "add" then
-        if V.addMother(state) then
+        if V.addMother(caskModData) then
             swap(self.item, self.item:getModData().jarType or PLAIN_JAR)
         end
         return true
     end
-    local moved = self.mode == "split" and V.splitMother(state) or self.mode == "take" and V.takeMother(state)
+    local moved = self.mode == "split" and V.splitMother(caskModData) or self.mode == "take" and V.takeMother(caskModData)
     if moved then
         local jarType = self.item:getFullType()
         local mother = swap(self.item, V.MOTHER_ITEM)

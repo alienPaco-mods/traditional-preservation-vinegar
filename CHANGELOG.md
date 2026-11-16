@@ -1,5 +1,8 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.31
+- **Naming sweep** (2026-11-16, TP Core's DEVGUIDE "How code is named"): the cask's saved table is `caskModData` (`V.caskModData`, was `caskState`); wort's `V.WORT_FLUID_KIND` and `V.WORT_PROCESS`, the runs' `process`; a pump choice's `fill`; the window's `caskView`. Tests and golden results unchanged; nothing changes in game. Saved keys follow TP Core's renames (`workHours`, `marks`, the Smokehouse stack's hours): pre-release, an old test save's stations read as new, so test on a fresh save.
+
 ## 0.2.30
 - **Wraps through TP Core's `Wrap`** (2026-11-16): the vessel's tank columns, output preview and station icons go in late and guarded; Craft's refusal on the vessel is a TP Core `UI.craftRefusal` layer (it shared `startCraft` with TP Core's slot rules). Same refusals, nothing changes in game. test_stations checks it.
 

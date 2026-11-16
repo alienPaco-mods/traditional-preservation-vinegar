@@ -60,7 +60,7 @@ V.FERMENTED = "MaltFermentedWort"
 -- Wort left waiting for the yeast sours: lactic bacteria from the grain get there first. It goes by this name
 -- once it has, and the vessel won't take it. Hours against 20 C; WORT_CURVE scales them by the place.
 V.SOUR_WORT = "MaltSourWort"
-V.WORT_KIND = "wort"
+V.WORT_PROCESS = "wort"
 V.WORT_SOUR_HOURS = 48
 V.WORT_SOURS = true
 -- A vessel run takes whole buckets of wort from its tank, one or two, and leaves 5% behind as lees.
@@ -144,21 +144,21 @@ V.placeOf = Fire.placeOf
 V.placeTemperature = Weather.placeTemperature
 
 -- Ledger keys are kind .. place ("aceticBasement"), as in every save so far.
-local KINDS = {
+local PROCESSES = {
     malting = V.maltingRate,
     alcoholic = V.alcoholicRate,
     acetic = V.aceticRate,
-    [V.WORT_KIND] = V.wortRate,
+    [V.WORT_PROCESS] = V.wortRate,
 }
 
 -- One total per stage and place.
 function V.newLedger(now)
-    return Weather.newLedger(now, KINDS)
+    return Weather.newLedger(now, PROCESSES)
 end
 
 -- Adds one stretch of weather to the totals.
 function V.advance(ledger, now, temperature)
-    Weather.advance(ledger, now, temperature, KINDS)
+    Weather.advance(ledger, now, temperature, PROCESSES)
 end
 
 -- Filled once on OnInitGlobalModData (fillLedger), so this is a plain lookup.
@@ -169,15 +169,15 @@ end
 -- A ledger saved before a kind or place was added has no totals for it. Filled once as the save loads,
 -- not on every getLedger: running batches, casks and popups ask for it many times a second.
 function V.fillLedger()
-    Weather.fillLedger(V.getLedger(), KINDS)
+    Weather.fillLedger(V.getLedger(), PROCESSES)
 end
 
 Events.OnInitGlobalModData.Add(V.fillLedger)
 
 -- Wort in a bucket or any container ages through TP Core's FluidAgeing, as Dairy's milk does. It has one stage
 -- only: Sour Wort is both its turned and its spoiled fluid. Fermented wort is not registered, so it keeps.
-V.WORT_SPEC = FluidAgeing.register({
-    kind = V.WORT_KIND,
+V.WORT_FLUID_KIND = FluidAgeing.register({
+    process = V.WORT_PROCESS,
     rate = V.wortRate,
     turnHours = V.WORT_SOUR_HOURS,
     spoilHours = V.WORT_SOUR_HOURS,
@@ -193,28 +193,28 @@ local function runPlace(modData)
 end
 
 -- The engine pools recipe data without clearing its ModData, so every run must set all of this.
-local function startRun(craftRecipeData, kind)
-    Weather.startRun(craftRecipeData:getModData(), V.getLedger(), kind)
+local function startRun(craftRecipeData, process)
+    Weather.startRun(craftRecipeData:getModData(), V.getLedger(), process)
 end
 
 -- Brings a run up to now at the place it was last told (V.notePlace), by a fire by the clock.
-local function catchUpRun(modData, kind)
-    if not modData.done then return end
-    Fire.catchUpRun(modData, V.getLedger(), kind, runPlace(modData), KINDS[kind])
+local function catchUpRun(modData, process)
+    if not modData.workHours then return end
+    Fire.catchUpRun(modData, V.getLedger(), process, runPlace(modData), PROCESSES[process])
 end
 
 -- Adds what the weather has given since the last update, at the place the station's World last told the run, so
 -- a roof built over a running vessel counts from then on.
-local function updateRun(craftRecipeData, kind, speed)
+local function updateRun(craftRecipeData, process, speed)
     local modData = craftRecipeData:getModData()
-    if not modData.done then return end
-    Fire.updateRun(craftRecipeData, V.getLedger(), kind, runPlace(modData), KINDS[kind], speed)
+    if not modData.workHours then return end
+    Fire.updateRun(craftRecipeData, V.getLedger(), process, runPlace(modData), PROCESSES[process], speed)
 end
 
 -- Tells a running batch (kind "malting" or "alcoholic") where its station stands: the place, and the fire's fuel
 -- when it is by one. A move first brings the run up to now where it was. Returns the place.
-function V.notePlace(modData, station, kind, now)
-    return Fire.notePlace(modData, station, now, function(state) catchUpRun(state, kind) end)
+function V.notePlace(modData, station, process, now)
+    return Fire.notePlace(modData, station, now, function(runModData) catchUpRun(runModData, process) end)
 end
 
 -- OnStart and OnUpdate hooks the recipe scripts name, one pair per weather-timed stage.
@@ -235,8 +235,8 @@ function V.onFermentUpdate(craftRecipeData)
 end
 
 -- How a running batch is doing right now, for its popup. hoursLeft assumes the temperature holds.
-function V.batchStatus(kind, modData, recipeHours, ledger)
-    return Weather.batchStatus(modData.done or 0, recipeHours, ledger, runPlace(modData), KINDS[kind])
+function V.batchStatus(process, modData, recipeHours, ledger)
+    return Weather.batchStatus(modData.workHours or 0, recipeHours, ledger, runPlace(modData), PROCESSES[process])
 end
 
 -- The bucket becomes the mash. Its kind (plain or forged) is noted on it, and heating carries the note over
@@ -297,16 +297,16 @@ V.STATION_SPRITES = { cask = V.CASK_SPRITE, vessel = V.VESSEL_SPRITE, floor = V.
 -- Which station this is ("cask", "vessel" or "floor") and which way it faces, or nil for anything else.
 V.stationKind = Station.kinds(V.SPRITE_PREFIX, V.FACE_COUNT, V.STATION_SPRITES)
 
-function V.isCask(object)
-    return V.stationKind(object) == "cask"
+function V.isCask(isoObject)
+    return V.stationKind(isoObject) == "cask"
 end
 
-function V.isVessel(object)
-    return V.stationKind(object) == "vessel"
+function V.isVessel(isoObject)
+    return V.stationKind(isoObject) == "vessel"
 end
 
-function V.isFloor(object)
-    return V.stationKind(object) == "floor"
+function V.isFloor(isoObject)
+    return V.stationKind(isoObject) == "floor"
 end
 
 -- The vessel's tank on one side, or nil.
@@ -339,25 +339,25 @@ function V.litres(tank)
     return tank and tank:getFluidContainer():getAmount() or 0
 end
 
--- The Wort tank is a station resource, not an item, so FluidAgeing can't keep a record on it: the record sits on
+-- The Wort tank is a station resource, not an item, so FluidAgeing can't keep a fluidAge on it: the fluidAge sits on
 -- the vessel's modData under FluidAgeing's key instead. Brings it up to now at place, starting one for wort that
--- has none, and forgets it once the tank is empty. Returns the record, or nil with no wort or souring off.
+-- has none, and forgets it once the tank is empty. Returns the fluidAge, or nil with no wort or souring off.
 function V.ageTank(modData, ml, place, now)
     local key = FluidAgeing.KEY
     if ml <= 0 or not V.WORT_SOURS then
         modData[key] = nil
         return nil
     end
-    local ledger, record = V.getLedger(), modData[key]
-    if not record or record.kind ~= V.WORT_KIND then
-        record = FluidAgeing.newRecord(V.WORT_SPEC, ledger, now, place)
-        modData[key] = record
-        return record
+    local ledger, fluidAge = V.getLedger(), modData[key]
+    if not fluidAge or fluidAge.process ~= V.WORT_PROCESS then
+        fluidAge = FluidAgeing.newFluidAge(V.WORT_FLUID_KIND, ledger, now, place)
+        modData[key] = fluidAge
+        return fluidAge
     end
-    return FluidAgeing.advance(record, V.WORT_SPEC, ledger, now, place)
+    return FluidAgeing.advance(fluidAge, V.WORT_FLUID_KIND, ledger, now, place)
 end
 
--- The vessel's tank record, brought up to now where the vessel stands. Items age by the weather's place, so the
+-- The vessel's tank fluidAge, brought up to now where the vessel stands. Items age by the weather's place, so the
 -- tank does too (a fire counts as the room it warms).
 function V.tankAge(vessel, now)
     local tank = V.vesselTank(vessel, ResourceIO.Input)
@@ -365,54 +365,54 @@ function V.tankAge(vessel, now)
     return V.ageTank(vessel:getModData(), ml, Weather.placeOf(vessel), now or getGameTime():getWorldAgeHours())
 end
 
--- The tank's record as it stands now, without changing the vessel: for windows and menus. Nil with no record yet.
+-- The tank's fluidAge as it stands now, without changing the vessel: for windows and menus. Nil with no fluidAge yet.
 function V.peekTank(vessel, now)
-    local record = vessel:getModData()[FluidAgeing.KEY]
-    if not record or record.kind ~= V.WORT_KIND or not V.WORT_SOURS then return nil end
+    local fluidAge = vessel:getModData()[FluidAgeing.KEY]
+    if not fluidAge or fluidAge.process ~= V.WORT_PROCESS or not V.WORT_SOURS then return nil end
     if V.litres(V.vesselTank(vessel, ResourceIO.Input)) <= 0 then return nil end
-    return FluidAgeing.advance(FluidAgeing.copy(record), V.WORT_SPEC, V.getLedger(),
+    return FluidAgeing.advance(FluidAgeing.copy(fluidAge), V.WORT_FLUID_KIND, V.getLedger(),
         now or getGameTime():getWorldAgeHours(), Weather.placeOf(vessel))
 end
 
-function V.isSour(record)
-    return record ~= nil and FluidAgeing.stage(record, V.WORT_SPEC) ~= "Fresh"
+function V.isSour(fluidAge)
+    return fluidAge ~= nil and FluidAgeing.stage(fluidAge, V.WORT_FLUID_KIND) ~= "Fresh"
 end
 
--- Hours until a record sours at a temperature, or nil when it has or won't there (frozen).
-function V.hoursToSour(record, celsius)
-    local left, rate = FluidAgeing.hoursLeft(record, V.WORT_SPEC), V.wortRate(celsius)
-    if not left or V.isSour(record) or rate <= 0 then return nil end
+-- Hours until a fluidAge sours at a temperature, or nil when it has or won't there (frozen).
+function V.hoursToSour(fluidAge, celsius)
+    local left, rate = FluidAgeing.hoursLeft(fluidAge, V.WORT_FLUID_KIND), V.wortRate(celsius)
+    if not left or V.isSour(fluidAge) or rate <= 0 then return nil end
     return left / rate
 end
 
 -- Wort poured into the tank brings its age: the older wins, as with milk. Call it before the wort moves.
 function V.pourIntoTank(vessel, item, now)
     local had = V.tankAge(vessel, now) ~= nil
-    local record = FluidAgeing.sourceRecord(item, now)
-    if record then FluidAgeing.receive(vessel:getModData(), record, had, Weather.placeOf(vessel)) end
+    local fluidAge = FluidAgeing.sourceFluidAge(item, now)
+    if fluidAge then FluidAgeing.receive(vessel:getModData(), fluidAge, had, Weather.placeOf(vessel)) end
 end
 
--- The cask's own state. It sits in movableData because vanilla copies that onto the item when a
+-- The cask's own modData. It sits in movableData because vanilla copies that onto the item when a
 -- station is picked up and back when it is placed, so the pool and the mother move with the cask,
 -- and there is only ever one of each.
-function V.caskState(cask)
-    local state = Station.movableData(cask)
-    state.ml = state.ml or 0
-    state.strength = state.strength or 0
-    return state
+function V.caskModData(cask)
+    local caskModData = Station.movableData(cask)
+    caskModData.ml = caskModData.ml or 0
+    caskModData.strength = caskModData.strength or 0
+    return caskModData
 end
 
 -- Millilitres the cask can still take.
-function V.caskRoom(state)
-    return math.max(V.CASK_ML - state.ml, 0)
+function V.caskRoom(caskModData)
+    return math.max(V.CASK_ML - caskModData.ml, 0)
 end
 
 -- New fermented wort has no acid, so it thins the pool's strength by its share.
-function V.pourIntoCask(state, ml)
-    ml = math.min(ml, V.caskRoom(state))
+function V.pourIntoCask(caskModData, ml)
+    ml = math.min(ml, V.caskRoom(caskModData))
     if ml <= 0 then return 0 end
-    state.strength = state.strength * state.ml / (state.ml + ml)
-    state.ml = state.ml + ml
+    caskModData.strength = caskModData.strength * caskModData.ml / (caskModData.ml + ml)
+    caskModData.ml = caskModData.ml + ml
     return ml
 end
 
@@ -423,124 +423,124 @@ function V.airShare(ml)
 end
 
 -- A mother in vinegar at least STARTER_STRENGTH makes the pool sour faster (CULTURE_BONUS).
-function V.hasStarter(state)
-    return state.mother and state.strength >= V.STARTER_STRENGTH
+function V.hasStarter(caskModData)
+    return caskModData.mother and caskModData.strength >= V.STARTER_STRENGTH
 end
 
 -- How fast this pool sours compared with a plain one, before temperature.
-function V.caskSpeed(state)
-    local culture = V.hasStarter(state) and 1 / (1 - V.CULTURE_BONUS) or 1
-    return culture * V.airShare(state.ml)
+function V.caskSpeed(caskModData)
+    local culture = V.hasStarter(caskModData) and 1 / (1 - V.CULTURE_BONUS) or 1
+    return culture * V.airShare(caskModData.ml)
 end
 
 -- Spends rateHours of weather on the pool. A pool that reaches full strength grows a mother.
-function V.sour(state, rateHours)
-    while rateHours > 0 and state.ml > 0 and state.strength < 1 do
-        local perHour = V.caskSpeed(state) / V.ACETIC_HOURS
-        local gain = math.min(rateHours * perHour, SOUR_STEP, 1 - state.strength)
+function V.sour(caskModData, rateHours)
+    while rateHours > 0 and caskModData.ml > 0 and caskModData.strength < 1 do
+        local perHour = V.caskSpeed(caskModData) / V.ACETIC_HOURS
+        local gain = math.min(rateHours * perHour, SOUR_STEP, 1 - caskModData.strength)
         if gain <= 0 then break end
         rateHours = rateHours - gain / perHour
-        state.strength = state.strength + gain
-        if state.mother then V.growMother(state, state.ml * gain) end
-        state.ml = state.ml - state.ml * V.ACETIC_LOSS * gain
-        if state.strength >= 1 - 1e-6 then
-            state.strength = 1
-            if not state.mother then V.addMother(state) end
+        caskModData.strength = caskModData.strength + gain
+        if caskModData.mother then V.growMother(caskModData, caskModData.ml * gain) end
+        caskModData.ml = caskModData.ml - caskModData.ml * V.ACETIC_LOSS * gain
+        if caskModData.strength >= 1 - 1e-6 then
+            caskModData.strength = 1
+            if not caskModData.mother then V.addMother(caskModData) end
         end
     end
 end
 
 -- Brings a cask up to date with the weather since it was last seen, at place (by a fire by the clock, until the
--- fuel noted in state ran out).
-function V.updateCask(state, ledger, place)
-    if state.last then
-        V.sour(state, Fire.catchUp(state, state.last, ledger, "acetic", place, V.aceticRate))
+-- fuel noted in caskModData ran out).
+function V.updateCask(caskModData, ledger, place)
+    if caskModData.marks then
+        V.sour(caskModData, Fire.catchUp(caskModData, caskModData.marks, ledger, "acetic", place, V.aceticRate))
     else
-        state.last = Weather.mark({}, ledger, "acetic")
+        caskModData.marks = Weather.mark({}, ledger, "acetic")
     end
 end
 
--- Brings a cask up to date where it stands: a move first catches it up where it was (state.place). Returns the
+-- Brings a cask up to date where it stands: a move first catches it up where it was (caskModData.place). Returns the
 -- place.
-function V.updateCaskAt(state, ledger, cask)
+function V.updateCaskAt(caskModData, ledger, cask)
     local now = getGameTime():getWorldAgeHours()
-    local place = Fire.notePlace(state, cask, now, function(was) V.updateCask(was, ledger, was.place) end)
-    V.updateCask(state, ledger, place)
+    local place = Fire.notePlace(caskModData, cask, now, function(was) V.updateCask(was, ledger, was.place) end)
+    V.updateCask(caskModData, ledger, place)
     return place
 end
 
 -- For the menus. hoursLeft is to fully soured and assumes the temperature holds; nil while frozen.
-function V.caskStatus(state, ledger, place)
+function V.caskStatus(caskModData, ledger, place)
     local temperature = Weather.placeTemperature(ledger, place)
     local rate = V.aceticRate(temperature)
     return {
         temperature = temperature,
         place = place,
         rate = rate,
-        hoursLeft = rate > 0 and (1 - state.strength) * V.ACETIC_HOURS / (V.caskSpeed(state) * rate) or nil,
+        hoursLeft = rate > 0 and (1 - caskModData.strength) * V.ACETIC_HOURS / (V.caskSpeed(caskModData) * rate) or nil,
     }
 end
 
 -- Only full-strength vinegar is drawn off.
-function V.bottlesLeft(state)
-    if state.strength < 1 then return 0 end
-    return math.floor(state.ml / V.BOTTLE_ML)
+function V.bottlesLeft(caskModData)
+    if caskModData.strength < 1 then return 0 end
+    return math.floor(caskModData.ml / V.BOTTLE_ML)
 end
 
 -- What is left after the last whole bottle stays as starter for the next fill.
-function V.takeBottle(state)
-    if V.bottlesLeft(state) < 1 then return false end
-    state.ml = state.ml - V.BOTTLE_ML
+function V.takeBottle(caskModData)
+    if V.bottlesLeft(caskModData) < 1 then return false end
+    caskModData.ml = caskModData.ml - V.BOTTLE_ML
     return true
 end
 
 -- Pouring a cask out leaves the mother in it.
-function V.emptyCask(state)
-    state.ml, state.strength = 0, 0
+function V.emptyCask(caskModData)
+    caskModData.ml, caskModData.strength = 0, 0
 end
 
 -- 0 without a mother.
-function V.motherLayers(state)
-    return state.mother and (state.layers or 1) or 0
+function V.motherLayers(caskModData)
+    return caskModData.mother and (caskModData.layers or 1) or 0
 end
 
 -- Every litre the pool sours feeds the mother, and it thickens a layer at a time.
-function V.growMother(state, souredMl)
-    state.souredMl = (state.souredMl or 0) + souredMl
-    while state.souredMl >= V.MOTHER_LAYER_ML do
-        state.souredMl = state.souredMl - V.MOTHER_LAYER_ML
-        state.layers = V.motherLayers(state) + 1
+function V.growMother(caskModData, souredMl)
+    caskModData.souredMl = (caskModData.souredMl or 0) + souredMl
+    while caskModData.souredMl >= V.MOTHER_LAYER_ML do
+        caskModData.souredMl = caskModData.souredMl - V.MOTHER_LAYER_ML
+        caskModData.layers = V.motherLayers(caskModData) + 1
     end
 end
 
 -- A new mother, grown or brought in a jar, is one thin layer.
-function V.addMother(state)
-    if state.mother then return false end
-    state.mother, state.layers, state.souredMl = true, 1, 0
+function V.addMother(caskModData)
+    if caskModData.mother then return false end
+    caskModData.mother, caskModData.layers, caskModData.souredMl = true, 1, 0
     return true
 end
 
 -- Lifting the whole mother out leaves the cask without one.
-function V.takeMother(state)
-    if not state.mother then return false end
-    state.mother, state.layers, state.souredMl = nil, nil, 0
+function V.takeMother(caskModData)
+    if not caskModData.mother then return false end
+    caskModData.mother, caskModData.layers, caskModData.souredMl = nil, nil, 0
     return true
 end
 
 -- A mother needs two layers to split: one to take, one to stay.
-function V.canSplitMother(state)
-    return V.motherLayers(state) >= 2
+function V.canSplitMother(caskModData)
+    return V.motherLayers(caskModData) >= 2
 end
 
 -- How much more vinegar the cask must make before the mother grows its next layer.
-function V.nextLayerMl(state)
-    return math.max(V.MOTHER_LAYER_ML - (state.souredMl or 0), 0)
+function V.nextLayerMl(caskModData)
+    return math.max(V.MOTHER_LAYER_ML - (caskModData.souredMl or 0), 0)
 end
 
 -- Peeling off a layer for a jar leaves the rest working in the cask.
-function V.splitMother(state)
-    if not V.canSplitMother(state) then return false end
-    state.layers = state.layers - 1
+function V.splitMother(caskModData)
+    if not V.canSplitMother(caskModData) then return false end
+    caskModData.layers = caskModData.layers - 1
     return true
 end
 
@@ -571,8 +571,8 @@ function V.hosePartner(station)
     local test = V.isVessel(station) and V.isCask or V.isVessel
     local objects = square:getObjects()
     for i = 0, objects:size() - 1 do
-        local object = objects:get(i)
-        if test(object) then return object, true end
+        local isoObject = objects:get(i)
+        if test(isoObject) then return isoObject, true end
     end
     return nil, true
 end
@@ -580,8 +580,8 @@ end
 -- Every cask the vessel can reach with a hose (same floor, HOSE_REACH apart at most each way) that has none
 -- of its own, nearest first. The menu offers the choice when there are several.
 function V.casksForHose(vessel)
-    return Station.near(vessel:getSquare(), V.HOSE_REACH, function(object)
-        return V.isCask(object) and not V.hoseLink(object)
+    return Station.near(vessel:getSquare(), V.HOSE_REACH, function(isoObject)
+        return V.isCask(isoObject) and not V.hoseLink(isoObject)
     end)
 end
 
@@ -605,10 +605,10 @@ V.PUMP_STEPS = { 5000, 10000 }
 
 -- Pumps up to ml of the vessel's fermented wort into the cask, as far as the tank and the cask's room allow.
 -- The player chooses how much, as Orléans vinegar makers topped up by hand.
-function V.pumpToCask(state, container, ml)
-    ml = math.min(ml, Container.ml(container), V.caskRoom(state))
+function V.pumpToCask(caskModData, container, ml)
+    ml = math.min(ml, Container.ml(container), V.caskRoom(caskModData))
     if ml < V.HOSE_MIN_ML then return 0 end
-    local moved = V.pourIntoCask(state, ml)
+    local moved = V.pourIntoCask(caskModData, ml)
     container:removeFluid(moved / 1000)
     return moved
 end
@@ -624,27 +624,27 @@ V.PUMP_REFUSALS = {
 -- The Pump to Cask presets: a few fixed amounts, up to the air line (the fullest the cask sours at full
 -- speed), and all that fits. Each has the litres it would move, or a reason it can't, with the litres
 -- the reason names.
-function V.pumpChoices(state, availableMl)
-    local room = V.caskRoom(state)
+function V.pumpChoices(caskModData, availableMl)
+    local room = V.caskRoom(caskModData)
     local choices = {}
-    local function choice(kind, ml, wanted)
-        local entry = { kind = kind, ml = ml, wanted = wanted }
+    local function addChoice(fill, ml, wanted)
+        local choice = { fill = fill, ml = ml, wanted = wanted }
         if availableMl < V.HOSE_MIN_ML then
-            entry.reason = V.PUMP_REFUSALS.pumpEmpty
+            choice.reason = V.PUMP_REFUSALS.pumpEmpty
         elseif room < V.HOSE_MIN_ML then
-            entry.reason, entry.reasonMl = V.PUMP_REFUSALS.pumpNoRoom, room
-        elseif kind == "air" and ml < V.HOSE_MIN_ML then
-            entry.reason, entry.reasonMl = V.PUMP_REFUSALS.pumpAtAirLine, V.AIR_ML
+            choice.reason, choice.reasonMl = V.PUMP_REFUSALS.pumpNoRoom, room
+        elseif fill == "air" and ml < V.HOSE_MIN_ML then
+            choice.reason, choice.reasonMl = V.PUMP_REFUSALS.pumpAtAirLine, V.AIR_ML
         elseif wanted and availableMl < wanted then
-            entry.reason, entry.reasonMl = V.PUMP_REFUSALS.pumpNotEnough, availableMl
+            choice.reason, choice.reasonMl = V.PUMP_REFUSALS.pumpNotEnough, availableMl
         elseif wanted and room < wanted then
-            entry.reason, entry.reasonMl = V.PUMP_REFUSALS.pumpNoRoom, room
+            choice.reason, choice.reasonMl = V.PUMP_REFUSALS.pumpNoRoom, room
         end
-        table.insert(choices, entry)
+        table.insert(choices, choice)
     end
-    for _, step in ipairs(V.PUMP_STEPS) do choice("step", step, step) end
-    choice("air", math.min(V.AIR_ML - state.ml, availableMl, room))
-    choice("all", math.min(availableMl, room))
+    for _, step in ipairs(V.PUMP_STEPS) do addChoice("step", step, step) end
+    addChoice("air", math.min(V.AIR_ML - caskModData.ml, availableMl, room))
+    addChoice("all", math.min(availableMl, room))
     return choices
 end
 
@@ -659,8 +659,8 @@ function V.findNear(character, test)
     return square and Station.near(square, V.REACH, test)[1] or nil
 end
 
-local function hasVinegar(object)
-    return V.isCask(object) and V.bottlesLeft(V.caskState(object)) > 0
+local function hasVinegar(isoObject)
+    return V.isCask(isoObject) and V.bottlesLeft(V.caskModData(isoObject)) > 0
 end
 
 -- A cask in reach with at least a bottle's worth of finished vinegar.
@@ -711,7 +711,7 @@ end
 -- Takes the litre from the cask and writes the bottle's type on the Vinegar, so it can be given back.
 function V.onBottled(craftRecipeData, character)
     local cask = V.findCaskWithVinegar(character)
-    if cask then V.takeBottle(V.caskState(cask)) end
+    if cask then V.takeBottle(V.caskModData(cask)) end
     local used, made = craftRecipeData:getAllConsumedItems(), craftRecipeData:getAllCreatedItems()
     if used:size() > 0 and made:size() > 0 then V.markBottle(made:get(0), used:get(0):getFullType()) end
 end

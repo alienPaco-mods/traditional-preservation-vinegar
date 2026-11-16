@@ -21,7 +21,7 @@ local function readDays(path)
     local days = {}
     for line in io.lines(path) do
         local f = {}
-        for value in line:gmatch("%S+") do table.insert(f, value) end
+        for field in line:gmatch("%S+") do table.insert(f, field) end
         -- Each month's forecast also holds the 10 days before it (offset below 0): skipped, so a month is 30 days.
         if #f >= 6 and tonumber(f[3]) >= 0 then table.insert(days, { world = tonumber(f[1]), offset = tonumber(f[3]), month = tonumber(f[2]), low = tonumber(f[4]), mean = tonumber(f[5]), high = tonumber(f[6]) }) end
     end
@@ -34,11 +34,11 @@ local function hourly(day, h)
 end
 
 local function run(seconds)
-    local data = { modData = {}, elapsed = 0 }
-    function data:getModData() return self.modData end
-    function data:setElapsedTime(value) self.elapsed = value end
-    function data:getRecipe() return { getTime = function() return seconds end } end
-    return data
+    local craftRecipeData = { modData = {}, elapsed = 0 }
+    function craftRecipeData:getModData() return self.modData end
+    function craftRecipeData:setElapsedTime(elapsedTime) self.elapsed = elapsedTime end
+    function craftRecipeData:getRecipe() return { getTime = function() return seconds end } end
+    return craftRecipeData
 end
 
 -- The first sampled world's calendar year, settled (Weather.settledMeans).

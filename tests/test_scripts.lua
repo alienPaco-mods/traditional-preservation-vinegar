@@ -59,10 +59,10 @@ local steep = block(modText, "craftRecipe SteepGrain")
 check("the mod has a Steep Grain recipe", steep ~= nil)
 
 -- Steep Grain takes any of the three grains, 24 of them, counted together.
-local count, list = steep:match("item%s+(%d+)%s+%[([^%]]*)%]")
+local count, grains = steep:match("item%s+(%d+)%s+%[([^%]]*)%]")
 check("Steep Grain takes 24 grain", tonumber(count) == 24)
 for _, grain in ipairs(GRAINS) do
-    check("and accepts " .. grain, list:find(grain, 1, true) ~= nil)
+    check("and accepts " .. grain, grains:find(grain, 1, true) ~= nil)
 end
 check("counted together, so a mix of grains works", steep:find("flags%[ItemCount%]") ~= nil)
 check("with 4 L of water from a kept container", steep:find("%-fluid 4%.0 %[Water%]") ~= nil and steep:find("item 1 %[%*%]") ~= nil)
@@ -107,8 +107,8 @@ check("Green Malt still kilns into Malt", greenMalt:find("ReplaceOnCooked = Trad
 local known = definedItems(vanillaFiles)
 for name in pairs(definedItems(modFiles)) do known[name] = true end
 local missing = {}
-for list in modText:gmatch("item%s+%d+%s+%[([^%]]+)%]") do
-    for name in list:gmatch("[^;%s]+") do
+for itemList in modText:gmatch("item%s+%d+%s+%[([^%]]+)%]") do
+    for name in itemList:gmatch("[^;%s]+") do
         local fullName = name:match("^%d+:(.+)") or name
         if fullName ~= "*" and not known[fullName] then table.insert(missing, fullName) end
     end

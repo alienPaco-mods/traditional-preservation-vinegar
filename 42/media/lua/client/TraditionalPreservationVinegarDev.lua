@@ -8,7 +8,7 @@ local Fire = require "TraditionalPreservationCore/Fire"
 local FluidAgeing = require "TraditionalPreservationCore/FluidAgeing"
 TPV = {}
 
-local KINDS = { "malting", "alcoholic", "acetic", "wort" }
+local PROCESSES = { "malting", "alcoholic", "acetic", "wort" }
 local ITEMS = { "SteepedGrain", "GreenMalt", "Malt", "BucketMash", "BucketPreparedMash", "SpentGrain", "MotherOfVinegar" }
 
 local function say(text) print("[TPV] " .. text) end
@@ -41,15 +41,15 @@ function TPV.weather()
     say(string.format("Temperature now %.1f C, season (10-day average) %.1f C", ledger.temperature or 0, ledger.seasonTemperature or 0))
     for _, place in ipairs(V.PLACES) do
         local speeds = {}
-        for _, kind in ipairs(KINDS) do
-            table.insert(speeds, string.format("%s %.0f%%", kind, (ledger[kind .. place .. "Rate"] or 0) * 100))
+        for _, process in ipairs(PROCESSES) do
+            table.insert(speeds, string.format("%s %.0f%%", process, (ledger[process .. place .. "Rate"] or 0) * 100))
         end
         say(string.format("%-9s %.1f C: %s", place, V.placeTemperature(ledger, place), table.concat(speeds, ", ")))
     end
     for _, place in ipairs({ Fire.PLACE, Fire.EMBERS }) do
         local speeds = {}
-        for _, kind in ipairs(KINDS) do
-            table.insert(speeds, string.format("%s %.0f%%", kind, V[kind .. "Rate"](Fire.fireC(place)) * 100))
+        for _, process in ipairs(PROCESSES) do
+            table.insert(speeds, string.format("%s %.0f%%", process, V[process .. "Rate"](Fire.fireC(place)) * 100))
         end
         say(string.format("%-9s %.1f C: %s (by the clock: TPV.age skips it)", place, Fire.fireC(place), table.concat(speeds, ", ")))
     end
@@ -62,8 +62,8 @@ end
 function TPV.age(hours)
     hours = hours or 24
     local ledger = V.getLedger()
-    for _, kind in ipairs(KINDS) do
-        for _, place in ipairs(V.PLACES) do ledger[kind .. place] = (ledger[kind .. place] or 0) + hours end
+    for _, process in ipairs(PROCESSES) do
+        for _, place in ipairs(V.PLACES) do ledger[process .. place] = (ledger[process .. place] or 0) + hours end
     end
     say(string.format("Added %.0f hours of perfect weather. Stations update within a few seconds; a cask when you next look at it.", hours))
 end
@@ -86,13 +86,13 @@ end
 function TPV.cask()
     local cask = near(V.isCask, "cask")
     if not cask then return end
-    local state = V.caskState(cask)
-    V.updateCaskAt(state, V.getLedger(), cask)
+    local caskModData = V.caskModData(cask)
+    V.updateCaskAt(caskModData, V.getLedger(), cask)
     say(string.format("Cask at %d,%d,%d (%s): %.2f L, %.1f%% soured, %d bottles ready",
-        cask:getX(), cask:getY(), cask:getZ(), V.placeOf(cask), state.ml / 1000, state.strength * 100, V.bottlesLeft(state)))
-    if state.mother then
-        say(string.format("Mother: %d layer(s), next in %.1f L, starter bonus %s", V.motherLayers(state),
-            V.nextLayerMl(state) / 1000, V.hasStarter(state) and "on" or "off"))
+        cask:getX(), cask:getY(), cask:getZ(), V.placeOf(cask), caskModData.ml / 1000, caskModData.strength * 100, V.bottlesLeft(caskModData)))
+    if caskModData.mother then
+        say(string.format("Mother: %d layer(s), next in %.1f L, starter bonus %s", V.motherLayers(caskModData),
+            V.nextLayerMl(caskModData) / 1000, V.hasStarter(caskModData) and "on" or "off"))
     else
         say("No mother.")
     end
@@ -102,23 +102,23 @@ end
 function TPV.setCask(litres, percent)
     local cask = near(V.isCask, "cask")
     if not cask then return end
-    local state = V.caskState(cask)
-    V.updateCaskAt(state, V.getLedger(), cask)
-    state.ml = math.floor(math.min(litres or 0, V.CASK_ML / 1000) * 1000 + 0.5)
-    state.strength = math.max(0, math.min((percent or 100) / 100, 1))
-    say(string.format("Cask set to %.2f L at %.0f%%.", state.ml / 1000, state.strength * 100))
+    local caskModData = V.caskModData(cask)
+    V.updateCaskAt(caskModData, V.getLedger(), cask)
+    caskModData.ml = math.floor(math.min(litres or 0, V.CASK_ML / 1000) * 1000 + 0.5)
+    caskModData.strength = math.max(0, math.min((percent or 100) / 100, 1))
+    say(string.format("Cask set to %.2f L at %.0f%%.", caskModData.ml / 1000, caskModData.strength * 100))
 end
 
 function TPV.mother(layers)
     local cask = near(V.isCask, "cask")
     if not cask then return end
-    local state = V.caskState(cask)
+    local caskModData = V.caskModData(cask)
     if not layers or layers < 1 then
-        V.takeMother(state)
+        V.takeMother(caskModData)
         return say("Mother removed.")
     end
-    V.addMother(state)
-    state.layers, state.souredMl = layers, 0
+    V.addMother(caskModData)
+    caskModData.layers, caskModData.souredMl = layers, 0
     say("Mother set to " .. layers .. " layer(s).")
 end
 
@@ -134,16 +134,16 @@ end
 function TPV.wort(litres) fillTank(ResourceIO.Input, V.WORT, litres, "Wort") end
 function TPV.fermented(litres) fillTank(ResourceIO.Output, V.FERMENTED, litres, "Fermented") end
 
--- Adds hours at 20 C to every wort record you carry and to the nearest vessel's tank, then renames what has soured.
+-- Adds hours at 20 C to every wort fluidAge you carry and to the nearest vessel's tank, then renames what has soured.
 function TPV.ageWort(hours)
     hours = hours or V.WORT_SOUR_HOURS
     local now, count = getGameTime():getWorldAgeHours(), 0
     local items = getPlayer():getInventory():getAllEvalRecurse(function(item) return item:getFluidContainer() ~= nil end)
     for i = 0, items:size() - 1 do
         local item = items:get(i)
-        local record = FluidAgeing.look(item, now)
-        if record and record.kind == V.WORT_KIND then
-            record.age = record.age + hours
+        local fluidAge = FluidAgeing.look(item, now)
+        if fluidAge and fluidAge.process == V.WORT_PROCESS then
+            fluidAge.age = fluidAge.age + hours
             FluidAgeing.look(item, now)
             count = count + 1
         end
