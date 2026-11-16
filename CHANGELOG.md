@@ -1,5 +1,8 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.32
+- **Wort (Fresh) and Wort (Soured)** (2026-11-16): anything that goes off shows *(Fresh)* in its good state, as milk does, and soured wort reads as soured milk does; were Wort and Sour Wort. Fluid names only (`MaltWort`, `MaltSourWort` unchanged). README, guide 4.
+
 ## 0.2.31
 - **Naming sweep** (2026-11-16, TP Core's DEVGUIDE "How code is named"): the cask's saved table is `caskModData` (`V.caskModData`, was `caskState`); wort's `V.WORT_FLUID_KIND` and `V.WORT_PROCESS`, the runs' `process`; a pump choice's `fill`; the window's `caskView`. Tests and golden results unchanged; nothing changes in game. Saved keys follow TP Core's renames (`workHours`, `marks`, the Smokehouse stack's hours): pre-release, an old test save's stations read as new, so test on a fresh save.
 

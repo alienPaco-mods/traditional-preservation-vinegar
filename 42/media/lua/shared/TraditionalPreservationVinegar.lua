@@ -175,7 +175,7 @@ end
 Events.OnInitGlobalModData.Add(V.fillLedger)
 
 -- Wort in a bucket or any container ages through TP Core's FluidAgeing, as Dairy's milk does. It has one stage
--- only: Sour Wort is both its turned and its spoiled fluid. Fermented wort is not registered, so it keeps.
+-- only: Wort (Soured) is both its turned and its spoiled fluid. Fermented wort is not registered, so it keeps.
 V.WORT_FLUID_KIND = FluidAgeing.register({
     process = V.WORT_PROCESS,
     rate = V.wortRate,

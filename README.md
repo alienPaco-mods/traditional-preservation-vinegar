@@ -1,4 +1,4 @@
-# Traditional Preservation (Vinegar) — Build 42 prototype (v0.2.31)
+# Traditional Preservation (Vinegar) — Build 42 prototype (v0.2.32)
 
 **Status: experimental.** The whole chain, from steeped grain to bottled vinegar, has been played in the game with test timers. Temperature effects have only been checked offline so far (see the test plan). Back up your save before enabling.
 
@@ -377,7 +377,7 @@ The real-world claims the design rests on, and the simplifications made for play
 - 24 seeds per bucket, about 0.5 kg of grain for 10 L, is a much weaker wort than a real one (roughly 1–2 kg per 10 L). It was chosen so a batch needs about 15 barley plants, one per bottle.
 - A whole yeast packet per run, as a station slot can't take part of one.
 - Fermentation yields 95% by volume (lees), and souring loses about a tenth overall.
-- Wort sours on one curve (2 days at 20 C, 1 at 30 C, about 5 at 13 C, stopped at 0 C) and goes straight to Sour Wort; real wild souring varies with the grain and the vessel, and spoils further into mould, which is left out.
+- Wort sours on one curve (2 days at 20 C, 1 at 30 C, about 5 at 13 C, stopped at 0 C) and goes straight to Wort (Soured); real wild souring varies with the grain and the vessel, and spoils further into mould, which is left out.
 - The mother grows one layer per 15 L of vinegar made, and a split always gives one layer.
 - The mother speeds a cask by 25% only while the pool is at least 25% soured.
 - The cask slows above 22.5 L of 30 L (three quarters), down to half speed when full.
@@ -429,5 +429,5 @@ Still to check in the game:
 9. The hose: attach; Pump to Cask from both stations, with 5 L, 10 L, the air line and all that fits each moving what it says; greyed options giving their reasons (empty vessel, short tank, no room, already at the air line); detach; and a destroyed station dropping the hose.
 10. Cask Info: opens from the cask's submenu, fills its bars, counts down while souring, shows bottles once ready and the hose when joined, and closes past 6 squares or when the cask is picked up.
 11. Green Malt: fresh for 2 days and rotten after 5. Stale Green Malt still kilns into Malt; rotten Green Malt stays rotten on the fire, and the composter takes it.
-12. Wort that sours: `TPV.ageWort(48)` turns carried wort into Sour Wort and the tank's wort to soured; Craft refuses with the reason, Pour Wort is greyed with "Sour wort won't ferment", Pour Away the Wort empties the tank; the info block's "sours in about"; a cancelled run gives back wort with its age.
+12. Wort that sours: `TPV.ageWort(48)` turns carried wort into Wort (Soured) and the tank's wort to soured; Craft refuses with the reason, Pour Wort is greyed with "Sour wort won't ferment", Pour Away the Wort empties the tank; the info block's "sours in about"; a cancelled run gives back wort with its age.
 13. `console.txt` shows no repeating Lua errors after an hour of play, including with the other Traditional Preservation mods on.
