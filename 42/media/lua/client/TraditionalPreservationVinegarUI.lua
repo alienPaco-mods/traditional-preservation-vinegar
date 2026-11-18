@@ -101,7 +101,9 @@ local FERMENTING_TITLE = "IGUI_TraditionalPreservationVinegar_TankFermenting"
 -- Wort column's bar shows the run's wort from a container of its own, titled Wort (Fermenting); the tank's again after.
 local function showRunWort(panel)
     ISFluidSlotPanel.update(panel)
-    local slot = panel.tableLayout and panel.tableLayout:cellGetFirst(0, 0)
+    -- The cell keeps its element as .element (vanilla's cellGetFirst reads a children list that is never filled).
+    local cell = panel.tableLayout and panel.tableLayout:cell(0, 0)
+    local slot = cell and cell.element
     local bar = slot and slot.fluidBar
     if not bar then return end
     local run = panel.entity:getModData().vinegarRun
