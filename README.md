@@ -1,4 +1,4 @@
-# Traditional Preservation (Vinegar) — Build 42 prototype (v0.2.34)
+# Traditional Preservation (Vinegar) — Build 42 prototype (v0.2.35)
 
 **Status: experimental.** The whole chain, from steeped grain to bottled vinegar, has been played in the game with test timers. Temperature effects have only been checked offline so far (see the test plan). Back up your save before enabling.
 
@@ -123,7 +123,7 @@ Craft won't start, and says why, when:
 - the tank's wort has soured (use **Pour Away the Wort**),
 - the Fermented tank still holds the last batch.
 
-When a run starts, its wort leaves the Wort tank and is held by the run. While it ferments, the Wort column is titled **Wort (Fermenting)** and its bar and info row show the run's wort; the batch's hover shows the litres too.
+When a run starts, its wort leaves the Wort tank and is held by the run. While it ferments, the Wort column reads **(Fermenting)** under its title and its bar shows the run's wort, and the info row reads **Wort (Fermenting)**; the batch's hover shows the litres too.
 
 **Cancel** stops the run and gives everything back: the wort to the tank, with the age it had, and the yeast to the slot.
 

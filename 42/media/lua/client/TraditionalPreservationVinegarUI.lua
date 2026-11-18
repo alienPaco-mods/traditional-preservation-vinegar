@@ -96,9 +96,27 @@ UI.keepDoorsFree(require("TraditionalPreservationVinegar/Tiles").STATIONS)
 
 local TANK_TITLES = { [ResourceIO.Input] = "IGUI_TraditionalPreservationVinegar_TankWort", [ResourceIO.Output] = "IGUI_TraditionalPreservationVinegar_TankFermented" }
 local FERMENTING_TITLE = "IGUI_TraditionalPreservationVinegar_TankFermenting"
+local FERMENTING_LINE = "IGUI_TraditionalPreservationVinegar_TankFermentingLine"
+
+-- A tank column's layout keeps a line under its title, so the narrow Wort column says (Fermenting) below Wort. Both
+-- columns keep it, so their bars line up: the bar is laid out a line shorter and moved down by it.
+local function tankLayout(panel, preferredWidth, preferredHeight)
+    ISGroupBox.calculateLayout(panel, preferredWidth, preferredHeight)
+    local element, label = panel.element, panel.borderLabel
+    if not (element and label) then return end
+    local line = label:getHeight()
+    if element.calculateLayout then element:calculateLayout(element:getWidth(), element:getHeight() - line) end
+    element:setY(element:getY() + line)
+    local secondLine = panel.secondLine
+    if secondLine then
+        secondLine:setX((panel:getWidth() - secondLine:getWidth()) / 2)
+        secondLine:setY(label:getY() + line)
+    end
+end
 
 -- A running batch holds its wort on the vessel, out of the tank (the World's settleRun), so while it ferments the
--- Wort column's bar shows the run's wort from a container of its own, titled Wort (Fermenting); the tank's again after.
+-- Wort column's bar shows the run's wort from a container of its own, with (Fermenting) under the title; the tank's
+-- again after.
 local function showRunWort(panel)
     ISFluidSlotPanel.update(panel)
     -- The cell keeps its element as .element (vanilla's cellGetFirst reads a children list that is never filled).
@@ -122,9 +140,7 @@ local function showRunWort(panel)
         bar:setContainer(slot.resource:getFluidContainer())
         bar.resource = slot.resource
     end
-    if panel.borderLabel then
-        panel.borderLabel:setNameWithoutMoving(getText(ml and FERMENTING_TITLE or TANK_TITLES[ResourceIO.Input]))
-    end
+    if panel.secondLine then panel.secondLine:setVisible(ml ~= nil) end
 end
 
 -- Vanilla never shows a station's fluid tanks, so the vessel's window gets a column for each, named
@@ -141,7 +157,16 @@ Wrap.method("ISCraftLogicPanel", "createChildren", function(vanillaCreateChildre
             panel:initialise()
             panel:instantiate()
             panel:addResource(tank, nil, nil, nil, nil)
-            if io == ResourceIO.Input then panel.update = showRunWort end
+            panel.calculateLayout = tankLayout
+            if io == ResourceIO.Input then
+                local secondLine = ISLabel:new(0, 0, -1, getText(FERMENTING_LINE), 1, 1, 1, 1, UIFont.Small, true)
+                secondLine:initialise()
+                secondLine:instantiate()
+                secondLine:setVisible(false)
+                ISUIElement.addChild(panel, secondLine)
+                panel.secondLine = secondLine
+                panel.update = showRunWort
+            end
             local column = self.tableLayout:addColumn(nil)
             self.tableLayout:setElement(column:index(), 0, panel)
         end

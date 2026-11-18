@@ -1,5 +1,8 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.35
+- **(Fermenting) on its own line** (2026-11-18): the Wort column's title stays Wort and (Fermenting) shows on a second line under it while a run ferments (Wort (Fermenting) was too long for the column). Both tank columns keep the line, so their bars line up. The 0.2.34 bar fix: the column finds its bar through the table cell's element.
+
 ## 0.2.34
 - **Wort (Fermenting)** (2026-11-18): while a run ferments, the vessel's Wort column is titled Wort (Fermenting) and its bar shows the run's wort (a display container of its own, client only), and the info block's Wort row reads Wort (Fermenting) with the run's litres; both bars read empty before. Back to Wort and the tank when the run ends. test_stations.
 
