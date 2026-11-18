@@ -223,7 +223,8 @@ check("a slow rate is coloured, and no heat damage line", lines[5].colour[2] == 
 check("and no translator warnings", #H.textWarnings == 0)
 check("the popup is wide enough", tooltip.width == 150)
 
--- The info block in the vessel's window, for the run in the open at 38 C: its tanks as rows, the run's bar.
+-- The info block in the vessel's window, for the run in the open at 38 C: its tanks as rows (the run's wort in the
+-- Wort row, as Wort (Fermenting)), the run's bar.
 local logic = vessel:getComponent("CraftLogic")
 logic.inProgress = { [batch] = { yeast = 1 } }
 function logic:getProgress() return 0.01 end
@@ -231,7 +232,7 @@ local block = stationInfo(vessel)
 local rows = {}
 for _, row in ipairs(block.rows) do table.insert(rows, getText(row[1]) .. " " .. row[2]) end
 check("the vessel's rows", table.concat(rows, " | ") == "Place Open air | Temperature 38 C | Working rate 22% | "
-    .. "Wort 0.0 of 20.0 L | Fermented 0.0 of 20.0 L")
+    .. "Wort (Fermenting) 20.0 of 20.0 L | Fermented 0.0 of 20.0 L")
 check("the run's bar, slow", #block.bars == 1 and block.bars[1].text == "Wort: 20.0 L"
     and block.bars[1].progressText == "1%, 45 d 1 h left" and block.bars[1].colour[1] == 0.75)
 check("and the weather note", table.concat(block.notes, " | ") == "Times left assume the temperature holds as it is now.")

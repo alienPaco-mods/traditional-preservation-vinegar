@@ -1,5 +1,8 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.34
+- **Wort (Fermenting)** (2026-11-18): while a run ferments, the vessel's Wort column is titled Wort (Fermenting) and its bar shows the run's wort (a display container of its own, client only), and the info block's Wort row reads Wort (Fermenting) with the run's litres; both bars read empty before. Back to Wort and the tank when the run ends. test_stations.
+
 ## 0.2.33
 - **Grain's season in the guide** (2026-11-16): Quick Start, the intro and Tips now say grain is sown August to October (best in September), that looted seed packets are grain too (5 each; 48 for a full batch is about 10 packets), and to malt while malting is in season; were "Autumn: grow barley" and "Malt the whole harvest in autumn" (vanilla 42.22 sows grain August to October). Guide 4 only; nothing changes in game.
 

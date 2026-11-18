@@ -44,6 +44,7 @@
   "IGUI_TraditionalPreservationVinegar_Layers": "Mother layers: %1. It grows a layer for about every %2 L of vinegar it makes, and can be split from 2.",
   "IGUI_TraditionalPreservationVinegar_TankWort": "Wort",
   "IGUI_TraditionalPreservationVinegar_TankFermented": "Fermented",
+  "IGUI_TraditionalPreservationVinegar_TankFermenting": "Wort (Fermenting)",
   "IGUI_TraditionalPreservationVinegar_Holds": "holds %1 L",
   "IGUI_TraditionalPreservationVinegar_UnderHour": "less than an hour left",
   "IGUI_TraditionalPreservationVinegar_HoseToCask": "Hose connected to an Orléans Vinegar Cask",

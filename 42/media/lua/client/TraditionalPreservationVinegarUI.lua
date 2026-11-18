@@ -95,6 +95,35 @@ UI.keepInPlace(holdsLiquid)
 UI.keepDoorsFree(require("TraditionalPreservationVinegar/Tiles").STATIONS)
 
 local TANK_TITLES = { [ResourceIO.Input] = "IGUI_TraditionalPreservationVinegar_TankWort", [ResourceIO.Output] = "IGUI_TraditionalPreservationVinegar_TankFermented" }
+local FERMENTING_TITLE = "IGUI_TraditionalPreservationVinegar_TankFermenting"
+
+-- A running batch holds its wort on the vessel, out of the tank (the World's settleRun), so while it ferments the
+-- Wort column's bar shows the run's wort from a container of its own, titled Wort (Fermenting); the tank's again after.
+local function showRunWort(panel)
+    ISFluidSlotPanel.update(panel)
+    local slot = panel.tableLayout and panel.tableLayout:cellGetFirst(0, 0)
+    local bar = slot and slot.fluidBar
+    if not bar then return end
+    local run = panel.entity:getModData().vinegarRun
+    local ml = run and run.ml or nil
+    if ml == panel.shownRunMl then return end
+    panel.shownRunMl = ml
+    bar:deactivateToolTip()
+    if ml then
+        panel.runWort = panel.runWort or FluidContainer.CreateContainer()
+        panel.runWort:Empty()
+        panel.runWort:setCapacity(slot.resource:getFluidContainer():getCapacity())
+        panel.runWort:addFluid(V.WORT, ml / 1000)
+        bar:setContainer(panel.runWort)
+        bar.resource = nil
+    else
+        bar:setContainer(slot.resource:getFluidContainer())
+        bar.resource = slot.resource
+    end
+    if panel.borderLabel then
+        panel.borderLabel:setNameWithoutMoving(getText(ml and FERMENTING_TITLE or TANK_TITLES[ResourceIO.Input]))
+    end
+end
 
 -- Vanilla never shows a station's fluid tanks, so the vessel's window gets a column for each, named
 -- for what it holds. The title has to be set before the panel builds its label. Wraps ISCraftLogicPanel.createChildren
@@ -110,6 +139,7 @@ Wrap.method("ISCraftLogicPanel", "createChildren", function(vanillaCreateChildre
             panel:initialise()
             panel:instantiate()
             panel:addResource(tank, nil, nil, nil, nil)
+            if io == ResourceIO.Input then panel.update = showRunWort end
             local column = self.tableLayout:addColumn(nil)
             self.tableLayout:setElement(column:index(), 0, panel)
         end
@@ -150,7 +180,7 @@ local function drawBatchTooltip(slot, tooltip, name, station)
     local status = V.batchStatus(process, craftRecipeData:getModData(), Weather.recipeHours(craftRecipeData), V.getLedger())
     UI.drawTooltip(tooltip, function(layout)
         UI.addLine(layout, "IGUI_TraditionalPreservationVinegar_Progress", percent(status.progress))
-        -- The run holds its wort, so the vessel's Wort tank reads empty while it ferments.
+        -- The run holds its wort, out of the vessel's Wort tank, while it ferments.
         local run = process == "alcoholic" and station and station:getModData().vinegarRun
         if run then UI.addLine(layout, "IGUI_TraditionalPreservationVinegar_InRun", say("IGUI_TraditionalPreservationVinegar_Litres", UI.litres(run.ml))) end
         UI.addLine(layout, "IGUI_TraditionalPreservationVinegar_TimeLeft", timeText(status.hoursLeft))
@@ -199,9 +229,12 @@ local function stationInfo(entity)
         for _, io in ipairs({ ResourceIO.Input, ResourceIO.Output }) do
             local tank = V.vesselTank(entity, io)
             local capacity = tank and tank:getFluidContainer():getCapacity() or 0
-            local text = say("IGUI_TraditionalPreservationVinegar_InfoLitres", UI.litres(V.litres(tank) * 1000), UI.litres(capacity * 1000))
-            local keeps = io == ResourceIO.Input and wortKeeps(entity, ledger)
-            table.insert(options.rows, { TANK_TITLES[io], keeps and text .. ", " .. keeps or text })
+            -- The running batch's wort reads in the Wort row, as in its bar.
+            local fermenting = io == ResourceIO.Input and run
+            local ml = fermenting and run.ml or V.litres(tank) * 1000
+            local text = say("IGUI_TraditionalPreservationVinegar_InfoLitres", UI.litres(ml), UI.litres(capacity * 1000))
+            local keeps = io == ResourceIO.Input and not fermenting and wortKeeps(entity, ledger)
+            table.insert(options.rows, { fermenting and FERMENTING_TITLE or TANK_TITLES[io], keeps and text .. ", " .. keeps or text })
         end
     end
     return StationInfo.block(options)
