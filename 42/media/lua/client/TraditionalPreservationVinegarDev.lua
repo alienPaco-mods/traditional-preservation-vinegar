@@ -25,6 +25,7 @@ function TPV.help()
     say("TPV.age(hours)            give every floor, vessel and cask this many hours of perfect weather")
     say("TPV.fast(hours)           test timers: every floor, vessel and cask run takes this many hours. TPV.fast() turns them off")
     say("TPV.timers()              the hours each stage takes right now")
+    say("TPV.floor()               the nearest Malting Floor: each heap, how far on, and done Green Malt's age")
     say("TPV.cask()                the nearest cask: litres, souring, mother, layers, starter, hose")
     say("TPV.setCask(litres, pct)  set the nearest cask's pool, e.g. TPV.setCask(16, 100)")
     say("TPV.mother(layers)        give the nearest cask a mother with this many layers. TPV.mother(0) takes it away")
@@ -81,6 +82,19 @@ end
 function TPV.timers()
     say(string.format("Malting %.1f h, fermenting %.1f h, souring %.1f h, effort x%.1f, temperature sensitivity %.1f%s",
         V.MALTING_HOURS, V.ALCOHOLIC_HOURS, V.ACETIC_HOURS, V.EFFORT, V.SENSITIVITY, V.TEST_HOURS and " (test timers on)" or ""))
+end
+
+function TPV.floor()
+    local floor = near(V.isFloor, "Malting Floor")
+    if not floor then return end
+    local now = getGameTime():getWorldAgeHours()
+    local record, place = V.floorNow(floor, now)
+    say(string.format("Floor at %d,%d,%d (%s): %d of %d heaps", floor:getX(), floor:getY(), floor:getZ(), tostring(place),
+        #record.heaps, V.FLOOR_HEAPS))
+    for _, heap in ipairs(record.heaps) do
+        say(string.format("  heap %d: %s, %.0f%% (%.1f of %.0f h), Green Malt %.1f days old", heap.id, V.heapState(heap, now),
+            V.heapProgress(heap) * 100, heap.work.age, V.MALTING_HOURS, V.heapAgeDays(heap, now)))
+    end
 end
 
 function TPV.cask()

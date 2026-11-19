@@ -103,6 +103,13 @@ check("Green Malt goes stale and then rots", greenMalt:find("DaysFresh = 2,", 1,
 check("rotten Green Malt is compostable", greenMalt:find("base:iscompostable", 1, true) ~= nil)
 check("Green Malt still kilns into Malt", greenMalt:find("ReplaceOnCooked = TraditionalPreservationVinegar.Malt,", 1, true) ~= nil)
 
+-- The Malting Floor keeps its heaps in its own record (TraditionalPreservationVinegarFloor.lua): no crafting window, no
+-- Malt Grain recipe.
+local floorEntity = read(MOD .. "/entities/entity_Malting_Floor.txt")
+check("the Malting Floor has no CraftLogic or slots", floorEntity:find("CraftLogic", 1, true) == nil
+    and floorEntity:find("Resources", 1, true) == nil and floorEntity:find("uiEnabled = false", 1, true) ~= nil)
+check("and no Malt Grain recipe", modText:find("craftRecipe MaltGrain", 1, true) == nil)
+
 -- Every item our recipes and stations name exists in vanilla or in the mod.
 local known = definedItems(vanillaFiles)
 for name in pairs(definedItems(modFiles)) do known[name] = true end

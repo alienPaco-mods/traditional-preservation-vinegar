@@ -85,10 +85,6 @@ V.advance(V.getLedger(), hours, 22)
 V.onFermentUpdate(batch)
 check("and it stops at done", batch.elapsed == ALCOHOL_TIME)
 
-local malt = recipeData(V.MALTING_HOURS * 3600)
-V.onMaltStart(malt)
-runHours(16, 60, malt, V.onMaltUpdate)
-check("60 hours at the best temperature is half of a 5 day malting", math.abs(malt.elapsed - 60 * 3600) < 1)
 local oldLedger = { lastHour = hours, alcoholicOpen = 0, alcoholicSheltered = 0, aceticOpen = 0, aceticSheltered = 0, heat = 0 }
 store.ledger, oldLedger = oldLedger, store.ledger
 V.fillLedger()
@@ -505,8 +501,6 @@ check("and each group holds its bottles", #groups[1].items == 1 and #groups[2].i
 -- Station inputs
 check("the vessel's slot takes a packet of yeast", V.inputRefusal("vessel", "Base.Yeast") == nil)
 check("and nothing else", V.inputRefusal("vessel", "Base.BucketEmpty") ~= nil)
-check("the floor takes steeped grain", V.inputRefusal("floor", "TraditionalPreservationVinegar.SteepedGrain") == nil)
-check("and nothing else", V.inputRefusal("floor", "Base.BarleySeed") ~= nil)
 
 -- Sandbox
 onInit()
@@ -548,7 +542,7 @@ V.WORT_SOURS = true
 SandboxVars = { TraditionalPreservationVinegar = { MaltingDays = 3, AlcoholicDays = 5, AceticDays = 14, CultureBonus = 50, TemperatureSensitivity = 1, WortSours = false } }
 onInit()
 check("the sandbox sets the vessel time", loaded["TraditionalPreservationVinegar.FermentWort"]:find("432000", 1, true) ~= nil)
-check("the sandbox sets the malting time", loaded["TraditionalPreservationVinegar.MaltGrain"]:find("259200", 1, true) ~= nil)
+check("the sandbox sets the malting time", V.MALTING_HOURS == 72)
 check("and the cask's days, bonus and sensitivity", V.ACETIC_HOURS == 336 and V.CULTURE_BONUS == 0.5 and V.SENSITIVITY == 0)
 check("Normal effort is the default, half as long again as Light", params["TraditionalPreservationVinegar.GreenMalt"] == "MinutesToCook = 180")
 check("the sandbox can turn souring off", V.WORT_SOURS == false)
@@ -563,7 +557,7 @@ check("and Light keeps the base times", params["TraditionalPreservationVinegar.B
 
 V.TEST_HOURS = 1
 onInit()
-check("test timers set every recipe to an hour", loaded["TraditionalPreservationVinegar.MaltGrain"]:find("3600", 1, true) ~= nil and loaded["TraditionalPreservationVinegar.FermentWort"]:find("3600", 1, true) ~= nil)
+check("test timers set every recipe to an hour", V.MALTING_HOURS == 1 and loaded["TraditionalPreservationVinegar.FermentWort"]:find("3600", 1, true) ~= nil)
 check("and the cask to an hour", V.ACETIC_HOURS == 1)
 check("and ignore the weather", V.aceticRate(-20) == 1)
 

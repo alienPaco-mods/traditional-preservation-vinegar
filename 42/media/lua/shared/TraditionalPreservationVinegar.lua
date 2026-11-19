@@ -211,21 +211,14 @@ local function updateRun(craftRecipeData, process, speed)
     Fire.updateRun(craftRecipeData, V.getLedger(), process, runPlace(modData), PROCESSES[process], speed)
 end
 
--- Tells a running batch (kind "malting" or "alcoholic") where its station stands: the place, and the fire's fuel
+-- Tells a running batch (kind "alcoholic") where its station stands: the place, and the fire's fuel
 -- when it is by one. A move first brings the run up to now where it was. Returns the place.
 function V.notePlace(modData, station, process, now)
     return Fire.notePlace(modData, station, now, function(runModData) catchUpRun(runModData, process) end)
 end
 
--- OnStart and OnUpdate hooks the recipe scripts name, one pair per weather-timed stage.
-function V.onMaltStart(craftRecipeData)
-    startRun(craftRecipeData, "malting")
-end
-
-function V.onMaltUpdate(craftRecipeData)
-    updateRun(craftRecipeData, "malting", 1)
-end
-
+-- OnStart and OnUpdate hooks the vessel's recipe script names. The Malting Floor keeps its own record
+-- (TraditionalPreservationVinegarFloor.lua).
 function V.onFermentStart(craftRecipeData)
     startRun(craftRecipeData, "alcoholic")
 end
@@ -277,7 +270,6 @@ end
 
 -- Slots take anything unless told otherwise, and a wrong item leaves the recipe with no output.
 local STATION_INPUTS = {
-    floor = { "TraditionalPreservationVinegar.SteepedGrain", "IGUI_TraditionalPreservationVinegar_NeedsSteeped" },
     vessel = { "Base.Yeast", "IGUI_TraditionalPreservationVinegar_NeedsYeast" },
 }
 
@@ -741,7 +733,6 @@ function V.applyRecipeTimes()
         print("[TraditionalPreservationVinegar] Test timers on: " .. V.TEST_HOURS .. " hours a batch")
         V.MALTING_HOURS, V.ALCOHOLIC_HOURS, V.ACETIC_HOURS, V.SENSITIVITY = V.TEST_HOURS, V.TEST_HOURS, V.TEST_HOURS, 0
     end
-    applyRecipeTime("MaltGrain", V.MALTING_HOURS)
     applyRecipeTime("FermentWort", V.ALCOHOLIC_HOURS)
     for name, time in pairs(CRAFT_TIMES) do
         local fullName = RECIPE_MODULE .. name
@@ -755,3 +746,5 @@ function V.applyRecipeTimes()
 end
 
 Events.OnInitGlobalModData.Add(V.applyRecipeTimes)
+
+require "TraditionalPreservationVinegarFloor"

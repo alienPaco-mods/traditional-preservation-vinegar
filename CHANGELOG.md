@@ -1,5 +1,15 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.41
+- **The Malting Floor off CraftLogic** (ROADMAP section 12): no crafting window and no Malt Grain recipe. Each Steeped
+  Grain is its own heap on its own clock (the floor's record in its movableData, `tpvFloor`), so a new heap goes down
+  beside heaps already sprouting. Right-click menu: Spread Steeped Grain (One / All), Take Done, Take Everything Off,
+  Floor Info (TP Core's InfoWindow: a row a heap, the buttons, the drop square). Green Malt ages from the hour its heap
+  was done; a heap taken off part way comes back as Steeped Grain that keeps its sprouting. The Farming XP still comes
+  once for heaps done together. A floor holding anything can't be picked up. Malting times are unchanged
+  (`tools/simulate.lua` matches its golden). `TPV.floor()` lists the nearest floor's heaps. Old floors' slot contents
+  don't carry over (no migration).
+
 ## 0.2.40
 - **Hand recipes work from the floor** (series recipe audit, 2026-11-19): every hand recipe but Packing has
   `CanBeDoneFromFloor`, so its inputs aren't carried into the inventory first (vanilla moves them otherwise): Steep Grain, Mash Malt (its 10 L bucket stays where it is), Strain Mash, Bottle Vinegar.

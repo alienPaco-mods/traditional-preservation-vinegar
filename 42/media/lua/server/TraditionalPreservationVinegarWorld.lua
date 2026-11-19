@@ -13,9 +13,7 @@ local log = require "TraditionalPreservationCore/Log"
 
 -- Bubbling gives way to settling lees for the last part of a run.
 local SEDIMENT_FROM = 0.7
-local ROOTLETS_FROM = 0.5
 
-local countItems = Station.countItems
 local litres = V.litres
 
 -- Each tank takes only its own liquid, whatever vanilla's transfer window offers.
@@ -38,14 +36,12 @@ local function readRun(station, logic, sessionState, process)
     return logic:getProgress(craftData), craftData
 end
 
--- Rootlets show from halfway through a run.
-function World.floorSprite(waiting, progress, finished)
-    if progress then
-        return progress >= ROOTLETS_FROM and V.FLOOR_ROOTLETS or V.FLOOR_SPROUTING
-    end
-    if finished > 0 then return V.FLOOR_FINISHED end
-    if waiting > 0 then return V.FLOOR_STEEPED end
-    return nil
+-- The floor's overlay for its heaps (V.floorLook), or nil when it is bare.
+local FLOOR_LOOKS = { steeped = V.FLOOR_STEEPED, sprouting = V.FLOOR_SPROUTING, rootlets = V.FLOOR_ROOTLETS, finished = V.FLOOR_FINISHED }
+
+function World.floorSprite(record)
+    local look = V.floorLook(record)
+    return look and FLOOR_LOOKS[look] or nil
 end
 
 -- Sediment shows from SEDIMENT_FROM through a run.
@@ -140,26 +136,18 @@ local function stationSprite(station, sessionState)
         return World.caskSprite(caskModData)
     end
 
+    -- The floor's heaps come done while its area is unloaded too; the XP goes once for those done since the last look,
+    -- as it went once a run.
+    if sessionState.base == V.FLOOR_SPRITE then
+        local record, _, _, finished = V.floorNow(station)
+        if finished > 0 then award(Perks.Farming, V.MALTING_XP) end
+        return World.floorSprite(record)
+    end
+
     local resources = station:getComponent(ComponentType.Resources)
     local logic = station:getComponent(ComponentType.CraftLogic)
     if not resources or not logic then return sessionState.sprite end
-    local progress, craftData = readRun(station, logic, sessionState, sessionState.base == V.FLOOR_SPRITE and "malting" or "alcoholic")
-
-    if sessionState.base == V.FLOOR_SPRITE then
-        local waiting = countItems(resources, logic:getInputsGroupName(), ResourceIO.Input)
-        local finished = countItems(resources, logic:getOutputsGroupName(), ResourceIO.Output)
-        -- A run that ended with more malt to collect than it started with finished; a cancelled one didn't.
-        -- The count is kept on the floor itself: a run usually ends while its area is unloaded.
-        local running = logic:isRunning()
-        local modData = station:getModData()
-        if running and not modData.vinegarMaltBefore then
-            modData.vinegarMaltBefore = finished
-        elseif not running and modData.vinegarMaltBefore then
-            if finished > modData.vinegarMaltBefore then award(Perks.Farming, V.MALTING_XP) end
-            modData.vinegarMaltBefore = nil
-        end
-        return World.floorSprite(waiting, progress, finished)
-    end
+    local progress, craftData = readRun(station, logic, sessionState, "alcoholic")
 
     local input, output = V.vesselTank(station, ResourceIO.Input), V.vesselTank(station, ResourceIO.Output)
     if not sessionState.restricted then

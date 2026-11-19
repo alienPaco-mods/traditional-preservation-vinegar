@@ -11,11 +11,16 @@ local V, World = TraditionalPreservationVinegar, TraditionalPreservationVinegarW
 
 local check = H.check
 
-check("an empty floor shows nothing", World.floorSprite(0, nil, 0) == nil)
-check("steeped grain", World.floorSprite(2, nil, 0) == V.FLOOR_STEEPED)
-check("sprouting", World.floorSprite(0, 0.2, 0) == V.FLOOR_SPROUTING)
-check("rootlets", World.floorSprite(0, 0.7, 0) == V.FLOOR_ROOTLETS)
-check("finished until collected", World.floorSprite(0, nil, 3) == V.FLOOR_FINISHED)
+-- The floor shows the stage most heaps are at, a tie going to the further on.
+local function heap(age, doneAt) return { work = { age = age }, doneAt = doneAt } end
+local H120 = V.MALTING_HOURS
+check("an empty floor shows nothing", World.floorSprite({ heaps = {} }) == nil)
+check("steeped grain", World.floorSprite({ heaps = { heap(0), heap(0) } }) == V.FLOOR_STEEPED)
+check("sprouting", World.floorSprite({ heaps = { heap(H120 * 0.2) } }) == V.FLOOR_SPROUTING)
+check("rootlets", World.floorSprite({ heaps = { heap(H120 * 0.7) } }) == V.FLOOR_ROOTLETS)
+check("finished until collected", World.floorSprite({ heaps = { heap(H120, 10), heap(H120, 10), heap(H120, 10) } }) == V.FLOOR_FINISHED)
+check("most heaps win", World.floorSprite({ heaps = { heap(0), heap(H120 * 0.7), heap(H120 * 0.8) } }) == V.FLOOR_ROOTLETS)
+check("a tie goes to the further on", World.floorSprite({ heaps = { heap(0), heap(H120, 10) } }) == V.FLOOR_FINISHED)
 
 check("a filled vessel", World.vesselSprite(2, nil, 0) == V.VESSEL_FILLED)
 check("bubbling", World.vesselSprite(0, 0.2, 0) == V.VESSEL_BUBBLING)

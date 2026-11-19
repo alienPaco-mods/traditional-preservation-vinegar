@@ -30,7 +30,7 @@ From threshed grain, the first vinegar takes about 55 to 60 days in good weather
 | # | Step | Where | In | Out | Time |
 |---|---|---|---|---|---|
 | 1 | Steep Grain | Crafting menu | 24 grain, 4 L water | Steeped Grain | a craft |
-| 2 | Malt Grain | Malting Floor | up to 4 Steeped Grain | Green Malt (rots in 5 days) | 5 days |
+| 2 | Spread Steeped Grain | Malting Floor | up to 4 Steeped Grain, each its own heap | Green Malt (rots in 5 days) | 5 days |
 | 3 | Kiln | Fire or oven | Green Malt | Malt (keeps forever) | 3 hours* |
 | 4 | Mash Malt | Crafting menu | 1 Malt, a metal bucket with 10 L water | Bucket of Mash | a craft |
 | 5 | Heat the mash | Fire or oven | Bucket of Mash | Bucket of Prepared Mash | 1.5 hours* |
@@ -74,13 +74,15 @@ Crafting menu, Cooking. 24 barley, wheat or rye seeds and 4 L of water from any 
 
 ### 2. Malting Floor
 
-Open the floor, load up to 4 Steeped Grain and press **Craft**. It sprouts into **Green Malt** in 5 days at the best temperature (12 to 20 C). The floor takes only Steeped Grain and says why when you try anything else.
+Right-click the floor, **Malting Floor > Spread Steeped Grain** (One or All). It holds 4 heaps, one a Steeped Grain, and each heap has its own clock: a new heap can go down beside heaps already sprouting, as real floor maltings laid out each steeping as its own "piece". A heap sprouts into **Green Malt** in 5 days at the best temperature (12 to 20 C).
+
+**Floor Info** (in the floor's menu, and at the bottom of the main menu) lists every heap with a bar: how far on and the time left, or, once done, when the Green Malt goes stale. Hover a row for its progress, the place's temperature and the working rate. **Take Done** takes the Green Malt off; **Take Everything Off** (Take All in the window) takes the rest too: a heap taken off part way comes back as Steeped Grain that keeps how far it sprouted, and carries on from there when spread again (off the floor it waits). Drop Steeped Grain on the window's drop square to spread it. A floor with any heap on it can't be picked up.
 
 ### 3. Kiln
 
 Put the Green Malt on a lit fire or in an oven. It dries into **Malt** in about 3 hours at Normal effort, and burns if left for a day. Malt keeps forever. Green Malt is food as far as the game is concerned, so it cooks like food, but nobody can eat it.
 
-Green Malt doesn't wait: real sprouted grain keeps growing and then moulds unless it is kilned. It stays fresh for 2 days and is rotten after 5, counting from when the floor finishes, so collect it and kiln it soon. Stale Green Malt still kilns into good Malt. Rotten Green Malt doesn't: the game skips its change into Malt, so it stays rotten Green Malt on the fire. Put it in a composter instead.
+Green Malt doesn't wait: real sprouted grain keeps growing and then moulds unless it is kilned. It stays fresh for 2 days and is rotten after 5, counting from when its heap finishes (on the floor or off it), so collect it and kiln it soon. Stale Green Malt still kilns into good Malt. Rotten Green Malt doesn't: the game skips its change into Malt, so it stays rotten Green Malt on the fire. Put it in a composter instead.
 
 ### 4. Mash Malt
 
@@ -205,11 +207,13 @@ The mother also travels with its cask: pick up an empty cask and put it down els
 
 | Malting Floor | When | What you see |
 |---|---|---|
-| Empty | Nothing in it | A bare wooden tray |
-| Steeped | Loaded, not started | Dark, wet grain |
-| Sprouting | First half of the run | Paler grain with a few sprouts |
-| Rootlets | Second half of the run | Pale rootlets matting the grain together |
-| Finished | Until collected | Thick rootlets, and a wooden malt shovel on the bed |
+| Empty | Nothing on it | A bare wooden tray |
+| Steeped | Just spread | Dark, wet grain |
+| Sprouting | First half of the 5 days | Paler grain with a few sprouts |
+| Rootlets | Second half | Pale rootlets matting the grain together |
+| Finished | Done, until taken off | Thick rootlets, and a wooden malt shovel on the bed |
+
+The tray shows one look: the stage most heaps are at, a tie going to the one further on.
 
 | Vessel | When | What you see |
 |---|---|---|

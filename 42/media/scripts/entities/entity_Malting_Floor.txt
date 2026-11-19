@@ -6,27 +6,10 @@ module TraditionalPreservationVinegar
         {
             xuiSkin = default,
             entityStyle = ES_MaltingFloor,
-            uiEnabled = true,
+            uiEnabled = false,
         }
-        component Resources
-        {
-            group craft_inputs
-            {
-                Item@Input@4,
-            }
-            group craft_outputs
-            {
-                Item@Output@4@StackAny,
-            }
-        }
-        component CraftLogic
-        {
-            Recipes = MaltingFloor,
-            StartMode = Manual,
-            inputGroup = craft_inputs,
-            outputGroup = craft_outputs,
-            actionAnim = Untie_Mid,
-        }
+        /* No window: the heaps are the floor's own record in its movableData (TraditionalPreservationVinegarFloor.lua),
+           put on and taken off from the right-click menu and Floor Info. */
         component SpriteConfig
         {
             OnIsValid = TraditionalPreservationCore.doorFits,

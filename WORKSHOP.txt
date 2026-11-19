@@ -22,7 +22,7 @@ Traditional Preservation (Vinegar) requires [b]Traditional Preservation (Core)[/
 [h2]The chain[/h2]
 [olist]
 [*][b]Steep Grain[/b] (crafting menu): 24 barley, wheat or rye seeds and 4 L of water give Steeped Grain.
-[*][b]Malting Floor[/b]: load up to 4 Steeped Grain and press Craft. It sprouts into Green Malt in 5 days at 12 to 20 C.
+[*][b]Malting Floor[/b]: spread up to 4 Steeped Grain from its right-click menu, each heap on its own clock. Each sprouts into Green Malt in 5 days at 12 to 20 C.
 [*][b]Kiln[/b]: put the Green Malt on a fire or in an oven for about 3 hours. Malt keeps forever. Green Malt doesn't: it's fresh for 2 days and rotten after 5, and rotten Green Malt won't kiln. Compost it.
 [*][b]Mash Malt[/b] (crafting menu): 1 Malt and a metal bucket holding 10 L of water.
 [*][b]Heat the mash[/b] on a fire or in an oven for about 1.5 hours.

@@ -1,6 +1,7 @@
 -- Traditional Preservation (Vinegar): keeps wrong items out of the station slots, shows the vessel's
--- tanks in its window, and adds a running batch's popup, the info block in the floor's and the vessel's crafting
--- windows (TP Core's StationInfo) and the right-click options on the vessel and cask.
+-- tanks in its window, and adds a running batch's popup, the info block in the vessel's crafting window (TP Core's
+-- StationInfo) and the right-click options on the vessel and cask. The Malting Floor's menu and window are
+-- TraditionalPreservationVinegarFloorUI.lua's.
 require "Entity/ISUI/Components/Crafting/ISCraftLogicPanel"
 require "Entity/ISUI/Components/Crafting/ISWidgetCraftLogicControl"
 require "Entity/ISUI/Components/Crafting/ISWidgetCraftLogicInputControl"
@@ -23,7 +24,7 @@ local Wrap = require "TraditionalPreservationCore/Wrap"
 
 local V = TraditionalPreservationVinegar
 
-local BATCH_RECIPES = { MaltGrain = "malting", FermentWort = "alcoholic" }
+local BATCH_RECIPES = { FermentWort = "alcoholic" }
 local VINEGAR_ICON = "Item_Vinegar"
 local HOSE_ICON = "Item_RubberHose"
 local WORT_ICON = "media/textures/Item_BucketWort.png"
@@ -216,7 +217,7 @@ local function drawBatchTooltip(slot, tooltip, name, station)
     end)
 end
 
-UI.progressTooltips({ MaltGrain = drawBatchTooltip, FermentWort = drawBatchTooltip })
+UI.progressTooltips({ FermentWort = drawBatchTooltip })
 
 -- How long the tank's wort keeps where the vessel stands, or that it has soured; nil when neither applies.
 local function wortKeeps(vessel, ledger)
@@ -227,42 +228,37 @@ local function wortKeeps(vessel, ledger)
     return hours and say("IGUI_TraditionalPreservationVinegar_InfoSours", timeText(hours)) or nil
 end
 
--- The block in the floor's and the vessel's own windows: where the station stands, the temperature and the stage's
--- rate there, the running batch's bar, and what waits or is done. The vessel's tanks have their own columns, so its
--- rows only say what is in them. The cask has no crafting window: its Info window does this.
+-- The block in the vessel's own window: where it stands, the temperature and the stage's rate there, the running batch's
+-- bar, and what is in the tanks (they have their own columns, so the rows only say what is in them). The cask and the
+-- floor have no crafting window: their Info windows do this.
 local function stationInfo(entity)
     local kind = V.stationKind(entity)
-    if kind ~= "floor" and kind ~= "vessel" then return nil end
+    if kind ~= "vessel" then return nil end
     local contents = StationInfo.contents(entity)
     if not contents then return nil end
-    local stage = kind == "floor" and "malting" or "alcoholic"
     local ledger = V.getLedger()
     local place = V.placeOf(entity)
     local temperature = Weather.placeTemperature(ledger, place)
-    local rate = stage == "malting" and V.maltingRate(temperature) or V.alcoholicRate(temperature)
+    local rate = V.alcoholicRate(temperature)
     local run = entity:getModData().vinegarRun
     local batches = {}
     for _, batch in ipairs(contents.batches) do
-        local status = V.batchStatus(stage, batch.craftRecipeData:getModData(), Weather.recipeHours(batch.craftRecipeData), ledger)
-        local name = stage == "malting" and say("IGUI_TraditionalPreservationVinegar_InfoGrain", tostring(batch.count))
-            or say("IGUI_TraditionalPreservationVinegar_InfoWort", UI.litres(run and run.ml or 0))
+        local status = V.batchStatus("alcoholic", batch.craftRecipeData:getModData(), Weather.recipeHours(batch.craftRecipeData), ledger)
+        local name = say("IGUI_TraditionalPreservationVinegar_InfoWort", UI.litres(run and run.ml or 0))
         table.insert(batches, { name = name, progress = status.progress, hoursLeft = status.hoursLeft })
     end
+    -- The marker the run leaves becomes the Fermented tank, so nothing reads as finished.
     local options = { place = place, temperature = temperature, rate = rate, batches = batches,
-        waiting = #contents.waiting, finished = #contents.finished }
-    if kind == "vessel" then
-        options.finished = 0  -- the marker the run leaves becomes the Fermented tank
-        options.rows = {}
-        for _, io in ipairs({ ResourceIO.Input, ResourceIO.Output }) do
-            local tank = V.vesselTank(entity, io)
-            local capacity = tank and tank:getFluidContainer():getCapacity() or 0
-            -- The running batch's wort reads in the Wort row, as in its bar.
-            local fermenting = io == ResourceIO.Input and run
-            local ml = fermenting and run.ml or V.litres(tank) * 1000
-            local text = say("IGUI_TraditionalPreservationVinegar_InfoLitres", UI.litres(ml), UI.litres(capacity * 1000))
-            local keeps = io == ResourceIO.Input and not fermenting and wortKeeps(entity, ledger)
-            table.insert(options.rows, { fermenting and FERMENTING_TITLE or TANK_TITLES[io], keeps and text .. ", " .. keeps or text })
-        end
+        waiting = #contents.waiting, finished = 0, rows = {} }
+    for _, io in ipairs({ ResourceIO.Input, ResourceIO.Output }) do
+        local tank = V.vesselTank(entity, io)
+        local capacity = tank and tank:getFluidContainer():getCapacity() or 0
+        -- The running batch's wort reads in the Wort row, as in its bar.
+        local fermenting = io == ResourceIO.Input and run
+        local ml = fermenting and run.ml or V.litres(tank) * 1000
+        local text = say("IGUI_TraditionalPreservationVinegar_InfoLitres", UI.litres(ml), UI.litres(capacity * 1000))
+        local keeps = io == ResourceIO.Input and not fermenting and wortKeeps(entity, ledger)
+        table.insert(options.rows, { fermenting and FERMENTING_TITLE or TANK_TITLES[io], keeps and text .. ", " .. keeps or text })
     end
     return StationInfo.block(options)
 end
@@ -641,7 +637,7 @@ local function onFillContextMenu(playerNum, context, worldobjects, test)
     for _, isoObject in ipairs(worldobjects) do
         local kind = V.stationKind(isoObject)
         -- Vanilla's probe for a controller's prompt: say there is a menu, do no work.
-        if test and (kind == "cask" or kind == "vessel") then return ISWorldObjectContextMenu.setTest() end
+        if test and kind then return ISWorldObjectContextMenu.setTest() end
         if kind and not seen[kind] then
             seen[kind] = true
             -- A station built this session isn't tracked until its area reloads, and the cask has no
@@ -651,6 +647,8 @@ local function onFillContextMenu(playerNum, context, worldobjects, test)
                 addCaskMenu(context, playerObj, isoObject)
             elseif kind == "vessel" then
                 addVesselMenu(context, playerObj, isoObject)
+            else
+                TraditionalPreservationVinegarFloorUI.addMenu(context, playerObj, isoObject)
             end
         end
     end

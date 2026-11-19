@@ -8,9 +8,10 @@ These console commands load only when the game runs in **debug mode** (launch op
 |---|---|
 | `TPV.weather()` | The temperature in each place (open air, under an open roof, indoors, a basement, by a fire, by banked embers), and how fast malting, fermenting, souring and wort's own souring (`wort`) work there. By a fire counts by the clock, so `TPV.age` doesn't move it. |
 | `TPV.here()` | Which kind of place you're standing in. |
-| `TPV.age(hours)` | Gives every floor, vessel and cask this many hours of perfect weather. `TPV.age(120)` finishes a malting run, 240 a vessel run, 840 a cask from fresh. |
-| `TPV.fast(hours)` | Test timers: every floor, vessel and cask run takes this many hours, with temperature ignored. `TPV.fast()` turns them off again. It replaces editing `V.TEST_HOURS`. |
+| `TPV.age(hours)` | Gives every floor, vessel and cask this many hours of perfect weather. `TPV.age(120)` finishes every heap on a Malting Floor, 240 a vessel run, 840 a cask from fresh. |
+| `TPV.fast(hours)` | Test timers: every floor heap, vessel and cask run takes this many hours, with temperature ignored (heaps already down too). `TPV.fast()` turns them off again. It replaces editing `V.TEST_HOURS`. |
 | `TPV.timers()` | The hours each stage takes right now, the brewing effort and the temperature sensitivity. |
+| `TPV.floor()` | The nearest Malting Floor (within 2 squares): each heap's state, progress and hours, and how old its Green Malt is once done. |
 | `TPV.cask()` | The nearest cask (within 2 squares): litres, souring, bottles ready, mother, layers, litres to the next layer, starter bonus and hose. |
 | `TPV.setCask(litres, percent)` | Sets the nearest cask's pool, e.g. `TPV.setCask(16, 100)` for a ready cask. |
 | `TPV.mother(layers)` | Gives the nearest cask a mother with that many layers. `TPV.mother(2)` lets you test Split Mother, and `TPV.mother(0)` removes it. |

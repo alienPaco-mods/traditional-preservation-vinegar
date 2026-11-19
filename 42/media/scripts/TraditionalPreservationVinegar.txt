@@ -24,24 +24,6 @@ module TraditionalPreservationVinegar
         }
     }
 
-    /* time is overwritten from MALTING_HOURS in TraditionalPreservationVinegar.lua */
-    craftRecipe MaltGrain
-    {
-        time = 432000,
-        Tags = MaltingFloor,
-        category = Cooking,
-        OnStart = TraditionalPreservationVinegar.onMaltStart,
-        OnUpdate = TraditionalPreservationVinegar.onMaltUpdate,
-        inputs
-        {
-            item variable[1:4] [TraditionalPreservationVinegar.SteepedGrain] flags[ItemCount] mode:destroy,
-        }
-        outputs
-        {
-            item variable[1:4] TraditionalPreservationVinegar.GreenMalt,
-        }
-    }
-
     /* Crushing is folded in here. The mash then has to be heated, then strained. */
     craftRecipe MashMalt
     {

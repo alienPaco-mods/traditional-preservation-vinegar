@@ -238,7 +238,7 @@ check("the run's bar, slow", #block.bars == 1 and block.bars[1].text == "Wort: 2
     and block.bars[1].progressText == "1%, 45 d 1 h left" and block.bars[1].colour[1] == 0.75)
 check("and the weather note", table.concat(block.notes, " | ") == "Times left assume the temperature holds as it is now.")
 local floor = station(V.FLOOR_SPRITE, 3, false)
-check("an empty floor indoors", stationInfo(floor).rows[1][2] == "Indoors" and stationInfo(floor).notes[1] == "Nothing in it.")
+check("the floor has no crafting window block", stationInfo(floor) == nil)
 check("the cask has no crafting window block", stationInfo(cask) == nil)
 logic.inProgress = nil
 

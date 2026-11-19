@@ -67,10 +67,8 @@ local function simulate(days, startIndex, place)
     end
 
     -- Malting, then the hands-on work.
-    local floor = run(V.MALTING_HOURS * 3600)
-    V.onMaltStart(floor)
-    floor.modData.place = place
-    repeat if not tick() then return nil end V.onMaltUpdate(floor) until floor.elapsed >= V.MALTING_HOURS * 3600
+    local heap = V.putHeap({ heaps = {}, nextId = 1 }, { getFullType = function() return V.STEEPED end, getModData = function() return {} end }, hour, place)
+    repeat if not tick() then return nil end V.advanceHeap(heap, hour, place, nil, nil, ledger) until V.heapDone(heap)
     note("malt ready")
     for _ = 1, HANDS_ON_HOURS do tick() end
 
