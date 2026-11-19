@@ -9,7 +9,7 @@ module TraditionalPreservationVinegar
     {
         timedAction = Making,
         time = 120,
-        Tags = InHandCraft,
+        Tags = InHandCraft;CanBeDoneFromFloor,
         category = Cooking,
         xpAward = Cooking:3,
         inputs
@@ -47,7 +47,7 @@ module TraditionalPreservationVinegar
     {
         timedAction = Making,
         time = 300,
-        Tags = InHandCraft,
+        Tags = InHandCraft;CanBeDoneFromFloor,
         category = Cooking,
         xpAward = Cooking:3,
         OnCreate = TraditionalPreservationVinegar.onMashed,
@@ -68,7 +68,7 @@ module TraditionalPreservationVinegar
     {
         timedAction = Making,
         time = 200,
-        Tags = InHandCraft,
+        Tags = InHandCraft;CanBeDoneFromFloor,
         category = Cooking,
         xpAward = Cooking:3,
         OnCreate = TraditionalPreservationVinegar.onStrained,
@@ -120,7 +120,7 @@ module TraditionalPreservationVinegar
     {
         timedAction = Making,
         time = 40,
-        Tags = InHandCraft,
+        Tags = InHandCraft;CanBeDoneFromFloor,
         category = Cooking,
         xpAward = Cooking:1,
         Tooltip = Tooltip_TraditionalPreservationVinegar_Bottle,

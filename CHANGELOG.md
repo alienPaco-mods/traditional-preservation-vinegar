@@ -1,5 +1,9 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.40
+- **Hand recipes work from the floor** (series recipe audit, 2026-11-19): every hand recipe but Packing has
+  `CanBeDoneFromFloor`, so its inputs aren't carried into the inventory first (vanilla moves them otherwise): Steep Grain, Mash Malt (its 10 L bucket stays where it is), Strain Mash, Bottle Vinegar.
+
 ## 0.2.39
 - **Info in the main menu too** (user, session 53): every station's Info row is also at the bottom of the main right-click menu, besides its submenu (TP Core's `UI.topInfo`). Cask Info.
 
