@@ -119,9 +119,9 @@ check("cold barely moves a batch", chilled.elapsed <= 100 * 3600 * 0.06)
 local roofed = recipeData(ALCOHOL_TIME)
 V.onFermentStart(roofed)
 roofed.modData.place = "Sheltered"
-V.getLedger().seasonTemperature = 20
+V.getLedger().seasonTemperature, V.getLedger().threeDayTemperature = 20, 20
 runHours(-5, 10, roofed, V.onFermentUpdate)
-check("a sheltered vessel goes by the season, not the frost", roofed.elapsed > 10 * 3600 * 0.5)
+check("a vessel in a shut room goes by the room's three-day mean, not the frost", roofed.elapsed > 10 * 3600 * 0.5)
 
 local pooled = recipeData(ALCOHOL_TIME)
 pooled.modData = { workHours = 500, place = "Fireside", fireUntil = 9, placeWithoutFire = "Open" }
@@ -253,9 +253,9 @@ sourHours(cold, 24, 0, false)
 check("frost barely sours an open cask", cold.strength < 0.003)
 local cellar = { ml = 10000, strength = 0 }
 V.updateCask(cellar, V.getLedger(), "Sheltered")
-V.getLedger().seasonTemperature = 25
+V.getLedger().seasonTemperature, V.getLedger().threeDayTemperature = 25, 25
 sourHours(cellar, 24, -5, true)
-check("but a room in a warm season keeps working", cellar.strength > 24 * 0.8 / V.ACETIC_HOURS)
+check("but a shut room in a warm spell keeps working through a frosty day (its three-day mean)", cellar.strength > 24 * 0.8 / V.ACETIC_HOURS)
 
 local deep = { ml = 10000, strength = 0 }
 V.updateCask(deep, V.getLedger(), "Basement")
@@ -268,9 +268,9 @@ check("which malts at full speed in summer", V.maltingRate(17) == 1)
 -- No fire anywhere: the cell has no squares round a station.
 function getCell() return { getGridSquare = function() return nil end } end
 local function stationAt(z, outside)
-    return { getSquare = function() return { getX = function() return 0 end, getY = function() return 0 end,
+    return { getSquare = function() return H.shutRoom({ getX = function() return 0 end, getY = function() return 0 end,
         getZ = function() return z end, isOutside = function() return outside end,
-        isInARoom = function() return not outside end } end }
+        isInARoom = function() return not outside end }) end }
 end
 check("below ground is a basement", V.placeOf(stationAt(-1, false)) == "Basement")
 check("a room is sheltered", V.placeOf(stationAt(0, false)) == "Sheltered")

@@ -45,14 +45,17 @@ local function daysToFinish(days, first, target, rate, place)
     local gridOn = place == "Grid" or nil
     if gridOn then place = "Sheltered" end
     local season, ground = settled(days[first].month, days[first].offset)
-    local done = 0
+    -- A shut room's and an aired room's means (Weather.ROOM_HOURS, AIRED_HOURS) start on the season's.
+    local done, threeDay, day = 0, season, season
     for index = first, #days do
         for hour = 0, 23 do
             local temperature = hourly(days[index], hour)
             season = season + (temperature - season) / Weather.SEASON_HOURS
             ground = ground + (season - ground) / Weather.GROUND_HOURS
+            threeDay = threeDay + (temperature - threeDay) / Weather.ROOM_HOURS
+            day = day + (temperature - day) / Weather.AIRED_HOURS
             done = done + rate(Weather.placeTemperature({ temperature = temperature, seasonTemperature = season,
-                groundTemperature = ground, gridOn = gridOn }, place))
+                groundTemperature = ground, threeDayTemperature = threeDay, dayTemperature = day, gridOn = gridOn }, place))
             if done >= target then return index - first + hour / 24 end
         end
     end
@@ -77,8 +80,8 @@ local days = readDays(arg[1] or "tools/climate_year.csv")
 settled = settle(days)
 -- Under an open roof reads the season's mean, as indoors does but for a room's winter lift (Weather.roomTemperature):
 -- within 2 C of the indoors column, so it has none of its own.
-local PLACES = { "Open", "Sheltered", "Grid", "Loft", "Basement" }
-print("| Month | Ferment, outdoors | Ferment, indoors | Ferment, grid on | Ferment, loft | Ferment, basement | First cask, outdoors | First cask, indoors | First cask, grid on | First cask, loft | First cask, basement |")
+local PLACES = { "Open", "Sheltered", "Grid", "AiredRoom", "Basement" }
+print("| Month | Ferment, outdoors | Ferment, indoors | Ferment, grid on | Ferment, aired room | Ferment, basement | First cask, outdoors | First cask, indoors | First cask, grid on | First cask, aired room | First cask, basement |")
 print("|---|---|---|---|---|---|---|---|---|---|---|")
 for month = 1, 12 do
     local cells = { MONTHS[month] }
@@ -88,7 +91,7 @@ for month = 1, 12 do
 end
 -- Wort waiting for the yeast: days until it sours, by where it stands (a bucket or the vessel's tank).
 print("")
-print("| Month | Wort sours, outdoors | indoors | grid on | loft | basement |")
+print("| Month | Wort sours, outdoors | indoors | grid on | aired room | basement |")
 print("|---|---|---|---|---|---|")
 for month = 1, 12 do
     local cells = { MONTHS[month] }

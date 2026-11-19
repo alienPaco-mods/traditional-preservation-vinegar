@@ -157,28 +157,28 @@ Every station runs on real temperature, **even while you're away**.
 
 | Place | Temperature |
 |---|---|
-| **Open air** | The day's weather |
-| **Under an open roof**, or **indoors** | The season: the average of the last 10 days. A room is 22 C while the power grid is on |
-| **Loft** (the top storey: a room upstairs with no room over it) | The sun on the roof: about 24 C in a 21 C July, as a room from October to April (TP Core's guide, chapter 8) |
+| **Open air**, **under an open roof** | The weather, hour by hour |
+| **Indoors** (a shut room) | The average of the last 3 days, 2 C warmer in the cold months, up to 2 C warmer in summer (stuffy). 22 C while the power grid is on |
+| **Aired room** (a window to the outside open, smashed or empty) | The day's average, at most 1 C warmer in winter; 22 C on the grid (TP Core's guide, chapter 8) |
 | **Basement** (below ground) | Follows the ground, a month behind the season: about 5 C from January to March, 13 C from July to September |
-| **By a fire** (any lit fire within 2 tiles, same floor) | **28 C** indoors, for as long as the fuel lasts; banked embers 24 C. Outside, under an open roof, the 10-day average +15 C; in the open, the day's weather +10 C; never past 28 C (TP Core's guide, chapter 7) |
+| **By a fire** (any lit fire within 2 tiles, same floor) | **28 C** in a shut room, for as long as the fuel lasts; banked embers 24 C. In an aired room or under an open roof, the air +15 C; in the open, +10 C; never past 28 C (TP Core's guide, chapter 7) |
 
 **First bottles, from the start of malting (two full batches, simulated on the game's weather, the grid off):**
 
-| Start | Open air | Indoors | Loft | Basement |
+| Start | Open air | Indoors (shut room) | Aired room | Basement |
 |---|---|---|---|---|
-| January | day 171 | day 177 | day 172 | day 230 |
-| April | day 84 | day 87 | day 82 | day 147 |
-| July | day 65 | day 53 | day 52 | day 88 |
-| October | day 250 | day 250 | day 247 | day 289 |
+| January | day 171 | day 169 | day 170 | day 230 |
+| April | day 84 | day 80 | day 81 | day 147 |
+| July | day 65 | day 54 | day 57 | day 88 |
+| October | day 250 | day 248 | day 250 | day 289 |
 
-**By a fire indoors**, any month: the vessel ferments in 11 days and a cask's first batch sours in 35, at 28 C. Banked embers (24 C) are as quick: 10 and 35. Don't malt there: sprouting grain wants it cool, and 28 C takes the floor 14 days instead of 5.
+**By a fire in a shut room**, any month: the vessel ferments in 11 days and a cask's first batch sours in 35, at 28 C. Banked embers (24 C) are as quick: 10 and 35. Don't malt there: sprouting grain wants it cool, and 28 C takes the floor 14 days instead of 5.
 
 **By a fire outside** the cold air takes the heat, so it helps most where the indoor fire is too hot. In January:
 
 | By a fire in January | Malting | Ferment | First cask |
 |---|---|---|---|
-| Under an open roof (a porch) | 5 to 7 days | 19 to 37 days | 56 to 78 days |
+| Under an open roof (a porch) | 5 to 9 days | 17 to 29 days | 53 to 75 days |
 | In the open (a campfire) | 7 to 16 days | 29 to 56 days | 77 to 105 days |
 
 > *Margin note:* a porch fire is the winter malting floor. The frost outside takes the fire down to the 12 to 20 C sprouting grain wants, where the kitchen hearth would cook it.
@@ -283,13 +283,13 @@ A sip scales down: half a litre of wort is 150 calories.
 
 ## 15. The Yearly Plan
 
-Each process laid out as the game's planting seasons: the months it works unheated, its best and poor months, and the months it is out of season (then only by a fire, banked embers or in a powered room, below). The fermenting and cask days are the game's sampled weather with the grid off, from pouring (two batches); malting is at the month's average temperature, so it's marked "about". Malting in July gives first bottles about **day 52** in a loft; in April about day 82 to 87; in October or January day 170 and more.
+Each process laid out as the game's planting seasons: the months it works unheated, its best and poor months, and the months it is out of season (then only by a fire, banked embers or in a powered room, below). The fermenting and cask days are the game's sampled weather with the grid off, from pouring (two batches); malting is at the month's average temperature, so it's marked "about". Malting in July gives first bottles about **day 54** indoors; in April about day 80 to 84; in October or January day 169 and more.
 
 | Process | Season | Best months | Poor months | Out of season | Where, at its best | Takes, at its best |
 |---|---|---|---|---|---|---|
-| **Malting** (Malt keeps; Green Malt must be kilned within 2 days) | April to October | May to September; October indoors, in a loft or a basement | April (about 8 to 12 days); October in the open air (about 7 to 9) | November to March | Indoors or the open air (12 to 20 C); a basement from May to November | About 5 days |
-| **Fermenting** | May to September | June, July, August | May (up to 17 days); September (upstairs up to 20; use a basement, 16 to 20) | October to April: 17 to 43 days in April, 25 and more from October to March (usually months) | Indoors or a loft | 10 days |
-| **Souring** | May to August | June, July | May (38 to 50 days); August (pour early: a late pour can sour into March) | September to April: 50 to 77 days in April, 75 and more from September to March | A cask in a loft or indoors | 35 to 41 days (26 with the mother at work) |
+| **Malting** (Malt keeps; Green Malt must be kilned within 2 days) | April to October | May to September; October indoors or in a basement | April (about 8 to 12 days); October in the open air (about 7 to 9) | November to March | Indoors or the open air (12 to 20 C); a basement from May to November | About 5 days |
+| **Fermenting** | May to September | June, July, August | May (up to 16 days); September (a shut room up to 93: use a basement, 16 to 20, or the fire) | October to April: 15 to 38 days in April, months from October to March | Indoors, windows shut | 10 days |
+| **Souring** | May to August | June, July | May (38 to 50 days); August (pour early: a late pour can sour into March) | September to April: 50 to 77 days in April, 75 and more from September to March | A cask indoors, windows shut | 35 to 41 days (26 with the mother at work) |
 
 **Any month by an indoor fire or a powered room:**
 
@@ -311,7 +311,7 @@ Each process laid out as the game's planting seasons: the months it works unheat
 
 | Command | What it does |
 |---|---|
-| `TPV.weather()` | The temperature in each place (open air, under an open roof, indoors, a loft, a basement, by a fire, by banked embers), and how fast malting, fermenting, souring and wort's own souring (`wort`) work there. |
+| `TPV.weather()` | The temperature in each place (open air, under an open roof, a shut room, an aired room, a basement, by a fire, by banked embers), and how fast malting, fermenting, souring and wort's own souring (`wort`) work there. |
 | `TPV.here()` | Which kind of place you're standing in. |
 | `TPV.age(hours)` | Gives every floor, vessel and cask this many hours of perfect weather. `TPV.age(120)` finishes a malting run, 240 a vessel run, 840 a cask from fresh. |
 | `TPV.fast(hours)` | Test timers: every floor, vessel and cask run takes this many hours, with temperature ignored. `TPV.fast()` turns them off again. |

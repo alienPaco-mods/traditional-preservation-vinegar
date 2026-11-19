@@ -257,11 +257,11 @@ Time counts by the game clock, at any Day Length, and keeps counting while the a
 
 The places are TP Core's, from the game's own flags:
 
-- **Open air**: the day's weather.
-- **Under an open roof** (a porch, an open shed) or **indoors** (a room): an unheated building follows the average outdoor temperature of the last 10 days or so. A warm afternoon or a cold night makes no difference. A room is **22 C while the power grid is on**, as vanilla's are.
-- **In a loft** (the top storey: a room upstairs with no room over it): as indoors, plus three tenths of whatever the 10-day average is above 10 C: the sun on the roof (about 24 C in a 21 C July, no warmer than a room from October to April); 22 C while the power grid is on.
+- **Open air** and **under an open roof** (a porch, an open shed): the weather, hour by hour.
+- **Indoors** (a shut room: every window to the outside shut or boarded): an unheated room follows the average of the last 3 days, 2 C warmer in the cold months and up to 2 C warmer in summer (stuffy). A room is **22 C while the power grid is on**, as vanilla's are.
+- **Aired room** (a room with a window to the outside open, smashed, without its glass or an empty frame): the day's average, at most 1 C warmer in winter; 22 C while the power grid is on.
 - **In a basement** (any level below ground): the earth takes the edge off the seasons, running a month behind the season: about 5 C from January to March and 13 C from July to September. Cooler than a room until August, warmer in the autumn (a September vessel ferments in 16 to 20 days there), and under 10 C from December to May.
-- **By a fire**: any lit fire within 2 tiles on the same floor holds an indoor station at **28 C** (banked embers 24 C) for as long as the fuel lasts: the vessel takes 11 days and a fresh cask 35, in any month. Too warm for malting (14 days instead of 5). Outside, the air carries the heat off: under an open roof the fire gives the 10-day average +15 C, in the open the day's weather +10 C, never past 28 C (banked embers +10 and +5, up to 24 C).
+- **By a fire**: any lit fire within 2 tiles on the same floor holds a station in a shut room at **28 C** (banked embers 24 C) for as long as the fuel lasts: the vessel takes 11 days and a fresh cask 35, in any month. Too warm for malting (14 days instead of 5). With a window open or outside, the air carries the heat off: in an aired room or under an open roof the fire gives the air +15 C, in the open +10 C, never past 28 C (banked embers +10 and +5, up to 24 C).
 
 That gives the year a shape: malt in spring or autumn, brew and sour indoors from May to August, and keep a cask going through winter by an indoor fire. A batch that runs into the cold waits under 10 C until it warms again, and stops altogether once it freezes.
 
@@ -269,39 +269,39 @@ Hover a running batch in the floor's window for its progress, time left at today
 
 These are the days a run takes by the month it starts, on the game's sampled weather for default settings, the grid off (`tools/season_report.lua`).
 
-| Month | Ferment, open air | Ferment, indoors | Ferment, loft | Ferment, basement | Cask from fresh, open air | Cask from fresh, indoors | Cask from fresh, loft | Cask from fresh, basement |
+| Month | Ferment, open air | Ferment, indoors (shut room) | Ferment, aired room | Ferment, basement | Cask from fresh, open air | Cask from fresh, indoors (shut room) | Cask from fresh, aired room | Cask from fresh, basement |
 |---|---|---|---|---|---|---|---|---|
-| Jan | 87–117 | 94–126 | 94–126 | 130–156 | 127–157 | 132–162 | 129–158 | 185–211 |
-| Feb | 58–88 | 67–99 | 67–99 | 104–130 | 98–128 | 104–134 | 101–130 | 157–184 |
-| Mar | 34–60 | 39–71 | 38–71 | 77–103 | 71–98 | 75–105 | 72–101 | 130–157 |
-| Apr | 16–36 | 17–43 | 16–43 | 50–76 | 50–72 | 50–77 | 46–73 | 102–129 |
-| May | 11–18 | 10–17 | 10–16 | 23–50 | 41–51 | 38–50 | 35–46 | 75–104 |
-| Jun | 11–12 | 10 | 10 | 17–23 | 39–43 | 35–38 | 35 | 66–75 |
-| Jul | 10–14 | 10 | 10 | 15–18 | 40–54 | 35–41 | 35–36 | 63–67 |
-| Aug | 11–17 | 10–12 | 10 | 15–16 | 48–239 | 39–152 | 36–74 | 67–151 |
-| Sep | 11–137 | 10–20 | 10–20 | 16–20 | 236–241 | 169–235 | 92–233 | 161–265 |
-| Oct | 139–175 | 25–186 | 21–186 | 20–143 | 215–236 | 218–235 | 215–233 | 262–266 |
-| Nov | 142–168 | 149–175 | 149–175 | 150–200 | 186–214 | 189–217 | 186–214 | 239–262 |
-| Dec | 115–141 | 122–148 | 122–148 | 156–181 | 157–185 | 161–188 | 158–186 | 212–238 |
+| Jan | 87–117 | 89–121 | 89–120 | 130–156 | 127–157 | 127–155 | 127–156 | 185–211 |
+| Feb | 58–88 | 61–93 | 61–93 | 104–130 | 98–128 | 98–126 | 98–127 | 157–184 |
+| Mar | 34–60 | 34–66 | 35–65 | 77–103 | 71–98 | 69–98 | 70–98 | 130–157 |
+| Apr | 16–36 | 15–38 | 15–38 | 50–76 | 50–72 | 46–70 | 48–70 | 102–129 |
+| May | 11–18 | 10–16 | 10–17 | 23–50 | 41–51 | 37–47 | 38–48 | 75–104 |
+| Jun | 11–12 | 10 | 10–11 | 17–23 | 39–43 | 36–38 | 36–39 | 66–75 |
+| Jul | 10–14 | 10–11 | 10–12 | 15–18 | 40–54 | 35–43 | 37–48 | 63–67 |
+| Aug | 11–17 | 10–12 | 10–13 | 15–16 | 48–239 | 40–230 | 42–238 | 67–151 |
+| Sep | 11–137 | 10–93 | 10–146 | 16–20 | 236–241 | 231–236 | 237–241 | 161–265 |
+| Oct | 139–175 | 100–185 | 148–185 | 20–143 | 215–236 | 212–233 | 214–236 | 262–266 |
+| Nov | 142–168 | 145–171 | 146–170 | 150–200 | 186–214 | 184–211 | 186–213 | 239–262 |
+| Dec | 115–141 | 117–144 | 118–146 | 156–181 | 157–185 | 156–183 | 156–185 | 212–238 |
 
-While the grid is on, a room or a loft (22 C) ferments in 10 days and sours a fresh cask in 35, any month. By a fire indoors (28 C): 11 and 35, malting 14; by banked embers indoors (24 C): 10 and 35, malting 7.
+While the grid is on, any room (22 C) ferments in 10 days and sours a fresh cask in 35, any month. By a fire in a shut room (28 C): 11 and 35, malting 14; by banked embers (24 C): 10 and 35, malting 7. A shut room no longer keeps the summer into autumn: a September ferment there takes 10 to 93 days, so from September brew by the fire or in the basement.
 
 By a fire outside, the same days for malting, fermenting and a fresh cask:
 
 | Month | Malting, fire under a roof | Malting, fire in the open | Ferment, fire under a roof | Ferment, fire in the open | Cask, fire under a roof | Cask, fire in the open |
 |---|---|---|---|---|---|---|
-| Jan | 5–7 | 7–16 | 19–37 | 29–56 | 56–78 | 77–105 |
-| Feb | 5–6 | 6–14 | 13–21 | 20–38 | 45–61 | 58–82 |
-| Mar | 5 | 5–9 | 10–16 | 12–22 | 35–45 | 42–58 |
-| Apr | 5–9 | 5–7 | 10 | 11–14 | 35 | 36–44 |
-| May | 8–14 | 6–12 | 10–11 | 10–11 | 35 | 35–36 |
-| Jun | 14 | 9–12 | 11 | 11 | 35 | 35 |
-| Jul | 14 | 9–14 | 11 | 10–11 | 35 | 35 |
-| Aug | 14 | 7–12 | 11 | 10–11 | 35 | 35–38 |
-| Sep | 11–14 | 6–11 | 11 | 10–12 | 35 | 38–83 |
-| Oct | 6–10 | 5–6 | 10 | 12–22 | 35–57 | 85–138 |
-| Nov | 5–6 | 6–14 | 10–21 | 26–66 | 58–88 | 126–138 |
-| Dec | 5–7 | 8–17 | 21–26 | 50–66 | 75–87 | 103–125 |
+| Jan | 5–9 | 7–16 | 17–29 | 29–56 | 53–75 | 77–105 |
+| Feb | 5–8 | 6–14 | 12–23 | 20–38 | 44–58 | 58–82 |
+| Mar | 5–7 | 5–9 | 10–15 | 12–22 | 37–45 | 42–58 |
+| Apr | 5–10 | 5–7 | 10–11 | 11–14 | 35–38 | 36–44 |
+| May | 10–14 | 6–12 | 11 | 10–11 | 35 | 35–36 |
+| Jun | 13–14 | 9–12 | 11 | 11 | 35 | 35 |
+| Jul | 12–14 | 9–14 | 11 | 10–11 | 35 | 35 |
+| Aug | 11–14 | 7–12 | 11 | 10–11 | 35 | 35–38 |
+| Sep | 7–13 | 6–11 | 11 | 10–12 | 35–39 | 38–83 |
+| Oct | 6–7 | 5–6 | 11–13 | 12–22 | 40–74 | 85–138 |
+| Nov | 5–7 | 6–14 | 14–28 | 26–66 | 78–90 | 126–138 |
+| Dec | 5–9 | 8–17 | 19–26 | 50–66 | 72–82 | 103–125 |
 
 A porch fire is the winter malting floor: the cold air takes the fire down to the grain's 12 to 20 C.
 

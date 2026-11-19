@@ -85,6 +85,7 @@ local function station(index, x, outside)
     function station:isOutside() return outside end
     function station.square:isOutside() return outside end
     function station.square:isInARoom() return not outside end
+    H.shutRoom(station.square)
     function station:getModData() return self.modData end
     function station:clearAttachedAnimSprite() self.sprites = {} self.clears = self.clears + 1 end
     function station:addAttachedAnimSpriteByName(name) table.insert(self.sprites, name) end

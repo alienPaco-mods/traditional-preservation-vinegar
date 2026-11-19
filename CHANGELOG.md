@@ -1,5 +1,10 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.37
+- **Aired rooms** (2026-11-19, TP Core 0.1.15): vessels and the cask read TP Core's new place temperatures (a shut
+  room follows the last three days and is stuffy in summer; a September ferment indoors 10 to 93 days where it was 10
+  to 20). `tools/season_report.lua` and `simulate.lua`: an aired room column (was loft). Needs TP Core 0.1.15.
+
 ## 0.2.36
 - **Five places** (2026-11-19, TP Core 0.1.14): TP Core has no Enclosed place any more, so `TPV.weather()` has no
   shed; the guide's console table follows. Nothing else changes in game.
