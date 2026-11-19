@@ -311,7 +311,7 @@ Each process laid out as the game's planting seasons: the months it works unheat
 
 | Command | What it does |
 |---|---|
-| `TPV.weather()` | The temperature in each place (open air, under an open roof, indoors, a loft, a basement, in a shed, by a fire, by banked embers), and how fast malting, fermenting, souring and wort's own souring (`wort`) work there. |
+| `TPV.weather()` | The temperature in each place (open air, under an open roof, indoors, a loft, a basement, by a fire, by banked embers), and how fast malting, fermenting, souring and wort's own souring (`wort`) work there. |
 | `TPV.here()` | Which kind of place you're standing in. |
 | `TPV.age(hours)` | Gives every floor, vessel and cask this many hours of perfect weather. `TPV.age(120)` finishes a malting run, 240 a vessel run, 840 a cask from fresh. |
 | `TPV.fast(hours)` | Test timers: every floor, vessel and cask run takes this many hours, with temperature ignored. `TPV.fast()` turns them off again. |
