@@ -175,7 +175,7 @@ function FloorWindow:render()
           tooltip = #all > #done and say("TakeAllHelp") or nil, onClick = function() FloorUI.take(playerObj, station, all) end },
     })
     y = self:dropZone(y, say("DropIdle"), function(items) return FloorUI.dropJudge(V.floorOf(station), items) end,
-        function(take) FloorUI.put(playerObj, station, take) end)
+        function(take) FloorUI.put(playerObj, station, take) end, getTexture("media/textures/Item_SteepedGrain.png"))
     local notes = { say("NoteMalting", tostring(V.GREEN_MALT_DAYS[1])) }
     if view.count == 0 then table.insert(notes, 1, say("NoteFloorEmpty")) end
     self:drawNotes(y, notes)

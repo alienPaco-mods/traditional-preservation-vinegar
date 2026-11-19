@@ -1,5 +1,8 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.44
+- Malting Floor Info's drop square shows Steeped Grain.
+
 ## 0.2.43
 - The window rows read the station's full name and Info (Fermentation Vessel Info, Orléans Vinegar Cask Info, Malting Floor Info), as vanilla's Fireplace Info and
   Generator Info; the window's title is the bare name. The short "Vessel Info", "Tub Info" and the like are gone.
