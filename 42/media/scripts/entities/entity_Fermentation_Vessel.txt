@@ -6,29 +6,11 @@ module TraditionalPreservationVinegar
         {
             xuiSkin = default,
             entityStyle = ES_FermentationVessel,
-            uiEnabled = true,
+            uiEnabled = false,
         }
-        component Resources
-        {
-            group craft_inputs
-            {
-                Item@Input@1,
-                Fluid@Input@20,
-            }
-            group craft_outputs
-            {
-                Item@Output@1,
-                Fluid@Output@20,
-            }
-        }
-        component CraftLogic
-        {
-            Recipes = FermentationVessel,
-            StartMode = Manual,
-            inputGroup = craft_inputs,
-            outputGroup = craft_outputs,
-            actionAnim = Untie_Mid,
-        }
+        /* No window: the tanks and the batch are the vessel's own record in its movableData
+           (TraditionalPreservationVinegarVessel.lua), poured, pitched and drawn off from the right-click menu and
+           Vessel Info. */
         component SpriteConfig
         {
             OnIsValid = TraditionalPreservationCore.doorFits,

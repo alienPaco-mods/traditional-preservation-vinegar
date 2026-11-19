@@ -21,5 +21,9 @@
   "ContextMenu_TraditionalPreservationVinegar_Spread": "Spread Steeped Grain",
   "ContextMenu_TraditionalPreservationVinegar_TakeDone": "Take Done (%1)",
   "ContextMenu_TraditionalPreservationVinegar_TakeAll": "Take Everything Off",
-  "ContextMenu_TraditionalPreservationVinegar_TakeAllCount": "Take All (%1)"
+  "ContextMenu_TraditionalPreservationVinegar_TakeAllCount": "Take All (%1)",
+  "ContextMenu_TraditionalPreservationVinegar_PitchYeast": "Pitch Yeast",
+  "ContextMenu_TraditionalPreservationVinegar_TopUp": "Top Up the Batch",
+  "ContextMenu_TraditionalPreservationVinegar_PourAwayBatch": "Pour Away the Batch",
+  "ContextMenu_TraditionalPreservationVinegar_DrawOffWort": "Draw Off Wort"
 }

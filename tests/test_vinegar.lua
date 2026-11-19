@@ -62,28 +62,33 @@ check("malting: wet grain pauses frozen at 0 C", V.maltingRate(0) == 0)
 check("a frozen cask has no time left, it waits", V.caskStatus({ ml = 1000, strength = 0.5 }, { temperature = -10, seasonTemperature = -10 }, "Open").hoursLeft == nil)
 check("malting: suffers in heat", V.maltingRate(30) < 0.35)
 
--- Timers
-local function runHours(temperature, count, craftRecipeData, update)
+-- Timers: the vessel's batch (TraditionalPreservationVinegarVessel.lua), stepped by the weather's totals.
+local function newBatch(litres, place)
+    local record = { wortMl = litres * 1000, fermentedMl = 0 }
+    V.pitch(record, hours, place)
+    return record
+end
+
+local function runHours(temperature, count, record, place)
+    local finished = false
     for _ = 1, count do
         hours = hours + 1
         V.advance(V.getLedger(), hours, temperature)
-        update(craftRecipeData)
+        finished = V.advanceVessel(record, hours, place, nil, place) or finished
     end
+    return finished
 end
 
-local ALCOHOL_TIME = V.ALCOHOLIC_HOURS * 3600
-local batch = recipeData(ALCOHOL_TIME)
-V.onFermentStart(batch)
-runHours(22, 120, batch, V.onFermentUpdate)
-check("120 hours at the best temperature is half of a 10 day batch", math.abs(batch.elapsed - ALCOHOL_TIME / 2) < 1)
+local batch = newBatch(20, "Open")
+check("pitching takes the whole buckets", batch.run.ml == 20000 and batch.wortMl == 0)
+runHours(22, 120, batch, "Open")
+check("120 hours at the best temperature is half of a 10 day batch", math.abs(V.runProgress(batch.run) - 0.5) < 1e-6)
 hours = hours + 200
 V.advance(V.getLedger(), hours, 22)
-V.onFermentUpdate(batch)
-check("hours spent unloaded count on return", math.abs(batch.elapsed - 320 * 3600) < 1 or batch.elapsed == ALCOHOL_TIME)
-hours = hours + 500
-V.advance(V.getLedger(), hours, 22)
-V.onFermentUpdate(batch)
-check("and it stops at done", batch.elapsed == ALCOHOL_TIME)
+local finished = V.advanceVessel(batch, hours, "Open", nil, "Open")
+check("hours spent unloaded count on return, and a done batch goes into the Fermented tank", finished
+    and batch.run == nil and batch.fermentedMl == V.fermentedMl(20000))
+check("a batch loses its lees", V.fermentedMl(20000) == math.floor(20000 * V.FERMENT_YIELD + 0.5))
 
 local oldLedger = { lastHour = hours, alcoholicOpen = 0, alcoholicSheltered = 0, aceticOpen = 0, aceticSheltered = 0, heat = 0 }
 store.ledger, oldLedger = oldLedger, store.ledger
@@ -91,55 +96,63 @@ V.fillLedger()
 check("a save from before malting gets its totals", V.getLedger().maltingOpen == 0)
 store.ledger = oldLedger
 
-local smooth = recipeData(ALCOHOL_TIME)
-V.onFermentStart(smooth)
-runHours(22, 1, smooth, V.onFermentUpdate)
-local atRecord = smooth.elapsed
-hours = hours + 0.1
-V.onFermentUpdate(smooth)
-check("the bar keeps moving between weather records", math.abs(smooth.elapsed - atRecord - 360) < 0.01)
-local doneBefore = smooth.modData.workHours
-hours = hours + 0.1
-V.onFermentUpdate(smooth)
-check("without counting that time twice", smooth.modData.workHours == doneBefore)
-hours = hours + 0.8
-V.advance(V.getLedger(), hours, 22)
-V.onFermentUpdate(smooth)
-check("and the next record lands where the bar already was", math.abs(smooth.elapsed - 2 * 3600) < 0.01)
+local chilled = newBatch(10, "Open")
+runHours(0, 100, chilled, "Open")
+check("cold barely moves a batch", V.runProgress(chilled.run) <= 100 * 0.06 / V.ALCOHOLIC_HOURS)
 
-local chilled = recipeData(ALCOHOL_TIME)
-V.onFermentStart(chilled)
-runHours(0, 100, chilled, V.onFermentUpdate)
-check("cold barely moves a batch", chilled.elapsed <= 100 * 3600 * 0.06)
-
-local roofed = recipeData(ALCOHOL_TIME)
-V.onFermentStart(roofed)
-roofed.modData.place = "Sheltered"
+local roofed = newBatch(10, "Sheltered")
 V.getLedger().seasonTemperature, V.getLedger().threeDayTemperature = 20, 20
-runHours(-5, 10, roofed, V.onFermentUpdate)
-check("a vessel in a shut room goes by the room's three-day mean, not the frost", roofed.elapsed > 10 * 3600 * 0.5)
+runHours(-5, 10, roofed, "Sheltered")
+check("a vessel in a shut room goes by the room's mean, not the frost", roofed.run.work.age > 10 * 0.5)
 
-local pooled = recipeData(ALCOHOL_TIME)
-pooled.modData = { workHours = 500, place = "Fireside", fireUntil = 9, placeWithoutFire = "Open" }
-V.onFermentStart(pooled)
-check("a reused recipe object starts clean", pooled.modData.workHours == 0
-    and pooled.modData.place == nil and pooled.modData.fireUntil == nil and pooled.modData.placeWithoutFire == nil)
+-- Pitching, topping up, drawing off
+local vessel = { wortMl = 15000, fermentedMl = 0 }
+V.ageTank(vessel, vessel.wortMl, "Open", hours)
+check("a batch can be pitched on a bucket or more", V.pitchRefusal(vessel, hours, "Open") == nil)
+V.pitch(vessel, hours, "Open")
+check("one bucket of 15 L goes in, the rest waits with its age", vessel.run.ml == 10000 and vessel.wortMl == 5000
+    and vessel.tpFluidAge ~= nil)
+check("a running batch refuses another", V.pitchRefusal(vessel, hours, "Open") == "IGUI_TraditionalPreservationVinegar_InUse")
+vessel.run.work.age = V.ALCOHOLIC_HOURS / 2
+check("wort poured in while a batch works goes into it, up to 20 L", V.wortRoom(vessel) == 10000
+    and V.pourWortIn(vessel, 12000, nil, "Open") == 10000 and vessel.run.ml == 20000 and vessel.wortMl == 5000)
+check("and the batch's progress is shared out over the new volume", math.abs(V.runProgress(vessel.run) - 0.25) < 1e-9)
+check("a full batch takes no more", V.wortRoom(vessel) == 0 and V.pourWortIn(vessel, 1000, nil, "Open") == 0)
+check("the waiting wort is drawn off as far as the container holds", V.drawOffWort(vessel, 3000, "Open", hours) == 3000
+    and vessel.wortMl == 2000 and vessel.tpFluidAge ~= nil)
+check("and the last of it takes its age along", V.drawOffWort(vessel, 3000, "Open", hours) == 2000
+    and vessel.wortMl == 0 and vessel.tpFluidAge == nil)
+vessel.fermentedMl = 1000
+V.pourAwayBatch(vessel)
+check("pouring the batch away leaves the fermented wort", vessel.run == nil and vessel.fermentedMl == 1000
+    and V.vesselHolds(vessel))
+check("an idle vessel takes wort in its tank, up to 20 L", V.pourWortIn(vessel, 25000, nil, "Open") == V.TANK_ML
+    and vessel.wortMl == V.TANK_ML)
+check("fermented wort must be drawn off before the next batch", V.pitchRefusal(vessel, hours, "Open")
+    == "IGUI_TraditionalPreservationVinegar_DrawOffFirst")
+check("drawn off as far as there is", V.drawOff(vessel, 5000) == 1000 and vessel.fermentedMl == 0)
+V.pourAwayWort(vessel)
+check("an emptied vessel holds nothing and asks for wort", not V.vesselHolds(vessel)
+    and V.pitchRefusal(vessel, hours, "Open") == "IGUI_TraditionalPreservationVinegar_NeedsWort")
+vessel.wortMl = 10000
+V.ageTank(vessel, vessel.wortMl, "Open", hours)
+vessel.tpFluidAge.age = V.WORT_SOUR_HOURS
+check("sour wort can't be pitched", V.pitchRefusal(vessel, hours, "Open") == "IGUI_TraditionalPreservationVinegar_WortSour")
 
--- The popup
+local function yeast(uses)
+    return { getFullType = function() return "Base.Yeast" end, getCurrentUsesFloat = function() return uses end }
+end
+check("a batch takes a full packet of yeast", V.isFullYeast(yeast(1)) and not V.isFullYeast(yeast(0.5)))
+
+-- The status line and Vessel Info
 local ledger = V.newLedger(0)
-ledger.temperature, ledger.seasonTemperature = 22, 15
-local status = V.batchStatus("alcoholic", { workHours = 120 }, 240, ledger)
-check("the popup shows progress", status.progress == 0.5)
+local status = V.runStatus({ run = { ml = 10000, work = { age = 120 } } }, 22)
+check("the batch shows progress", status.progress == 0.5 and status.ml == 10000)
 check("and the time left at the best temperature", status.hoursLeft == 120 and status.rate == 1)
-ledger.temperature = 5
-status = V.batchStatus("alcoholic", { workHours = 120 }, 240, ledger)
-check("the cold stretches the time left", status.hoursLeft > 2000 and status.temperature == 5)
-status = V.batchStatus("alcoholic", { workHours = 120, place = "Sheltered" }, 240, ledger)
-check("a sheltered batch goes by the season, a room's", status.temperature == Weather.roomTemperature(15) and status.place == "Sheltered")
-ledger.temperature = 25
-check("the floor goes by its own temperature range", V.batchStatus("malting", { workHours = 60 }, 120, ledger).rate < 0.7)
-check("a run saved with heat hours loses nothing (heat harm is gone, 0.2.10)", V.fermentedMl(20000) == math.floor(20000 * V.FERMENT_YIELD + 0.5)
-    and V.batchStatus("alcoholic", { workHours = 0, heat = 10 }, 240, ledger).heatLoss == nil)
+status = V.runStatus({ run = { ml = 10000, work = { age = 120 } } }, 5)
+check("the cold stretches the time left", status.hoursLeft > 2000)
+check("frozen it waits", V.runStatus({ run = { ml = 10000, work = { age = 120 } } }, -5).hoursLeft == nil)
+check("no batch, no status", V.runStatus({ wortMl = 0, fermentedMl = 0 }, 22) == nil)
 
 -- Liquids
 local function container(name, amount, capacity, other)
@@ -280,14 +293,12 @@ hearthside.fireUntil, hearthside.placeWithoutFire = hours + 12, "Open"
 sourHours(hearthside, 24, -15, Fire.PLACE)
 check("a cask by a fire in a frost sours 12 hours at 28 C, then barely",
     math.abs(hearthside.strength - 12 * V.aceticRate(Fire.FIRE_C) / V.ACETIC_HOURS) < 0.002)
-local downstairs = recipeData(ALCOHOL_TIME)
-V.onFermentStart(downstairs)
-downstairs.modData.place = "Basement"
+local downstairs = newBatch(10, "Basement")
 V.getLedger().seasonTemperature = 25
-runHours(-10, 10, downstairs, V.onFermentUpdate)
+runHours(-10, 10, downstairs, "Basement")
 check("a basement vessel in summer works through a cold snap",
-    downstairs.elapsed >= 10 * 3600 * V.alcoholicRate(V.placeTemperature(V.getLedger(), "Basement")) - 1
-    and downstairs.elapsed > 2 * 10 * 3600 * V.alcoholicRate(-10))
+    downstairs.run.work.age >= 10 * V.alcoholicRate(V.placeTemperature(V.getLedger(), "Basement")) - 0.01
+    and downstairs.run.work.age > 2 * 10 * V.alcoholicRate(-10))
 
 local caskStatus = V.caskStatus({ ml = 20000, strength = 0.5 }, { temperature = 25 }, "Open")
 check("the menu says how long to full strength", math.abs(caskStatus.hoursLeft - V.ACETIC_HOURS / 2) < 0.001)
@@ -333,17 +344,14 @@ check("then it can be split", V.canSplitMother(young) and V.nextLayerMl(young) =
 
 -- The hose
 local function tank(litres)
-    local tank = { litres = litres }
-    function tank:getAmount() return self.litres end
-    function tank:removeFluid(amount) self.litres = self.litres - amount end
-    return tank
+    return { fermentedMl = litres * 1000 }
 end
 local roomy, out = { ml = 5000, strength = 1, mother = true }, tank(19)
-check("the hose pumps the amount asked for", V.pumpToCask(roomy, out, 10000) == 10000 and roomy.ml == 15000 and math.abs(out.litres - 9) < 1e-9)
+check("the hose pumps the amount asked for", V.pumpToCask(roomy, out, 10000) == 10000 and roomy.ml == 15000 and out.fermentedMl == 9000)
 check("and it thins the pool like any pour", math.abs(roomy.strength - 5 / 15) < 1e-9)
-check("no more than the tank holds", V.pumpToCask(roomy, out, 20000) == 9000 and math.abs(out.litres) < 1e-9)
+check("no more than the tank holds", V.pumpToCask(roomy, out, 20000) == 9000 and out.fermentedMl == 0)
 local nearlyFull, rest = { ml = 25000, strength = 1 }, tank(19)
-check("no more than the cask has room for", V.pumpToCask(nearlyFull, rest, 19000) == 5000 and nearlyFull.ml == 30000 and math.abs(rest.litres - 14) < 1e-9)
+check("no more than the cask has room for", V.pumpToCask(nearlyFull, rest, 19000) == 5000 and nearlyFull.ml == 30000 and rest.fermentedMl == 14000)
 check("an empty tank pumps nothing", V.pumpToCask({ ml = 0, strength = 0 }, tank(0), 5000) == 0)
 check("nor do dregs", V.pumpToCask({ ml = 0, strength = 0 }, tank(0.03), 5000) == 0)
 local function choices(caskMl, available)
@@ -498,13 +506,9 @@ local groups = V.groupBottles({ water, crafted, water2 })
 check("bottles group by kind, in name order", #groups == 2 and groups[1].name == "Glass Bottle" and groups[2].name == "Water Bottle")
 check("and each group holds its bottles", #groups[1].items == 1 and #groups[2].items == 2)
 
--- Station inputs
-check("the vessel's slot takes a packet of yeast", V.inputRefusal("vessel", "Base.Yeast") == nil)
-check("and nothing else", V.inputRefusal("vessel", "Base.BucketEmpty") ~= nil)
-
 -- Sandbox
 onInit()
-check("the default vessel run is 10 days", loaded["TraditionalPreservationVinegar.FermentWort"]:find("864000", 1, true) ~= nil)
+check("the default vessel batch is 10 days", V.ALCOHOLIC_HOURS == 240)
 -- Wort that sours
 check("wort: 2 days at 20 C", V.WORT_SOUR_HOURS / V.wortRate(20) == 48)
 check("wort: 1 day at 30 C", V.WORT_SOUR_HOURS / V.wortRate(30) == 24)
@@ -541,7 +545,7 @@ V.WORT_SOURS = true
 
 SandboxVars = { TraditionalPreservationVinegar = { MaltingDays = 3, AlcoholicDays = 5, AceticDays = 14, CultureBonus = 50, TemperatureSensitivity = 1, WortSours = false } }
 onInit()
-check("the sandbox sets the vessel time", loaded["TraditionalPreservationVinegar.FermentWort"]:find("432000", 1, true) ~= nil)
+check("the sandbox sets the vessel time", V.ALCOHOLIC_HOURS == 120)
 check("the sandbox sets the malting time", V.MALTING_HOURS == 72)
 check("and the cask's days, bonus and sensitivity", V.ACETIC_HOURS == 336 and V.CULTURE_BONUS == 0.5 and V.SENSITIVITY == 0)
 check("Normal effort is the default, half as long again as Light", params["TraditionalPreservationVinegar.GreenMalt"] == "MinutesToCook = 180")
@@ -557,7 +561,7 @@ check("and Light keeps the base times", params["TraditionalPreservationVinegar.B
 
 V.TEST_HOURS = 1
 onInit()
-check("test timers set every recipe to an hour", V.MALTING_HOURS == 1 and loaded["TraditionalPreservationVinegar.FermentWort"]:find("3600", 1, true) ~= nil)
+check("test timers set every stage to an hour", V.MALTING_HOURS == 1 and V.ALCOHOLIC_HOURS == 1)
 check("and the cask to an hour", V.ACETIC_HOURS == 1)
 check("and ignore the weather", V.aceticRate(-20) == 1)
 

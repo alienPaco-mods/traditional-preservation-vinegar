@@ -35,7 +35,7 @@ From threshed grain, the first vinegar takes about 55 to 60 days in good weather
 | 4 | Mash Malt | Crafting menu | 1 Malt, a metal bucket with 10 L water | Bucket of Mash | a craft |
 | 5 | Heat the mash | Fire or oven | Bucket of Mash | Bucket of Prepared Mash | 1.5 hours* |
 | 6 | Strain Mash | Crafting menu | Prepared Mash, a cloth (kept) | 10 L Wort in the bucket, Spent Grain | a craft |
-| 7 | Ferment Wort | Fermentation Vessel | 10 or 20 L Wort, 1 packet of Yeast | 95% as Fermented Wort | 10 days |
+| 7 | Pitch Yeast | Fermentation Vessel | 10 or 20 L Wort, 1 packet of Yeast | 95% as Fermented Wort | 10 days |
 | 8 | Pour into the cask | By hand | Fermented Wort | joins the cask's pool | |
 | 9 | Sour | Orléans Vinegar Cask | | the pool sours to 100% | 35 days, 26 with a mother |
 | 10 | Bottle Vinegar | Cask's right-click menu | 1 L and an empty bottle | 1 vanilla Vinegar | a moment |
@@ -111,27 +111,27 @@ Wort and Fermented Wort are real liquids, added by this mod, not vanilla ones. T
 
 ### 7. Fermentation Vessel
 
-The vessel's window has a slot for yeast and two tanks: **Wort** on the left and **Fermented** on the right.
+Everything is in the vessel's right-click **Fermentation Vessel** submenu, and **Vessel Info** (in the submenu, and at the bottom of the main menu) shows the Wort tank, the batch and the Fermented tank as bars, with the place, the working rate and a **Pitch Yeast** button.
 
-1. Right-click the vessel and use **Pour Wort**. Pick a container, or All. Only containers holding nothing but wort are offered.
-2. Put **one full packet of vanilla Yeast** in the slot. A part-used packet is refused, as the run uses the whole packet.
-3. Press **Craft** on **Ferment Wort**.
+1. **Pour Wort**: pick a container, or All. Only containers holding nothing but wort are offered. The Wort tank holds 20 L.
+2. **Pitch Yeast** with **one full packet of vanilla Yeast** on you. A part-used packet won't do, as the batch uses the whole packet.
 
-A run takes whole buckets from the tank: **10 L** with one bucket's worth in, **20 L** with two. Anything over a whole bucket stays in the tank for later. It takes 10 days at the best temperature (18 to 25 C) and gives back 95%, so 9.5 or 19 L, as the lees stay behind. One packet either way, so two buckets is the efficient run and one bucket the quick one.
+A batch takes whole buckets from the tank: **10 L** with one bucket's worth in, **20 L** with two. Anything over a whole bucket stays in the tank. It takes 10 days at the best temperature (18 to 25 C) and gives back 95%, so 9.5 or 19 L, as the lees stay behind. One packet either way, so two buckets is the efficient batch and one bucket the quick one.
 
-Craft won't start, and says why, when:
-- the vessel is already working,
+Pitch Yeast is greyed out, and says why, when:
+- a batch is already working,
 - there is less than 10 L of wort in the tank,
 - the tank's wort has soured (use **Pour Away the Wort**),
-- the Fermented tank still holds the last batch.
+- the Fermented tank still holds the last batch,
+- you carry no full packet of yeast.
 
-When a run starts, its wort leaves the Wort tank and is held by the run. While it ferments, the Wort column reads **(Fermenting)** under its title and its bar shows the run's wort, and the info row reads **Wort (Fermenting)**; the batch's hover shows the litres too.
+**Top Up the Batch**: while a batch works, Pour Wort becomes Top Up the Batch, and the wort goes into the batch, up to 20 L. The batch slows by the new wort's share: 10 L into a 10 L batch half done makes 20 L a quarter done.
 
-**Cancel** stops the run and gives everything back: the wort to the tank, with the age it had, and the yeast to the slot.
+**Pour Away the Batch** (last in the submenu, while a batch works) asks yes or no first: the yeast is in it, so nothing comes back. Fermented wort is never poured away, only drawn off or pumped.
 
-The vessel's info block shows how long the tank's wort keeps where the vessel stands ("sours in about 2 days"), or that it has soured. **Pour Away the Wort** (right-click, whenever the tank holds wort and no run is going) empties the Wort tank onto the ground.
+Waiting wort in the tank sours as it does in a bucket; Vessel Info's Wort bar says how long it keeps where the vessel stands ("sours in about 2 days"), or that it has soured. **Draw Off Wort** takes it back out into empty containers, keeping its age. **Pour Away the Wort** empties the tank onto the ground.
 
-When it finishes, right-click and use **Draw Off Fermented Wort**. Only completely empty containers are offered, so nothing is ever topped up into a mixture.
+When the batch finishes, use **Draw Off Fermented Wort**. Only completely empty containers are offered, so nothing is ever topped up into a mixture. A vessel holding anything can't be picked up.
 
 ### 8–9. Orléans Vinegar Cask
 
@@ -379,7 +379,7 @@ The real-world claims the design rests on, and the simplifications made for play
 **Simplifications made for play**
 - Crushing the malt is folded into Mash Malt, and steeping into the Malting Floor's time.
 - 24 seeds per bucket, about 0.5 kg of grain for 10 L, is a much weaker wort than a real one (roughly 1–2 kg per 10 L). It was chosen so a batch needs about 15 barley plants, one per bottle.
-- A whole yeast packet per run, as a station slot can't take part of one.
+- A whole yeast packet per batch, whatever its size.
 - Fermentation yields 95% by volume (lees), and souring loses about a tenth overall.
 - Wort sours on one curve (2 days at 20 C, 1 at 30 C, about 5 at 13 C, stopped at 0 C) and goes straight to Wort (Soured); real wild souring varies with the grain and the vessel, and spoils further into mould, which is left out.
 - The mother grows one layer per 15 L of vinegar made, and a split always gives one layer.
@@ -393,9 +393,8 @@ The real-world claims the design rests on, and the simplifications made for play
 
 ## Engineering notes
 
-- The Wort tank's age: the tank is a station resource, not an item, so FluidAgeing can't keep a record on it. The record sits on the vessel's modData under FluidAgeing's key (`V.ageTank`, `V.tankAge`), the tank's wort is never renamed (the tank only takes wort), and the vessel checks the record instead (`V.isSour`). A run keeps the age it took (`run.wortAge`) for a cancel.
-- The vessel's liquid is handled by the mod, not the engine. The engine doesn't hold a liquid recipe to its amounts, and runs whichever recipe it likes. So Ferment Wort takes only the yeast as a recipe input and gives a marker item, the world code takes 10 or 20 L from the tank when it sees the run start, and turns the marker into fermented wort in the other tank when the run ends.
-- A station slot consumes a drainable item whole, which is why a run takes a full yeast packet rather than 5 uses.
+- The vessel has no crafting window: the Wort tank, the batch and the Fermented tank are its record in its `movableData` (`tpvVessel`, `TraditionalPreservationVinegarVessel.lua`), stepped by the World. The batch's work is a FluidAgeing age on the alcoholic ledger, as the floor's heaps are on the malting one.
+- The Wort tank's age: the tank is not an item, so FluidAgeing can't keep a record on it. The record sits on the vessel's record under FluidAgeing's key (`V.ageTank`), the tank's wort is never renamed (the tank only takes wort), and the vessel checks the record instead (`V.isSour`). Wort drawn off takes the age with it.
 - The cask's pool, souring, mother and layers live in the cask's `movableData`, which vanilla copies onto the item when a station is picked up and back when it's placed. So the mother moves with the cask and can't be duplicated.
 - Weather is kept as running totals in global ModData, per stage and place, so stations catch up exactly when their area loads again.
 - Station sprites are layered by the mod rather than with `SpriteOverlayConfig`, which can only show one overlay for a first batch.
@@ -412,7 +411,7 @@ In debug mode, `TPV.help()` in the Lua console lists commands for testing this m
 - Mash Malt takes a metal bucket, plain or forged (not a wooden one), and Strain Mash gives back the kind that went in.
 - The bottle list is written out, as no tag covers plastic bottles, so bottles from other mods aren't accepted.
 - Apples, grapes and other fruit aren't used, as vanilla can't grow apples or grapes.
-- Several vanilla UI functions are wrapped (the station window, slot adds, the Craft button, the pick-up cursor and the station's right-click entry), so compare them with vanilla after a game update.
+- The pick-up cursor is wrapped through TP Core (`UI.keepInPlace`), so compare it with vanilla after a game update.
 - The tiledef number 5130 must be unique among your active mods.
 - Multiplayer is not supported. This mod is singleplayer only for now.
 

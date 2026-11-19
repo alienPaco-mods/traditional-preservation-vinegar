@@ -8,17 +8,19 @@ These console commands load only when the game runs in **debug mode** (launch op
 |---|---|
 | `TPV.weather()` | The temperature in each place (open air, under an open roof, indoors, a basement, by a fire, by banked embers), and how fast malting, fermenting, souring and wort's own souring (`wort`) work there. By a fire counts by the clock, so `TPV.age` doesn't move it. |
 | `TPV.here()` | Which kind of place you're standing in. |
-| `TPV.age(hours)` | Gives every floor, vessel and cask this many hours of perfect weather. `TPV.age(120)` finishes every heap on a Malting Floor, 240 a vessel run, 840 a cask from fresh. |
-| `TPV.fast(hours)` | Test timers: every floor heap, vessel and cask run takes this many hours, with temperature ignored (heaps already down too). `TPV.fast()` turns them off again. It replaces editing `V.TEST_HOURS`. |
+| `TPV.age(hours)` | Gives every floor, vessel and cask this many hours of perfect weather. `TPV.age(120)` finishes every heap on a Malting Floor, 240 a vessel batch, 840 a cask from fresh. |
+| `TPV.fast(hours)` | Test timers: every floor heap, vessel batch and cask run takes this many hours, with temperature ignored (heaps already down too). `TPV.fast()` turns them off again. It replaces editing `V.TEST_HOURS`. |
 | `TPV.timers()` | The hours each stage takes right now, the brewing effort and the temperature sensitivity. |
 | `TPV.floor()` | The nearest Malting Floor (within 2 squares): each heap's state, progress and hours, and how old its Green Malt is once done. |
 | `TPV.cask()` | The nearest cask (within 2 squares): litres, souring, bottles ready, mother, layers, litres to the next layer, starter bonus and hose. |
 | `TPV.setCask(litres, percent)` | Sets the nearest cask's pool, e.g. `TPV.setCask(16, 100)` for a ready cask. |
 | `TPV.mother(layers)` | Gives the nearest cask a mother with that many layers. `TPV.mother(2)` lets you test Split Mother, and `TPV.mother(0)` removes it. |
-| `TPV.wort(litres)` | Fills the nearest vessel's Wort tank (20 if you leave the litres out). |
-| `TPV.fermented(litres)` | Fills the nearest vessel's Fermented tank, to test drawing off and the hose. |
-| `TPV.ageWort(hours)` | Adds this many hours at 20 C to every wort you carry and to the nearest vessel's Wort tank. `TPV.ageWort(48)` (the default) sours it: carried wort turns to Sour Wort at once, and the vessel then refuses to start. |
-| `TPV.kit(kind)` | The things a test needs: `"build"` (hammer, saw, planks, nails, twine, a jar and ripped sheets for all three stations), `"malt"` (24 barley seeds, a bucket of water, an empty bucket, ripped sheets), `"ferment"` (a bucket of wort and 2 yeast), `"cask"` (hose, pliers, a Mother of Vinegar, an empty jar, 3 empty Crafted Bottles), or `"all"`. `TPV.kit()` lists them. |
+| `TPV.vessel()` | The nearest vessel: the waiting wort and its hours to souring, the batch (litres, progress, hours), the fermented wort and the hose. |
+| `TPV.wort(litres)` | Sets the nearest vessel's Wort tank to this much fresh wort (20 if you leave the litres out). |
+| `TPV.batch(litres, pct)` | Sets the nearest vessel's batch, as if pitched and worked this far: `TPV.batch(10, 50)` is 10 L half done. No yeast needed. `TPV.batch(0)` takes it away. |
+| `TPV.fermented(litres)` | Sets the nearest vessel's Fermented tank, to test drawing off and the hose. |
+| `TPV.ageWort(hours)` | Adds this many hours at 20 C to every wort you carry and to the nearest vessel's Wort tank. `TPV.ageWort(48)` (the default) sours it: carried wort turns to Sour Wort at once, and the vessel then refuses Pitch Yeast. |
+| `TPV.kit(kind)` | The things a test needs: `"build"` (hammer, saw, planks, nails, twine, a jar and ripped sheets for all three stations), `"malt"` (24 barley seeds, a bucket of water, an empty bucket, ripped sheets), `"ferment"` (2 buckets of wort, 2 yeast and an empty bucket: pitch on one, top up with the other, draw off into the third), `"cask"` (hose, pliers, a Mother of Vinegar, an empty jar, 3 empty Crafted Bottles), or `"all"`. `TPV.kit()` lists them. |
 | `TPV.give(name, n)` | Spawns mod items such as `Malt` or `MotherOfVinegar`, or any full type such as `Base.Yeast` or `Base.RubberHose`. `TPV.give()` lists the names. |
 
 Debug mode also adds **[Debug] Fill with Wort** and **[Debug] Fill with Fermented Wort** to a container's right-click menu.

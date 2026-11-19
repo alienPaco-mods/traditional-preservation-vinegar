@@ -66,37 +66,6 @@ module TraditionalPreservationVinegar
         }
     }
 
-    /* A stand-in for a finished vessel run. The world code swaps it for fermented wort in the tank. */
-    item FermentedBatch
-    {
-        DisplayCategory = Food,
-        ItemType = base:normal,
-        Weight = 0.1,
-        Icon = Yeast,
-        WorldStaticModel = Yeast,
-    }
-
-    /* time is overwritten from ALCOHOLIC_HOURS in TraditionalPreservationVinegar.lua. The engine can't
-       hold a liquid recipe to its amounts, so the world code takes 10 or 20 L of wort from the tank when
-       the run starts and puts back 95% as fermented wort when the marker comes out. A station slot takes a
-       drainable whole, so a run uses one full packet of yeast. */
-    craftRecipe FermentWort
-    {
-        time = 864000,
-        Tags = FermentationVessel,
-        category = Cooking,
-        OnStart = TraditionalPreservationVinegar.onFermentStart,
-        OnUpdate = TraditionalPreservationVinegar.onFermentUpdate,
-        inputs
-        {
-            item 1 [Base.Yeast] flags[ItemCount] mode:destroy,
-        }
-        outputs
-        {
-            item 1 TraditionalPreservationVinegar.FermentedBatch,
-        }
-    }
-
     /* OnTest wants an empty bottle and a cask with vinegar in reach. OnCreate takes the vinegar from the cask. */
     craftRecipe BottleVinegar
     {

@@ -1,4 +1,5 @@
--- Checks the world file's stations and the batch popup with stand-ins for the engine. Run from the mod folder:
+-- Checks the world file's stations, the weather and the hose with stand-ins for the engine (the vessel's own record,
+-- menu and window: test_vessel.lua). Run from the mod folder:
 -- luajit tests/test_stations.lua
 local H = dofile((os.getenv("TPCORE") or "../TraditionalPreservationCore") .. "/tests/harness.lua")
 local check, near, list = H.check, H.near, H.list
@@ -11,7 +12,7 @@ H.installGetText()
 -- The mod's own modules and TP Core's load for real, vanilla's are left out.
 local realRequire = require
 require = function(name)
-    if name:find("^TraditionalPreservationVinegar/") or name:find("^TraditionalPreservationCore/") then
+    if name:find("^TraditionalPreservation") then
         return realRequire(name)
     end
 end
@@ -19,11 +20,6 @@ end
 -- Engine stand-ins
 local function noop() end
 function isClient() return false end
-ComponentType = { Resources = "Resources", CraftLogic = "CraftLogic" }
-ResourceIO = { Input = "Input", Output = "Output" }
-ResourceType = { Item = "Item", Fluid = "Fluid" }
-ArrayList = { new = function() return list({}) end }
-Fluid = { Get = function() return nil end }
 function getPlayer() return {} end
 local temperature = 25
 function getClimateManager()
@@ -35,11 +31,6 @@ local cellSquares = {}
 function getCell()
     return { getGridSquare = function(_, x, y, z) return cellSquares[x .. "," .. y .. "," .. z] end }
 end
-CraftLogicUILogic = {
-    new = function(_, _, logic)
-        return { getCraftLogic = function() return logic end, getItemsInProgress = function() return logic.inProgress or {} end }
-    end,
-}
 ScriptManager = { instance = { getCraftRecipe = function() return { Load = noop } end, getItem = function() return { DoParam = noop } end } }
 
 local PREFIX = "traditionalpreservationvinegar_01_"
@@ -57,27 +48,11 @@ local function square(x, z)
     return s
 end
 
-local function tank(litres)
-    local container = { litres = litres }
-    function container:getAmount() return self.litres end
-    function container:getCapacity() return 20 end
-    return { getFluidContainer = function() return container end }
-end
-
--- A station on its own square, showing this sprite index. A vessel gets empty tanks and an idle run.
+-- A station on its own square, showing this sprite index.
 local function station(index, x, outside)
     local station = { square = square(x, 0), modData = {}, sprites = {}, clears = 0 }
     station.square.objects = { station }
-    local logic = {}
-    function logic:isRunning() return false end
-    function logic:getInputsGroupName() return "in" end
-    function logic:getOutputsGroupName() return "out" end
-    local resources = {}
-    function resources:getResourcesFromGroup(_, _, io, resourceType)
-        if resourceType == "Fluid" then return list({ tank(0) }) end
-        return list({ { getStoredItems = function() return list({}) end } })
-    end
-    function station:getComponent(componentType) return componentType == "Resources" and resources or logic end
+    function station:getComponent() return nil end
     function station:getSprite() return { getName = function() return PREFIX .. index end } end
     function station:getName() return nil end
     function station:getSquare() return self.square end
@@ -149,111 +124,5 @@ cask.square.objects = {}
 tick()
 check("a hose to a station that is gone comes off", V.hoseLink(vessel) == nil and dropped[1] == V.HOSE_ITEM
     and #vessel.sprites == 0)
-
--- Popup
-ISCraftLogicPanel = { ItemSlotAddItems = noop, createChildren = noop }
-local crafted = 0
-ISWidgetCraftLogicControl = { startCraft = function() crafted = crafted + 1 end }
-ISWidgetCraftLogicInputControl = { updateOutputItems = noop }
-ISItemSlot = { defaultVerifyItem = noop, onMouseUp = noop }
-ISMoveableSpriteProps = { canPickUpMoveable = noop, getInfoPanelFlagsPerTile = noop }
-ISWidgetCraftLogicOutputProgress = { updateProgressItems = function(self) self.vanillaRan = true end }
--- Cask Info derives TP Core's InfoWindow, which derives this.
-local function class()
-    return { derive = function() return class() end }
-end
-ISCollapsableWindow = class()
--- What TP Core's StationInfo derives from; the stations' provider is kept here instead of hooked.
-ISPanel = H.class("ISPanel")
-local stationInfo
-require("TraditionalPreservationCore/StationInfo").add = function(provider) stationInfo = provider end
-ISWorldMenuElements = { ContextEntity = noop }
-dofile("42/media/lua/client/TraditionalPreservationVinegarUI.lua")
-
-local function recipeData(name, hours)
-    local craftRecipeData = { modData = {}, elapsed = 0 }
-    function craftRecipeData:getModData() return self.modData end
-    function craftRecipeData:setElapsedTime(elapsedTime) self.elapsed = elapsedTime end
-    function craftRecipeData:getRecipe()
-        return { getTime = function() return hours * 3600 end, getName = function() return "TraditionalPreservationVinegar." .. name end }
-    end
-    return craftRecipeData
-end
-
-local batch = recipeData("FermentWort", V.ALCOHOLIC_HOURS)
-V.onFermentStart(batch)
-batch.modData.place = "Open"
-temperature = 38
-weather(210)
-V.onFermentUpdate(batch)
-vessel.modData.vinegarRun = { ml = 20000, heat = 0 }
-local slot, other = { craftRecipeData = batch }, { craftRecipeData = recipeData("SteepGrain", 2) }
-local widget = { entity = vessel, progressItems = { getItemSlots = function() return { slot, other } end } }
-ISWidgetCraftLogicOutputProgress.updateProgressItems(widget)
-check("vanilla's list still runs, and only batches get the popup", widget.vanillaRan and slot.drawTooltip and not other.drawTooltip)
-
-local lines = {}
-local tooltip = { width = 0 }
-function tooltip:getFont() end
-function tooltip:DrawText() end
-function tooltip:adjustWidth() end
-function tooltip:getLineSpacing() return 10 end
-function tooltip:beginLayout()
-    return {
-        addItem = function()
-            local item = {}
-            function item:setLabel(text) self.label = text end
-            function item:setValue(text, r, g, b) self.value, self.colour = text, { r, g, b } end
-            table.insert(lines, item)
-            return item
-        end,
-        render = function() return 60 end,
-    }
-end
-function tooltip:endLayout() end
-function tooltip:setHeight() end
-function tooltip:getWidth() return self.width end
-function tooltip:setWidth(width) self.width = width end
-slot.drawTooltip(slot, tooltip)
-local shown = {}
-for _, item in ipairs(lines) do table.insert(shown, item.label .. " " .. item.value) end
--- 10 hours at 38 C is 22% speed: 2.2 of 240 done, 237.8 left is 1081 hours. Every one of them over 35 C costs 1%.
-check("the popup's lines", table.concat(shown, " | ") == "Progress: 1% | Fermenting: 20.0 L of wort | "
-    .. "Time Remaining: 45d 1h, if the temperature holds | Temperature: 38 C (Open air) | Working Rate: 22%")
-check("a slow rate is coloured, and no heat damage line", lines[5].colour[2] == 0.7 and lines[1].colour[2] == 1 and #lines == 5)
-check("and no translator warnings", #H.textWarnings == 0)
-check("the popup is wide enough", tooltip.width == 150)
-
--- The info block in the vessel's window, for the run in the open at 38 C: its tanks as rows (the run's wort in the
--- Wort row, as Wort (Fermenting)), the run's bar.
-local logic = vessel:getComponent("CraftLogic")
-logic.inProgress = { [batch] = { yeast = 1 } }
-function logic:getProgress() return 0.01 end
-local block = stationInfo(vessel)
-local rows = {}
-for _, row in ipairs(block.rows) do table.insert(rows, getText(row[1]) .. " " .. row[2]) end
-check("the vessel's rows", table.concat(rows, " | ") == "Place Open air | Temperature 38 C | Working rate 22% | "
-    .. "Wort (Fermenting) 20.0 of 20.0 L | Fermented 0.0 of 20.0 L")
-check("the run's bar, slow", #block.bars == 1 and block.bars[1].text == "Wort: 20.0 L"
-    and block.bars[1].progressText == "1%, 45 d 1 h left" and block.bars[1].colour[1] == 0.75)
-check("and the weather note", table.concat(block.notes, " | ") == "Times left assume the temperature holds as it is now.")
-local floor = station(V.FLOOR_SPRITE, 3, false)
-check("the floor has no crafting window block", stationInfo(floor) == nil)
-check("the cask has no crafting window block", stationInfo(cask) == nil)
-logic.inProgress = nil
-
--- A batch that has just finished hands its data back to the engine's pool before its slot goes.
-function batch:getRecipe() return nil end
-lines = {}
-slot.drawTooltip(slot, tooltip)
-check("a batch that has just finished draws nothing", #lines == 0)
-
--- Craft on the vessel says why it can't run (TP Core's UI.craftRefusal, a layer on the one wrap of startCraft).
-local halos = {}
-HaloTextHelper = { addBadText = function(_, text) table.insert(halos, text) end }
-ISWidgetCraftLogicControl.startCraft({ entity = vessel, player = "player" })
-check("Craft on a vessel with no wort says so and doesn't start", halos[1] == getText("IGUI_TraditionalPreservationVinegar_NeedsWort") and crafted == 0)
-ISWidgetCraftLogicControl.startCraft({ entity = floor, player = "player" })
-check("any other station crafts as vanilla does", crafted == 1 and #halos == 1)
 
 H.done()

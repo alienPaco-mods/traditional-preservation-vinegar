@@ -27,7 +27,7 @@ Traditional Preservation (Vinegar) requires [b]Traditional Preservation (Core)[/
 [*][b]Mash Malt[/b] (crafting menu): 1 Malt and a metal bucket holding 10 L of water.
 [*][b]Heat the mash[/b] on a fire or in an oven for about 1.5 hours.
 [*][b]Strain Mash[/b] (crafting menu, with a Ripped Sheet or Cheesecloth, kept): the bucket comes back holding 10 L of Wort, plus Spent Grain for the composter or your farm animals. Don't let the wort wait: it sours in about 2 days in a warm room (5 in a cellar), and the vessel won't take sour wort. Mash on the day the vessel is free; Malt keeps.
-[*][b]Fermentation Vessel[/b]: pour in 10 or 20 L of wort, add one full packet of Yeast and press Craft. 10 days at 18 to 25 C gives 95% back as Fermented Wort.
+[*][b]Fermentation Vessel[/b]: pour in 10 or 20 L of wort and pitch one full packet of Yeast. 10 days at 18 to 25 C gives 95% back as Fermented Wort.
 [*][b]Orléans Vinegar Cask[/b]: pour the fermented wort in. The pool sours in 35 days at 20 to 30 C, 26 with a mother.
 [*][b]Bottle Vinegar[/b]: from the cask's right-click menu, 1 L and an empty bottle make one vanilla Vinegar.
 [/olist]
@@ -43,7 +43,7 @@ All three are under Furniture in the Build menu and need a hammer (kept).
 [/list]
 
 [h2]The vessel[/h2]
-The vessel's window has a yeast slot and two tanks, Wort and Fermented. A run takes whole buckets, 10 or 20 L, and one packet of yeast either way, so two buckets is the efficient run. While it ferments the wort is held by the run, and the status line and the batch's hover show how much. Cancel gives back the wort and the yeast. When it's done, Draw Off Fermented Wort into any empty container.
+Everything is in the vessel's right-click menu, and Vessel Info shows the Wort tank, the batch and the Fermented tank as bars. A batch takes whole buckets, 10 or 20 L, and one packet of yeast either way, so two buckets is the efficient batch. Wort poured in while it works tops it up to 20 L, slowing it by the new wort's share. Pour Away the Batch asks first, as the yeast goes with it. When it's done, Draw Off Fermented Wort into any empty container.
 
 [h2]The Orléans cask[/h2]
 The cask is one pool of up to 30 L that you keep going for the whole game. Everything is in its right-click menu.

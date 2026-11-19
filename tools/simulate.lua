@@ -33,14 +33,6 @@ local function hourly(day, h)
     return swing >= 0 and day.mean + (day.high - day.mean) * swing or day.mean + (day.mean - day.low) * swing
 end
 
-local function run(seconds)
-    local craftRecipeData = { modData = {}, elapsed = 0 }
-    function craftRecipeData:getModData() return self.modData end
-    function craftRecipeData:setElapsedTime(elapsedTime) self.elapsed = elapsedTime end
-    function craftRecipeData:getRecipe() return { getTime = function() return seconds end } end
-    return craftRecipeData
-end
-
 -- The first sampled world's calendar year, settled (Weather.settledMeans).
 local function settle(days)
     local year = {}
@@ -75,16 +67,12 @@ local function simulate(days, startIndex, place)
     -- Two vessel runs of 20 L each, back to back; the second starts as soon as the first is drawn off.
     local cask = { ml = 0, strength = 0 }
     V.updateCask(cask, ledger, place)
-    local vesselTank = { litres = 0 }
-    function vesselTank:getAmount() return self.litres end
-    function vesselTank:removeFluid(amount) self.litres = self.litres - amount end
+    local vessel = { wortMl = 0, fermentedMl = 0 }
     local wortIn, bottled, firstBottleDay = 0, 0, nil
     local runsLeft = 2
-    local vessel
     local function startRun()
-        vessel = run(V.ALCOHOLIC_HOURS * 3600)
-        V.onFermentStart(vessel)
-        vessel.modData.place = place
+        V.pourWortIn(vessel, 20000, nil, place)
+        V.pitch(vessel, hour, place)
         wortIn = wortIn + 20000
         runsLeft = runsLeft - 1
     end
@@ -93,22 +81,16 @@ local function simulate(days, startIndex, place)
     while guard < 24 * 400 do
         guard = guard + 1
         if not tick() then return nil, log end
-        if vessel then
-            V.onFermentUpdate(vessel)
-            if vessel.elapsed >= V.ALCOHOLIC_HOURS * 3600 then
-                local made = V.fermentedMl(20000)
-                vesselTank.litres = vesselTank.litres + made / 1000
-                note(string.format("vessel done: %.1f L fermented wort", made / 1000))
-                vessel = nil
-            end
+        if V.advanceVessel(vessel, hour, place, nil, place, nil, ledger) then
+            note(string.format("vessel done: %.1f L fermented wort", vessel.fermentedMl / 1000))
         end
         V.updateCask(cask, ledger, place)
         -- The player pumps a whole batch across once the cask has room for it.
-        local batch = math.floor(vesselTank.litres * 1000 + 0.5)
-        local pumped = V.caskRoom(cask) >= batch and V.pumpToCask(cask, vesselTank, batch) or 0
+        local batch = vessel.fermentedMl
+        local pumped = V.caskRoom(cask) >= batch and V.pumpToCask(cask, vessel, batch) or 0
         if pumped > 0 then
             note(string.format("hose pumped %.1f L, cask now %.1f L at %.0f%%", pumped / 1000, cask.ml / 1000, cask.strength * 100))
-            if runsLeft > 0 and not vessel then startRun() end
+            if runsLeft > 0 and not vessel.run then startRun() end
         end
         if cask.strength >= 1 and cask.ml > BOTTLE_KEEP_ML + V.BOTTLE_ML then
             local count = 0
@@ -116,7 +98,7 @@ local function simulate(days, startIndex, place)
             bottled = bottled + count
             firstBottleDay = firstBottleDay or (hour - (startIndex - 1) * 24) / 24
             note(string.format("bottled %d, %.1f L left as starter, mother layers %d", count, cask.ml / 1000, V.motherLayers(cask)))
-            if runsLeft == 0 and not vessel and vesselTank.litres < 0.05 then break end
+            if runsLeft == 0 and not vessel.run and vessel.fermentedMl < 50 then break end
         end
     end
     local vinegar = bottled + cask.ml / 1000

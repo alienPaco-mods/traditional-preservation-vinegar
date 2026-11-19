@@ -61,7 +61,7 @@ Vanilla vinegar is loot-only, and without it there's no pickling. This mod lets 
 | 4 | Mash Malt (Malt + bucket with 10 L water) | Crafting menu | a craft |
 | 5 | Heat the mash | Fire or oven | 1.5 hours |
 | 6 | Strain Mash (cloth kept) | Crafting menu | a craft → **10 L Wort** + Spent Grain |
-| 7 | Ferment Wort (10 or 20 L + 1 yeast packet) | Fermentation Vessel | 10 days |
+| 7 | Pitch Yeast (10 or 20 L + 1 yeast packet) | Fermentation Vessel | 10 days |
 | 8 | Pour or hose it into the cask | | |
 | 9 | Sour | Orléans Vinegar Cask | 35 days (26 with mother) |
 | 10 | Bottle Vinegar | Cask menu | a moment |
@@ -80,11 +80,11 @@ Vanilla vinegar is loot-only, and without it there's no pickling. This mod lets 
 
 **Don't let the wort wait.** Wort left for the yeast **sours**: in 2 days in a 20 C room, 1 day at 30 C, about 5 in a cool cellar, never while frozen. It turns to **Wort (Soured)**, which you can drink but the vessel won't take. That goes for a bucket, any container, and the vessel's own Wort tank. Mash on the day the vessel is free, and keep your grain as Malt, which never spoils.
 
-> *Margin note:* a real brewer's day runs mash, strain and pitch without a break. Sweet wort is a feast for the lactic bacteria that ride in on the grain, and in a warm room they win within a day or two. Once the yeast is in, the alcohol and the acid it makes keep them out, which is why the wort is safe the moment a run starts.
+> *Margin note:* a real brewer's day runs mash, strain and pitch without a break. Sweet wort is a feast for the lactic bacteria that ride in on the grain, and in a warm room they win within a day or two. Once the yeast is in, the alcohol and the acid it makes keep them out, which is why the wort is safe the moment a batch starts.
 
-**Fermenting.** Right-click the vessel and **Pour Wort**. The vessel's window has a tank for the wort and one for what comes out, and says where it stands and how fast it is working. Put **one full yeast packet** in its slot and press **Craft**. It takes **10 L or 20 L**, in whole buckets only, and gives back 95% as **Fermented Wort** after 10 days. Then **Draw Off** into empty containers, or pump it across with the hose. The window's Wort tank line says how long the wort keeps where the vessel stands (*"sours in about 2 days"*), or that it has soured; then right-click and **Pour Away the Wort**.
+**Fermenting.** Right-click the vessel, **Fermentation Vessel**, **Pour Wort**, then **Pitch Yeast** with **one full yeast packet** on you. It takes **10 L or 20 L**, in whole buckets only, and gives back 95% as **Fermented Wort** after 10 days. Wort poured in while it works **tops up the batch** to 20 L, slowing it by the new wort's share. Then **Draw Off** into empty containers, or pump it across with the hose. **Vessel Info** shows the tank, the batch and the fermented wort as bars, and how long waiting wort keeps where the vessel stands (*"sours in about 2 days"*). Soured wort: **Pour Away the Wort**. A batch you want rid of: **Pour Away the Batch**, which asks first, as the yeast is lost with it.
 
-**Souring.** Right-click the cask, **Orléans Vinegar Cask**, **Pour Fermented Wort**. Watch the status line: *"19.0 L, 40% soured, about 12 days left."* At 100% it reads **"ready to bottle"**. For the whole picture, just **click the cask** (or pick **Cask Info** in the submenu): bars for how full and how soured, time left, bottles ready, temperature, working rate, the mother and the hose, updating live until you walk away.
+**Souring.** Right-click the cask, **Orléans Vinegar Cask**, **Pour Fermented Wort**. Watch the status line: *"19.0 L, 40% soured, about 12 days left."* At 100% it reads **"ready to bottle"**. For the whole picture, pick **Cask Info** (in the submenu, or at the bottom of the main menu): bars for how full and how soured, time left, bottles ready, temperature, working rate, the mother and the hose, updating live until you walk away.
 
 **Bottling.** **Bottle Vinegar**, then *Any Bottle*, *All Bottles*, or a specific kind. 1 L per bottle. Leave a few litres in the cask (see below).
 

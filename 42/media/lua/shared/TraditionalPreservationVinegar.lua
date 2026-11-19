@@ -31,7 +31,7 @@ V.FLOOR_ROOTLETS, V.FLOOR_FINISHED = OVERLAYS.floor.rootlets, OVERLAYS.floor.fin
 V.VESSEL_HOSE, V.CASK_HOSE = Tiles.HOSE.vessel, Tiles.HOSE.cask
 V.FACE_COUNT = Tiles.FACE_COUNT
 
--- Hours at a rate of 1. These set the recipes' times, and the sandbox can replace them.
+-- Hours at a rate of 1 for each stage; the sandbox can replace them.
 V.MALTING_HOURS = 120
 V.ALCOHOLIC_HOURS = 240
 V.ACETIC_HOURS = 840
@@ -187,51 +187,6 @@ V.WORT_FLUID_KIND = FluidAgeing.register({
     enabled = function() return V.WORT_SOURS end,
 })
 
--- A run's place, as the station's World last told it (V.notePlace); the open air before then.
-local function runPlace(modData)
-    return modData.place or Weather.NEW_RUN_PLACE
-end
-
--- The engine pools recipe data without clearing its ModData, so every run must set all of this.
-local function startRun(craftRecipeData, process)
-    Weather.startRun(craftRecipeData:getModData(), V.getLedger(), process)
-end
-
--- Brings a run up to now at the place it was last told (V.notePlace), by a fire by the clock.
-local function catchUpRun(modData, process)
-    if not modData.workHours then return end
-    Fire.catchUpRun(modData, V.getLedger(), process, runPlace(modData), PROCESSES[process])
-end
-
--- Adds what the weather has given since the last update, at the place the station's World last told the run, so
--- a roof built over a running vessel counts from then on.
-local function updateRun(craftRecipeData, process, speed)
-    local modData = craftRecipeData:getModData()
-    if not modData.workHours then return end
-    Fire.updateRun(craftRecipeData, V.getLedger(), process, runPlace(modData), PROCESSES[process], speed)
-end
-
--- Tells a running batch (kind "alcoholic") where its station stands: the place, and the fire's fuel
--- when it is by one. A move first brings the run up to now where it was. Returns the place.
-function V.notePlace(modData, station, process, now)
-    return Fire.notePlace(modData, station, now, function(runModData) catchUpRun(runModData, process) end)
-end
-
--- OnStart and OnUpdate hooks the vessel's recipe script names. The Malting Floor keeps its own record
--- (TraditionalPreservationVinegarFloor.lua).
-function V.onFermentStart(craftRecipeData)
-    startRun(craftRecipeData, "alcoholic")
-end
-
-function V.onFermentUpdate(craftRecipeData)
-    updateRun(craftRecipeData, "alcoholic", 1)
-end
-
--- How a running batch is doing right now, for its popup. hoursLeft assumes the temperature holds.
-function V.batchStatus(process, modData, recipeHours, ledger)
-    return Weather.batchStatus(modData.workHours or 0, recipeHours, ledger, runPlace(modData), PROCESSES[process])
-end
-
 -- The bucket becomes the mash. Its kind (plain or forged) is noted on it, and heating carries the note over
 -- (see the core's Container).
 function V.onMashed(craftRecipeData)
@@ -268,17 +223,6 @@ function V.holdsOnly(container, name)
     return Container.fluidIn(container) == name
 end
 
--- Slots take anything unless told otherwise, and a wrong item leaves the recipe with no output.
-local STATION_INPUTS = {
-    vessel = { "Base.Yeast", "IGUI_TraditionalPreservationVinegar_NeedsYeast" },
-}
-
--- The translation key saying what this station takes, or nil if fullType is it.
-function V.inputRefusal(kind, fullType)
-    local input = STATION_INPUTS[kind]
-    return fullType ~= input[1] and input[2] or nil
-end
-
 function V.spriteName(index)
     return V.SPRITE_PREFIX .. index
 end
@@ -301,38 +245,8 @@ function V.isFloor(isoObject)
     return V.stationKind(isoObject) == "floor"
 end
 
--- The vessel's tank on one side, or nil.
-function V.vesselTank(vessel, io)
-    local resources = vessel:getComponent(ComponentType.Resources)
-    local logic = vessel:getComponent(ComponentType.CraftLogic)
-    if not resources or not logic then return nil end
-    local group = io == ResourceIO.Input and logic:getInputsGroupName() or logic:getOutputsGroupName()
-    -- This clears the list it is given, so each call needs its own.
-    local tanks = resources:getResourcesFromGroup(group, ArrayList.new(), io, ResourceType.Fluid)
-    return tanks:size() > 0 and tanks:get(0) or nil
-end
-
--- The running batch's recipe data, or nil. CraftLogic's own list of runs isn't exposed to Lua, so
--- this goes through the window's logic, which needs a real player.
-function V.runningBatch(station, logic, uiLogic)
-    if not logic or not logic:isRunning() then return nil end
-    if not uiLogic then
-        local player = getPlayer()
-        if not player then return nil end
-        uiLogic = CraftLogicUILogic.new(player, station, logic)
-    end
-    for craftData, _ in pairs(uiLogic:getItemsInProgress()) do
-        return craftData
-    end
-    return nil
-end
-
-function V.litres(tank)
-    return tank and tank:getFluidContainer():getAmount() or 0
-end
-
--- The Wort tank is a station resource, not an item, so FluidAgeing can't keep a fluidAge on it: the fluidAge sits on
--- the vessel's modData under FluidAgeing's key instead. Brings it up to now at place, starting one for wort that
+-- The Wort tank is the vessel's record, not an item, so FluidAgeing can't keep a fluidAge on it: the fluidAge sits on
+-- the record under FluidAgeing's key instead. Brings it up to now at place, starting one for wort that
 -- has none, and forgets it once the tank is empty. Returns the fluidAge, or nil with no wort or souring off.
 function V.ageTank(modData, ml, place, now)
     local key = FluidAgeing.KEY
@@ -349,23 +263,6 @@ function V.ageTank(modData, ml, place, now)
     return FluidAgeing.advance(fluidAge, V.WORT_FLUID_KIND, ledger, now, place)
 end
 
--- The vessel's tank fluidAge, brought up to now where the vessel stands. Items age by the weather's place, so the
--- tank does too (a fire counts as the room it warms).
-function V.tankAge(vessel, now)
-    local tank = V.vesselTank(vessel, ResourceIO.Input)
-    local ml = tank and Container.ml(tank:getFluidContainer()) or 0
-    return V.ageTank(vessel:getModData(), ml, Weather.placeOf(vessel), now or getGameTime():getWorldAgeHours())
-end
-
--- The tank's fluidAge as it stands now, without changing the vessel: for windows and menus. Nil with no fluidAge yet.
-function V.peekTank(vessel, now)
-    local fluidAge = vessel:getModData()[FluidAgeing.KEY]
-    if not fluidAge or fluidAge.process ~= V.WORT_PROCESS or not V.WORT_SOURS then return nil end
-    if V.litres(V.vesselTank(vessel, ResourceIO.Input)) <= 0 then return nil end
-    return FluidAgeing.advance(FluidAgeing.copy(fluidAge), V.WORT_FLUID_KIND, V.getLedger(),
-        now or getGameTime():getWorldAgeHours(), Weather.placeOf(vessel))
-end
-
 function V.isSour(fluidAge)
     return fluidAge ~= nil and FluidAgeing.stage(fluidAge, V.WORT_FLUID_KIND) ~= "Fresh"
 end
@@ -375,13 +272,6 @@ function V.hoursToSour(fluidAge, celsius)
     local left, rate = FluidAgeing.hoursLeft(fluidAge, V.WORT_FLUID_KIND), V.wortRate(celsius)
     if not left or V.isSour(fluidAge) or rate <= 0 then return nil end
     return left / rate
-end
-
--- Wort poured into the tank brings its age: the older wins, as with milk. Call it before the wort moves.
-function V.pourIntoTank(vessel, item, now)
-    local had = V.tankAge(vessel, now) ~= nil
-    local fluidAge = FluidAgeing.sourceFluidAge(item, now)
-    if fluidAge then FluidAgeing.receive(vessel:getModData(), fluidAge, had, Weather.placeOf(vessel)) end
 end
 
 -- The cask's own modData. It sits in movableData because vanilla copies that onto the item when a
@@ -595,13 +485,13 @@ end
 V.HOSE_MIN_ML = 50
 V.PUMP_STEPS = { 5000, 10000 }
 
--- Pumps up to ml of the vessel's fermented wort into the cask, as far as the tank and the cask's room allow.
--- The player chooses how much, as Orléans vinegar makers topped up by hand.
-function V.pumpToCask(caskModData, container, ml)
-    ml = math.min(ml, Container.ml(container), V.caskRoom(caskModData))
+-- Pumps up to ml of the vessel's fermented wort (its record, V.vesselOf) into the cask, as far as the tank and the
+-- cask's room allow. The player chooses how much, as Orléans vinegar makers topped up by hand.
+function V.pumpToCask(caskModData, record, ml)
+    ml = math.min(ml, record.fermentedMl, V.caskRoom(caskModData))
     if ml < V.HOSE_MIN_ML then return 0 end
     local moved = V.pourIntoCask(caskModData, ml)
-    container:removeFluid(moved / 1000)
+    V.drawOff(record, moved)
     return moved
 end
 
@@ -721,19 +611,14 @@ function V.applySandbox()
     if options.WortSours ~= nil then V.WORT_SOURS = options.WortSours end
 end
 
-local function applyRecipeTime(name, hours)
-    Weather.setRecipeHours(RECIPE_MODULE .. name, hours, "TraditionalPreservationVinegar")
-end
-
--- Sets each recipe's script time from the sandbox, so the crafting window shows the right length.
--- TEST_HOURS (Dev console) overrides them all.
+-- Reads the sandbox into the stage times and sets the hand recipes' times and cooking minutes for the effort.
+-- TEST_HOURS (Dev console) overrides the stage times.
 function V.applyRecipeTimes()
     V.applySandbox()
     if V.TEST_HOURS then
         print("[TraditionalPreservationVinegar] Test timers on: " .. V.TEST_HOURS .. " hours a batch")
         V.MALTING_HOURS, V.ALCOHOLIC_HOURS, V.ACETIC_HOURS, V.SENSITIVITY = V.TEST_HOURS, V.TEST_HOURS, V.TEST_HOURS, 0
     end
-    applyRecipeTime("FermentWort", V.ALCOHOLIC_HOURS)
     for name, time in pairs(CRAFT_TIMES) do
         local fullName = RECIPE_MODULE .. name
         local recipe = ScriptManager.instance:getCraftRecipe(fullName)
@@ -748,3 +633,4 @@ end
 Events.OnInitGlobalModData.Add(V.applyRecipeTimes)
 
 require "TraditionalPreservationVinegarFloor"
+require "TraditionalPreservationVinegarVessel"

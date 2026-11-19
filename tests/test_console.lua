@@ -51,7 +51,7 @@ check("fast with no number turns them off", V.TEST_HOURS == nil)
 for _, command in ipairs({ "cask", "setCask", "mother" }) do
     check(command .. " says so when no cask is near", run(command):find("No cask", 1, true) ~= nil)
 end
-for _, command in ipairs({ "wort", "fermented" }) do
+for _, command in ipairs({ "vessel", "wort", "batch", "fermented" }) do
     check(command .. " says so when no vessel is near", run(command):find("No vessel", 1, true) ~= nil)
 end
 
@@ -87,7 +87,8 @@ check("kit with no kind lists every kit", run("kit"):find("TPV.kit(\"all\")", 1,
 run("kit", "build")
 check("the build kit has the three stations' planks and nails", counted("Base.Plank") == 24 and counted("Base.Nails") == 36)
 run("kit", "ferment")
-check("the ferment kit brings a bucket of wort", filled[V.WORT] == 10 and counted("Base.Yeast") == 2)
+check("the ferment kit brings two buckets of wort, one to top up", filled[V.WORT] == 20 and counted("Base.Yeast") == 2
+    and counted("Base.BucketEmpty") == 3)
 player.given = {}
 run("kit", "all")
 check("all gives every kit", counted("Base.Plank") == 24 and counted(V.MOTHER_ITEM) == 1 and counted("Base.BarleySeed") == 24

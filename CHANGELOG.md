@@ -1,5 +1,22 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.42
+- **The Fermentation Vessel off CraftLogic** (ROADMAP section 12): no crafting window, no Ferment Wort recipe and no
+  Finished Batch marker. The Wort tank, the batch and the Fermented tank are the vessel's record in its movableData
+  (`tpvVessel`, `TraditionalPreservationVinegarVessel.lua`), stepped by the World; the batch's work is an age on the
+  alcoholic ledger, as the floor's heaps. Right-click submenu: Pour Wort, **Pitch Yeast** (a full packet on you, the
+  tank's whole buckets as before), Draw Off Wort, Pour Away the Wort, Draw Off Fermented Wort, the hose, and **Vessel
+  Info** (TP Core's InfoWindow: Wort, Batch and Fermented bars, place, rate, a Pitch Yeast button). Batch times are
+  unchanged (`tools/simulate.lua` matches its golden).
+- **Top Up the Batch** (user): wort poured in while a batch works joins it, up to 20 L, its progress shared out over
+  the new volume (10 L into a 10 L batch half done is 20 L a quarter done).
+- **Pour Away the Batch** replaces vanilla's Cancel (user): the yeast is in, so nothing comes back, and it asks yes or
+  no first (TP Core's `UI.confirm`). Fermented wort is never poured away, only drawn off or pumped.
+- **Draw Off Wort** (user): waiting wort comes back out of the tank into empty containers, keeping its age.
+- `TPV.vessel()` and `TPV.batch(litres, pct)`; `TPV.wort` and `TPV.fermented` set the record; the ferment kit has a
+  second bucket of wort to top up with and an empty one. Old vessels' tanks and runs don't carry over (no migration).
+- Guide: the cask's Info is picked from its menu (a left click hasn't opened it since 0.2.38).
+
 ## 0.2.41
 - **The Malting Floor off CraftLogic** (ROADMAP section 12): no crafting window and no Malt Grain recipe. Each Steeped
   Grain is its own heap on its own clock (the floor's record in its movableData, `tpvFloor`), so a new heap goes down
