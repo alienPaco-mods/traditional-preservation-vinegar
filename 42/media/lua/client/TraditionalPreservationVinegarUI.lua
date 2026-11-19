@@ -243,7 +243,7 @@ local VesselWindow = InfoWindow:derive("TraditionalPreservationVinegarVesselWind
 
 function VesselWindow:new(playerObj, vessel)
     local o = InfoWindow.new(self, playerObj, vessel)
-    o.title = getText("IGUI_TraditionalPreservationVinegar_VesselInfo")
+    o.title = getText("IGUI_CraftingWindow_FermentationVessel")
     return o
 end
 

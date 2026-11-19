@@ -182,8 +182,8 @@ local context, menu = menuFor(cellar)
 check("the vessel's own entry, with its icon", context.options[1].name == "Fermentation Vessel"
     and context.options[1].iconTexture == "media/textures/Item_FermentationVessel.png")
 check("the status row first, greyed", menu.options[1].name == "Fermentation Vessel: empty" and menu.options[1].isDisabled)
-check("then Vessel Info, and Info at the bottom of the main menu", menu.options[2].name == "Vessel Info"
-    and context.options[2].name == "Vessel Info")
+check("then its Info row, the station's full name, and the same at the bottom of the main menu",
+    menu.options[2].name == "Fermentation Vessel Info" and context.options[2].name == "Fermentation Vessel Info")
 local pitch = named(menu, "Pitch Yeast")
 check("Pitch Yeast greyed with no wort in", pitch.isDisabled and pitch.toolTip.description == "Needs at least 10 L of wort in the tank")
 check("every row has an icon", (function()

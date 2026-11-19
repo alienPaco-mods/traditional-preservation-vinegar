@@ -72,7 +72,7 @@ Vanilla vinegar is loot-only, and without it there's no pickling. This mod lets 
 
 ## 4. Walkthrough
 
-**Malting.** Steep 24 grain in 4 L of water to make Steeped Grain. Spread up to 4 on the **Malting Floor** from its right-click menu, each its own heap on its own clock, so a new one can go down beside heaps already sprouting. Each sprouts in 5 days (best at 12–20 C). **Floor Info** lists every heap with a bar and the time left, and says when done Green Malt goes stale. Watch the tray: wet grain, sprouts, matted rootlets, then a malt shovel when done.
+**Malting.** Steep 24 grain in 4 L of water to make Steeped Grain. Spread up to 4 on the **Malting Floor Info** from its right-click menu, each its own heap on its own clock, so a new one can go down beside heaps already sprouting. Each sprouts in 5 days (best at 12–20 C). The **Malting Floor** window lists every heap with a bar and the time left, and says when done Green Malt goes stale. Watch the tray: wet grain, sprouts, matted rootlets, then a malt shovel when done.
 
 **Kilning.** Put Green Malt on a fire or in an oven. It dries into **Malt** in about 3 hours. Don't leave it a day or it burns. **Don't leave it waiting either:** Green Malt is fresh for 2 days and rotten after 5, counted from when the floor finishes. Stale malt still kilns fine, but rotten Green Malt never turns into Malt. Compost it.
 
@@ -82,9 +82,9 @@ Vanilla vinegar is loot-only, and without it there's no pickling. This mod lets 
 
 > *Margin note:* a real brewer's day runs mash, strain and pitch without a break. Sweet wort is a feast for the lactic bacteria that ride in on the grain, and in a warm room they win within a day or two. Once the yeast is in, the alcohol and the acid it makes keep them out, which is why the wort is safe the moment a batch starts.
 
-**Fermenting.** Right-click the vessel, **Fermentation Vessel**, **Pour Wort**, then **Pitch Yeast** with **one full yeast packet** on you. It takes **10 L or 20 L**, in whole buckets only, and gives back 95% as **Fermented Wort** after 10 days. Wort poured in while it works **tops up the batch** to 20 L, slowing it by the new wort's share. Then **Draw Off** into empty containers, or pump it across with the hose. **Vessel Info** shows the tank, the batch and the fermented wort as bars, and how long waiting wort keeps where the vessel stands (*"sours in about 2 days"*). Soured wort: **Pour Away the Wort**. A batch you want rid of: **Pour Away the Batch**, which asks first, as the yeast is lost with it.
+**Fermenting.** Right-click the vessel, **Fermentation Vessel Info**, **Pour Wort**, then **Pitch Yeast** with **one full yeast packet** on you. It takes **10 L or 20 L**, in whole buckets only, and gives back 95% as **Fermented Wort** after 10 days. Wort poured in while it works **tops up the batch** to 20 L, slowing it by the new wort's share. Then **Draw Off** into empty containers, or pump it across with the hose. The **Fermentation Vessel** window shows the tank, the batch and the fermented wort as bars, and how long waiting wort keeps where the vessel stands (*"sours in about 2 days"*). Soured wort: **Pour Away the Wort**. A batch you want rid of: **Pour Away the Batch**, which asks first, as the yeast is lost with it.
 
-**Souring.** Right-click the cask, **Orléans Vinegar Cask**, **Pour Fermented Wort**. Watch the status line: *"19.0 L, 40% soured, about 12 days left."* At 100% it reads **"ready to bottle"**. For the whole picture, pick **Cask Info** (in the submenu, or at the bottom of the main menu): bars for how full and how soured, time left, bottles ready, temperature, working rate, the mother and the hose, updating live until you walk away.
+**Souring.** Right-click the cask, **Orléans Vinegar Cask Info**, **Pour Fermented Wort**. Watch the status line: *"19.0 L, 40% soured, about 12 days left."* At 100% it reads **"ready to bottle"**. For the whole picture, pick **Orléans Vinegar Cask** (in the submenu, or at the bottom of the main menu): bars for how full and how soured, time left, bottles ready, temperature, working rate, the mother and the hose, updating live until you walk away.
 
 **Bottling.** **Bottle Vinegar**, then *Any Bottle*, *All Bottles*, or a specific kind. 1 L per bottle. Leave a few litres in the cask (see below).
 
@@ -109,7 +109,7 @@ The pale skin that grows on the pool, and the heart of the cask.
 
 - **Grows by itself** the first time a cask reaches 100%.
 - **+25% speed** (35 days becomes 26), **but only once the pool is at least 25% soured.** Fresh wort in an empty cask starts slow and speeds up when it passes 25%. Keeping a starter, as above, puts the pool over 25% straight away.
-- **Thickens** by a layer for about every 15 L of new vinegar the cask makes after the mother forms, about one full batch. Cask Info shows its layers and how many litres until the next.
+- **Thickens** by a layer for about every 15 L of new vinegar the cask makes after the mother forms, about one full batch. The Orléans Vinegar Cask window shows its layers and how many litres until the next.
 - **Take Mother** (empty jar): lift it all out. The cask loses its boost.
 - **Split Mother** (2+ layers, empty jar): peel one layer off for a second cask. Until then it's greyed out, and hovering it says how long to go.
 - **Add Mother**: put a jarred mother into a cask without one. You get the jar back.

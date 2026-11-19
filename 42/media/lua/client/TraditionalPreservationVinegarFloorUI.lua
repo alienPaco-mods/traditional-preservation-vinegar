@@ -149,7 +149,7 @@ local FloorWindow = InfoWindow:derive("TraditionalPreservationVinegarFloorWindow
 
 function FloorWindow:new(playerObj, station)
     local o = InfoWindow.new(self, playerObj, station)
-    o.title = say("FloorInfo")
+    o.title = getText("IGUI_CraftingWindow_MaltingFloor")
     return o
 end
 

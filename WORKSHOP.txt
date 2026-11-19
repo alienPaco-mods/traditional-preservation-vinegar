@@ -43,7 +43,7 @@ All three are under Furniture in the Build menu and need a hammer (kept).
 [/list]
 
 [h2]The vessel[/h2]
-Everything is in the vessel's right-click menu, and Vessel Info shows the Wort tank, the batch and the Fermented tank as bars. A batch takes whole buckets, 10 or 20 L, and one packet of yeast either way, so two buckets is the efficient batch. Wort poured in while it works tops it up to 20 L, slowing it by the new wort's share. Pour Away the Batch asks first, as the yeast goes with it. When it's done, Draw Off Fermented Wort into any empty container.
+Everything is in the vessel's right-click menu, and the Fermentation Vessel window shows the Wort tank, the batch and the Fermented tank as bars. A batch takes whole buckets, 10 or 20 L, and one packet of yeast either way, so two buckets is the efficient batch. Wort poured in while it works tops it up to 20 L, slowing it by the new wort's share. Pour Away the Batch asks first, as the yeast goes with it. When it's done, Draw Off Fermented Wort into any empty container.
 
 [h2]The Orléans cask[/h2]
 The cask is one pool of up to 30 L that you keep going for the whole game. Everything is in its right-click menu.
@@ -52,7 +52,7 @@ The cask is one pool of up to 30 L that you keep going for the whole game. Every
 [*]Souring loses about a tenth to the air, so 19 L of fermented wort becomes about 17 L of vinegar.
 [*]The culture needs air. Over 22.5 L it slows, to half speed when brimming at 30 L.
 [*]You can only bottle once the pool is 100% soured. What's left after the last whole bottle stays behind as starter.
-[*]The status line shows the litres, how soured it is and the time left. Click the cask, or pick [b]Cask Info[/b], for a small window with bars for both, the temperature, the working rate, the mother and the hose.
+[*]The status line shows the litres, how soured it is and the time left. Click the cask, or pick [b]Orléans Vinegar Cask Info[/b], for a small window with bars for both, the temperature, the working rate, the mother and the hose.
 [/list]
 
 [b]The mother.[/b] A cask grows its own Mother of Vinegar the first time it fully sours. It makes souring 25% quicker, but only while the pool is at least 25% soured, so follow the old rule: keep about a third as much vinegar in the cask as the fermented wort you're about to add. Keep much more than that and the cask runs short of air. The mother thickens a layer for about every 15 L of vinegar. From 2 layers you can Split Mother into an empty jar to start another cask, or Take Mother to move it. In a jar it lives about a month.

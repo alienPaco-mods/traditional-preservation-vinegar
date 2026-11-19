@@ -1,5 +1,9 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.43
+- The window rows read the station's full name and Info (Fermentation Vessel Info, Orléans Vinegar Cask Info, Malting Floor Info), as vanilla's Fireplace Info and
+  Generator Info; the window's title is the bare name. The short "Vessel Info", "Tub Info" and the like are gone.
+
 ## 0.2.42
 - **The Fermentation Vessel off CraftLogic** (ROADMAP section 12): no crafting window, no Ferment Wort recipe and no
   Finished Batch marker. The Wort tank, the batch and the Fermented tank are the vessel's record in its movableData

@@ -210,8 +210,8 @@ local context, menu = menuFor(empty)
 check("the floor's own entry, with its icon", context.options[1].name == "Malting Floor"
     and context.options[1].iconTexture == "media/textures/Item_MaltingFloor.png")
 check("the status row first, greyed: what it holds", menu.options[1].name == "Heaps: 0 / 4" and menu.options[1].isDisabled)
-check("then Floor Info, and Info at the bottom of the main menu", menu.options[2].name == "Floor Info"
-    and context.options[2].name == "Floor Info")
+check("then its Info row, the station's full name, and the same at the bottom of the main menu",
+    menu.options[2].name == "Malting Floor Info" and context.options[2].name == "Malting Floor Info")
 local spread = named(menu, "Spread Steeped Grain")
 check("Spread Steeped Grain: One, All (2)", spread and spread.subOption.options[1].name == "One"
     and spread.subOption.options[2].name == "All (2)")

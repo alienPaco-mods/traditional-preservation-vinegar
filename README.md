@@ -1,4 +1,4 @@
-# Traditional Preservation (Vinegar) — Build 42 prototype (v0.2.35)
+# Traditional Preservation (Vinegar) — Build 42 prototype (v0.2.43)
 
 **Status: experimental.** The whole chain, from steeped grain to bottled vinegar, has been played in the game with test timers. Temperature effects have only been checked offline so far (see the test plan). Back up your save before enabling.
 
@@ -76,7 +76,7 @@ Crafting menu, Cooking. 24 barley, wheat or rye seeds and 4 L of water from any 
 
 Right-click the floor, **Malting Floor > Spread Steeped Grain** (One or All). It holds 4 heaps, one a Steeped Grain, and each heap has its own clock: a new heap can go down beside heaps already sprouting, as real floor maltings laid out each steeping as its own "piece". A heap sprouts into **Green Malt** in 5 days at the best temperature (12 to 20 C).
 
-**Floor Info** (in the floor's menu, and at the bottom of the main menu) lists every heap with a bar: how far on and the time left, or, once done, when the Green Malt goes stale. Hover a row for its progress, the place's temperature and the working rate. **Take Done** takes the Green Malt off; **Take Everything Off** (Take All in the window) takes the rest too: a heap taken off part way comes back as Steeped Grain that keeps how far it sprouted, and carries on from there when spread again (off the floor it waits). Drop Steeped Grain on the window's drop square to spread it. A floor with any heap on it can't be picked up.
+**Malting Floor Info** (in the floor's menu, and at the bottom of the main menu) lists every heap with a bar: how far on and the time left, or, once done, when the Green Malt goes stale. Hover a row for its progress, the place's temperature and the working rate. **Take Done** takes the Green Malt off; **Take Everything Off** (Take All in the window) takes the rest too: a heap taken off part way comes back as Steeped Grain that keeps how far it sprouted, and carries on from there when spread again (off the floor it waits). Drop Steeped Grain on the window's drop square to spread it. A floor with any heap on it can't be picked up.
 
 ### 3. Kiln
 
@@ -111,7 +111,7 @@ Wort and Fermented Wort are real liquids, added by this mod, not vanilla ones. T
 
 ### 7. Fermentation Vessel
 
-Everything is in the vessel's right-click **Fermentation Vessel** submenu, and **Vessel Info** (in the submenu, and at the bottom of the main menu) shows the Wort tank, the batch and the Fermented tank as bars, with the place, the working rate and a **Pitch Yeast** button.
+Everything is in the vessel's right-click **Fermentation Vessel Info** submenu, and **Fermentation Vessel** (in the submenu, and at the bottom of the main menu) shows the Wort tank, the batch and the Fermented tank as bars, with the place, the working rate and a **Pitch Yeast** button.
 
 1. **Pour Wort**: pick a container, or All. Only containers holding nothing but wort are offered. The Wort tank holds 20 L.
 2. **Pitch Yeast** with **one full packet of vanilla Yeast** on you. A part-used packet won't do, as the batch uses the whole packet.
@@ -129,7 +129,7 @@ Pitch Yeast is greyed out, and says why, when:
 
 **Pour Away the Batch** (last in the submenu, while a batch works) asks yes or no first: the yeast is in it, so nothing comes back. Fermented wort is never poured away, only drawn off or pumped.
 
-Waiting wort in the tank sours as it does in a bucket; Vessel Info's Wort bar says how long it keeps where the vessel stands ("sours in about 2 days"), or that it has soured. **Draw Off Wort** takes it back out into empty containers, keeping its age. **Pour Away the Wort** empties the tank onto the ground.
+Waiting wort in the tank sours as it does in a bucket; the Fermentation Vessel window's Wort bar says how long it keeps where the vessel stands ("sours in about 2 days"), or that it has soured. **Draw Off Wort** takes it back out into empty containers, keeping its age. **Pour Away the Wort** empties the tank onto the ground.
 
 When the batch finishes, use **Draw Off Fermented Wort**. Only completely empty containers are offered, so nothing is ever topped up into a mixture. A vessel holding anything can't be picked up.
 
@@ -146,7 +146,7 @@ The cask is one continuous pool of up to **30 L**, not a batch station, so it ha
 
 The grey status line reads like `Orléans Vinegar Cask: 9.5 L, 40% soured, about 3 days left, mother established`, or `Orléans Vinegar Cask: 17.2 L, ready to bottle, mother established`. Hover it for the temperature, how fast it's souring, and notes about air and the mother. The time left assumes today's temperature holds.
 
-**Cask Info** (in the submenu) opens a small window with the same facts laid out: a bar for how full the cask is and one for its souring, the time left, bottles ready, the temperature and place, the working rate (temperature, mother and air together), the mother's layers and the hose. It updates while open and closes when you walk more than 6 squares away.
+**Orléans Vinegar Cask Info** (in the submenu) opens a small window with the same facts laid out: a bar for how full the cask is and one for its souring, the time left, bottles ready, the temperature and place, the working rate (temperature, mother and air together), the mother's layers and the hose. It updates while open and closes when you walk more than 6 squares away.
 
 **Empty Cask** pours everything away and keeps the mother.
 
@@ -193,9 +193,9 @@ A cask grows its own mother the first time its pool reaches 100%. It doesn't rep
   | 3.5 L | 9.5 L | 27% | **19.2** |
 
   Keeping much more than a third fills the cask past 22.5 L, and the lack of air costs more than the starter gains.
-- **Layers**: the mother thickens by a layer for about every **15 L of new vinegar** the cask makes after it forms, roughly one full batch. Its first souring only creates it. Cask Info shows its layers and how many litres until the next.
+- **Layers**: the mother thickens by a layer for about every **15 L of new vinegar** the cask makes after it forms, roughly one full batch. Its first souring only creates it. The Orléans Vinegar Cask window shows its layers and how many litres until the next.
 - **Take Mother**: lifts the whole mother into an empty jar (Empty Jar or Crafted Jar). The cask loses its speed.
-- **Split Mother**: once it has 2 layers or more, peels one off into an empty jar and leaves the rest in the cask. Use it to start a second cask. Before then it shows greyed out, and hovering it, or Cask Info, says how much more vinegar the next layer needs.
+- **Split Mother**: once it has 2 layers or more, peels one off into an empty jar and leaves the rest in the cask. Use it to start a second cask. Before then it shows greyed out, and hovering it, or the Orléans Vinegar Cask window, says how much more vinegar the next layer needs.
 - **Add Mother**: lays a living mother from its jar into a cask that has none, and gives the jar back.
 - **In the jar** a mother is like food: fresh for about 30 days, dead at 40. A fridge slows it down, as it does for food. A dead mother can't be added.
 
@@ -235,7 +235,7 @@ The tray shows one look: the stage most heaps are at, a tie going to the one fur
 ## Right-click menus
 
 - **Fermentation Vessel**: a grey status line (empty, wort waiting, wort soured, fermenting with its progress, or fermented wort ready), **Pour Wort** (greyed with "Sour wort won't ferment" when all you carry is sour), **Pour Away the Wort** when the tank holds some, and **Draw Off Fermented Wort** when there is some. Options you can't use yet are greyed out, and hovering says why.
-- **Orléans Vinegar Cask**: one submenu with the status line, **Cask Info**, **Pour Fermented Wort**, **Bottle Vinegar**, **Take Mother** / **Split Mother** / **Add Mother**, **Empty Cask**, and the hose line and **Detach Hose** when joined.
+- **Orléans Vinegar Cask Info**: one submenu with the status line, **Orléans Vinegar Cask**, **Pour Fermented Wort**, **Bottle Vinegar**, **Take Mother** / **Split Mother** / **Add Mother**, **Empty Cask**, and the hose line and **Detach Hose** when joined.
 - **Hose** (on the vessel): **Attach Hose to Cask**, or a grey line and **Detach Hose** when joined.
 
 ## Picking stations up
@@ -430,7 +430,7 @@ Still to check in the game:
 7. "(Basement)" and its temperature on a station below ground; "(By a fire)" at 28 C within 2 tiles of a lit fire indoors, "(By a fire, under a roof)" and "(By a fire, in the open)" outside; *Paused here (frozen)* on a vessel or cask at -3 C and below.
 8. A run with real timers and temperature on, in a cold month and a hot month, indoors, outdoors, in a basement and by a fire.
 9. The hose: attach; Pump to Cask from both stations, with 5 L, 10 L, the air line and all that fits each moving what it says; greyed options giving their reasons (empty vessel, short tank, no room, already at the air line); detach; and a destroyed station dropping the hose.
-10. Cask Info: opens from the cask's submenu, fills its bars, counts down while souring, shows bottles once ready and the hose when joined, and closes past 6 squares or when the cask is picked up.
+10. The Orléans Vinegar Cask window: opens from the cask's submenu, fills its bars, counts down while souring, shows bottles once ready and the hose when joined, and closes past 6 squares or when the cask is picked up.
 11. Green Malt: fresh for 2 days and rotten after 5. Stale Green Malt still kilns into Malt; rotten Green Malt stays rotten on the fire, and the composter takes it.
 12. Wort that sours: `TPV.ageWort(48)` turns carried wort into Wort (Soured) and the tank's wort to soured; Craft refuses with the reason, Pour Wort is greyed with "Sour wort won't ferment", Pour Away the Wort empties the tank; the info block's "sours in about"; a cancelled run gives back wort with its age.
 13. `console.txt` shows no repeating Lua errors after an hour of play, including with the other Traditional Preservation mods on.
