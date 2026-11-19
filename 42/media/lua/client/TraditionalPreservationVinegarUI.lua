@@ -619,6 +619,7 @@ local function addCaskMenu(context, playerObj, cask)
     UI.disable(status, caskDetail(cask, caskModData))
     local infoOption = menu:addOption(getText("ContextMenu_TraditionalPreservationVinegar_CaskInfo"), playerObj, CaskWindow.open, cask)
     infoOption.iconTexture = getTexture(STATION_ICONS.cask)
+    UI.topInfo(context, getText("ContextMenu_TraditionalPreservationVinegar_CaskInfo"), getTexture(STATION_ICONS.cask), playerObj, CaskWindow.open, cask)
 
     if V.caskRoom(caskModData) > 0 then
         local fermented = carrying(playerObj, V.FERMENTED)
