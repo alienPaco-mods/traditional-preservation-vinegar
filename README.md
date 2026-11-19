@@ -144,7 +144,7 @@ The cask is one continuous pool of up to **30 L**, not a batch station, so it ha
 
 The grey status line reads like `Orléans Vinegar Cask: 9.5 L, 40% soured, about 3 days left, mother established`, or `Orléans Vinegar Cask: 17.2 L, ready to bottle, mother established`. Hover it for the temperature, how fast it's souring, and notes about air and the mother. The time left assumes today's temperature holds.
 
-**Cask Info** (in the submenu, or just click the cask) opens a small window with the same facts laid out: a bar for how full the cask is and one for its souring, the time left, bottles ready, the temperature and place, the working rate (temperature, mother and air together), the mother's layers and the hose. It updates while open and closes when you walk more than 6 squares away.
+**Cask Info** (in the submenu) opens a small window with the same facts laid out: a bar for how full the cask is and one for its souring, the time left, bottles ready, the temperature and place, the working rate (temperature, mother and air together), the mother's layers and the hose. It updates while open and closes when you walk more than 6 squares away.
 
 **Empty Cask** pours everything away and keeps the mother.
 

@@ -608,11 +608,6 @@ function CaskWindow:render()
 end
 
 -- Clicking a cask opens Cask Info, as clicking a door opens it.
-InfoWindow.clickOpens(V.isCask, function(playerObj, cask)
-    track(cask)
-    CaskWindow.open(playerObj, cask)
-end)
-
 local function addCaskMenu(context, playerObj, cask)
     local caskModData = V.caskModData(cask)
     local option = context:addOption(getText("IGUI_CraftingWindow_VinegarCask"))
