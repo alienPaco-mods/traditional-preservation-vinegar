@@ -103,6 +103,7 @@ dofile("42/media/lua/shared/TraditionalPreservationVinegar.lua")
 dofile("42/media/lua/server/TraditionalPreservationVinegarWorld.lua")
 dofile("42/media/lua/client/TraditionalPreservationVinegarFloorUI.lua")
 local V, World, FloorUI = TraditionalPreservationVinegar, TraditionalPreservationVinegarWorld, TraditionalPreservationVinegarFloorUI
+local InfoWindow = require "TraditionalPreservationCore/InfoWindow"
 
 local function tick(times)
     for _ = 1, times or 30 do H.fire("OnTick") end
@@ -246,6 +247,27 @@ local judged = FloorUI.dropJudge(floorRecord, { newItem(V.STEEPED), newItem(V.GR
 check("the drop square takes Steeped Grain only, saying why not the rest", #judged.take == 1
     and judged.refused == "Only Steeped Grain goes on the floor.")
 check("and refuses on a full floor", #FloorUI.dropJudge({ heaps = { 1, 2, 3, 4 } }, { newItem(V.STEEPED) }).take == 0)
+check("a drag fills a cell a heap, in malt", judged.cells == 1 and judged.pattern == "media/textures/TPCell_Malt.png")
+local holding = FloorUI.holding(view)
+check("the heaps are four cells, two full", holding.kind == "cells" and holding.cells == 4 and holding.filled == 2
+    and holding.amount == "2 of 4 heaps")
+
+-- Floor Info's band: the worst first.
+local function bandWord(rows)
+    local word, text, look = FloorUI.band({ rows = rows })
+    return word:match("FloorBand(%a+)$"), text, look
+end
+local function heapRow(state, hoursLeft) return { status = { state = state, hoursLeft = hoursLeft } } end
+local word, text, look = bandWord({})
+check("nothing on it: empty, grey", word == "Empty" and look == InfoWindow.BAND_IDLE)
+word, text = bandWord({ heapRow("sprouting", 30), heapRow("sprouting", 10), heapRow("done") })
+check("sprouting: malting, how many of each", word == "Malting" and text == "2 sprouting, 1 done")
+check("every heap done: done", bandWord({ heapRow("done"), heapRow("done") }) == "Done")
+check("none sprouting now: waiting", bandWord({ heapRow("sprouting"), heapRow("done") }) == "Waiting")
+word, text, look = bandWord({ heapRow("done"), heapRow("stale") })
+check("a stale heap: stale, amber", word == "Stale" and look == InfoWindow.BAND_WAITING)
+word, _, look = bandWord({ heapRow("stale"), heapRow("rotten"), heapRow("sprouting", 5) })
+check("a rotten heap goes first: rotten, red", word == "Rotten" and look == InfoWindow.BAND_AT_RISK)
 
 -- Taking off.
 given = {}

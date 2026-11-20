@@ -72,7 +72,7 @@ Vanilla vinegar is loot-only, and without it there's no pickling. This mod lets 
 
 ## 4. Walkthrough
 
-**Malting.** Steep 24 grain in 4 L of water to make Steeped Grain. Spread up to 4 on the **Malting Floor Info** from its right-click menu, each its own heap on its own clock, so a new one can go down beside heaps already sprouting. Each sprouts in 5 days (best at 12–20 C). The **Malting Floor** window lists every heap with a bar and the time left, and says when done Green Malt goes stale. Watch the tray: wet grain, sprouts, matted rootlets, then a malt shovel when done.
+**Malting.** Steep 24 grain in 4 L of water to make Steeped Grain. Spread up to 4 on the **Malting Floor** from its right-click menu (or drag them onto the heaps in its window), each its own heap on its own clock, so a new one can go down beside heaps already sprouting. Each sprouts in 5 days (best at 12–20 C). The **Malting Floor** window shows the floor's state at the top, the heaps as cells, and every heap with a bar and the time left; it says when done Green Malt goes stale, and has Take Done and Take All buttons. Watch the tray: wet grain, sprouts, matted rootlets, then a malt shovel when done.
 
 **Kilning.** Put Green Malt on a fire or in an oven. It dries into **Malt** in about 3 hours. Don't leave it a day or it burns. **Don't leave it waiting either:** Green Malt is fresh for 2 days and rotten after 5, counted from when the floor finishes. Stale malt still kilns fine, but rotten Green Malt never turns into Malt. Compost it.
 

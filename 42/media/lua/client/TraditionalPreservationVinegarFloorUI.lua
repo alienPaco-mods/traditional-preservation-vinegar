@@ -1,7 +1,7 @@
 -- Traditional Preservation (Vinegar) B42: the Malting Floor's right-click menu (what it holds, Info, Spread Steeped
 -- Grain, Take Done, Take Everything Off; TPVinegarFloor does the hand jobs) and Floor Info, its info window (TP Core's
--- InfoWindow, a row a heap in TP Core's scrolling list, the buttons and the drop square). A floor holding anything stays
--- where it is.
+-- InfoWindow on the settled look: band, Station block, the heaps as cells taking a drag, a row a heap, the buttons).
+-- A floor holding anything stays where it is.
 require "TimedActions/TPVinegarFloor"
 local InfoWindow = require "TraditionalPreservationCore/InfoWindow"
 local PiecesUI = require "TraditionalPreservationCore/PiecesUI"
@@ -15,6 +15,10 @@ local V = TraditionalPreservationVinegar
 local KEY = "IGUI_TraditionalPreservationVinegar_"
 local MENU = "ContextMenu_TraditionalPreservationVinegar_"
 local FLOOR_ICON = "media/textures/Item_MaltingFloor.png"
+local STATION_ICON = "media/textures/TPStation_MaltingFloor.png"   -- Floor Info's Station block (TP Core's tools/station_icons.py)
+local MALT_CELL = "media/textures/TPCell_Malt.png"                   -- the heaps' cells (TP Core's tools/cell_patterns.py)
+local CELL_COLOUR = { 0.72, 0.62, 0.38 }
+local GREEN_MALT_ICON, RETURNED_ICON = "media/textures/Item_GreenMalt.png", "media/ui/Entity/Icon_Returned_48x48.png"
 local COLOURS = { sprouting = { 0.35, 0.7, 0.35 }, done = { 0.35, 0.7, 0.35 }, stale = { 0.8, 0.6, 0.2 },
     rotten = { 0.6, 0.3, 0.25 } }
 
@@ -125,7 +129,7 @@ local function carriedGrain(playerObj)
     return grain
 end
 
--- What Floor Info's drop square makes of a dragged selection: the grain it would spread, as many as fit.
+-- What Floor Info's cells make of a dragged selection: the grain it would spread, as many as fit (cells: one a heap).
 function FloorUI.dropJudge(record, items)
     local take, refused = {}, nil
     local room = V.floorRoom(record)
@@ -138,9 +142,41 @@ function FloorUI.dropJudge(record, items)
             table.insert(take, item)
         end
     end
-    if #take == 0 then return { take = take, lines = { refused or say("FloorFull") }, refused = refused } end
+    if #take == 0 then return { take = take, lines = { refused or say("FloorFull") }, refused = refused, cells = 0 } end
     local lines = { say("DropSpread", tostring(#take), tostring(#items)), say("DropRoom", tostring(room)) }
-    return { take = take, lines = lines, refused = #take < #items and refused or nil }
+    return { take = take, lines = lines, refused = #take < #items and refused or nil, cells = #take, pattern = MALT_CELL }
+end
+
+-- The band (all_info_mock), the worst first: empty; a heap rotten; a heap stale; all done; none sprouting (too cold
+-- or too hot); else malting. Returns the word's key, the finished text and the colours.
+function FloorUI.band(view)
+    local counts = { sprouting = 0, done = 0, stale = 0, rotten = 0 }
+    local waiting = 0
+    for _, row in ipairs(view.rows) do
+        counts[row.status.state] = counts[row.status.state] + 1
+        if row.status.state == "sprouting" and not row.status.hoursLeft then waiting = waiting + 1 end
+    end
+    local count = #view.rows
+    if count == 0 then return KEY .. "FloorBandEmpty", say("FloorBandEmptyText"), InfoWindow.BAND_IDLE end
+    if counts.rotten > 0 then
+        return KEY .. "FloorBandRotten", say("FloorBandRottenText", tostring(counts.rotten), tostring(count)), InfoWindow.BAND_AT_RISK
+    end
+    if counts.stale > 0 then
+        return KEY .. "FloorBandStale", say("FloorBandStaleText", tostring(counts.stale), tostring(count)), InfoWindow.BAND_WAITING
+    end
+    if counts.sprouting == 0 then return KEY .. "FloorBandDone", say("FloorBandDoneText", tostring(count)), InfoWindow.BAND_WORKING end
+    if waiting == counts.sprouting then
+        return KEY .. "FloorBandWaiting", say("FloorBandWaitingText"), InfoWindow.BAND_WAITING
+    end
+    return KEY .. "FloorBandMalting", say("FloorBandMaltingText", tostring(counts.sprouting), tostring(counts.done)), InfoWindow.BAND_WORKING
+end
+
+-- The heaps as Holds' cells: one a heap, out of the floor's four, in malt.
+function FloorUI.holding(view)
+    return { kind = "cells", name = say("InfoHeapsCells"),
+        amount = say("InfoHeapsValue", tostring(view.count), tostring(V.FLOOR_HEAPS)),
+        cells = V.FLOOR_HEAPS, filled = view.count, share = view.count / V.FLOOR_HEAPS, colour = CELL_COLOUR,
+        pattern = MALT_CELL }
 end
 
 -- Floor Info
@@ -155,30 +191,37 @@ end
 
 function FloorWindow:refresh()
     self.floorView = viewOf(self.station)
+    local station, playerObj = self.station, self.playerObj
+    self.drop = self.drop or { judge = function(items) return FloorUI.dropJudge(V.floorOf(station), items) end,
+        drop = function(take) FloorUI.put(playerObj, station, take) end }
 end
 
+-- Floor Info on the settled look (all_info_mock): the band, the Station block with the working rate, the heaps as
+-- cells with their lore beside them (Steeped Grain dragged onto them is spread), a row a heap, Take Done and Take
+-- All, then notes.
 function FloorWindow:render()
     ISCollapsableWindow.render(self)
     if self.isCollapsed or not self.floorView then return end
     local view = self.floorView
     local station, playerObj = self.station, self.playerObj
-    local y = self:top()
-    y = self:row(y, KEY .. "InfoPlace", UI.placeText(view.place, view.placeC))
-    y = self:row(y, KEY .. "RateLabel", UI.percent(V.maltingRate(view.placeC)))
-    y = self:row(y, KEY .. "InfoHolds", say("InfoHeapsValue", tostring(view.count), tostring(V.FLOOR_HEAPS)))
-    y = self:pieceList(y, KEY .. "InfoHeaps", view.rows)
+    local word, text, look = FloorUI.band(view)
+    local y = self:band(getText(word), text, look[1], look[2])
+    y = self:stationBlock(y, STATION_ICON, view.place, view.placeC, { { KEY .. "RateLabel", UI.percent(V.maltingRate(view.placeC)) } })
+    y = self:section(y, "IGUI_TraditionalPreservationCore_SectionHolds")
+    local holding = FloorUI.holding(view)
+    holding.drop = self.drop
+    y = self:holds(y, { holding }, say("FloorLore"))
+    if view.count > 0 then
+        y = self:pieceListBlock(y, KEY .. "InfoHeaps", say("InfoHeapsCount", tostring(view.count)), view.rows)
+    end
     local done, all = view.doneIds, view.allIds
     y = self:buttonRow(y, {
-        { title = UI.say(MENU .. "TakeDone", tostring(#done)), enabled = #done > 0,
+        { title = UI.say(MENU .. "TakeDone", tostring(#done)), icon = GREEN_MALT_ICON, enabled = #done > 0,
           tooltip = #done == 0 and view.waitText or nil, onClick = function() FloorUI.take(playerObj, station, done) end },
-        { title = UI.say(MENU .. "TakeAllCount", tostring(#all)), enabled = #all > 0,
+        { title = UI.say(MENU .. "TakeAllCount", tostring(#all)), icon = RETURNED_ICON, enabled = #all > 0,
           tooltip = #all > #done and say("TakeAllHelp") or nil, onClick = function() FloorUI.take(playerObj, station, all) end },
     })
-    y = self:dropZone(y, say("DropIdle"), function(items) return FloorUI.dropJudge(V.floorOf(station), items) end,
-        function(take) FloorUI.put(playerObj, station, take) end, getTexture("media/textures/Item_SteepedGrain.png"))
-    local notes = { say("NoteMalting", tostring(V.GREEN_MALT_DAYS[1])) }
-    if view.count == 0 then table.insert(notes, 1, say("NoteFloorEmpty")) end
-    self:drawNotes(y, notes)
+    self:drawNotes(y, { say("NoteMalting", tostring(V.GREEN_MALT_DAYS[1])), say("NoteDrag") })
 end
 
 function FloorUI.open(playerObj, station)
@@ -219,7 +262,7 @@ function FloorUI.addMenu(context, playerObj, station)
     -- Take Done is always there: greyed until a heap is done, saying when the next will be.
     local done, all = view.doneIds, view.allIds
     local finished = menu:addOption(UI.say(MENU .. "TakeDone", tostring(#done)), playerObj, FloorUI.take, station, done)
-    finished.iconTexture = getTexture("media/textures/Item_GreenMalt.png")
+    finished.iconTexture = getTexture(GREEN_MALT_ICON)
     if #done == 0 then UI.disable(finished, view.waitText) end
     if #all > #done then
         local takeAll = menu:addOption(getText(MENU .. "TakeAll"), playerObj, FloorUI.take, station, all)

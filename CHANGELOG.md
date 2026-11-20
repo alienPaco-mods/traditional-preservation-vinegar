@@ -1,5 +1,12 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.47
+- **Malting Floor Info built to the approved mock** (`art/all_info_mock.png`): a band (Empty, Malting with sprouting
+  and done counts, Waiting when none sprouts, Done, Stale, Rotten; worst first), the Station block (outline icon,
+  Place, Working Rate), the four heaps as cells in the malt pattern (`TPCell_Malt`) with the shiels lore beside them,
+  Steeped Grain dragged onto them spreads (the drop square is gone), the heaps' list, Take Done (Green Malt icon) and
+  Take All buttons, and the notes.
+
 ## 0.2.46
 - **Orléans Vinegar Cask Info built to the approved mock** (`art/cask_one_tank_mock.png`): a band (Empty, Paused,
   Ready with bottles, Crowded above the air line, Souring with its speed), the Station block (outline icon, Place,
