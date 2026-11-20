@@ -93,7 +93,7 @@
   "IGUI_TraditionalPreservationVinegar_FloorEmpty": "Nothing is on the floor.",
   "IGUI_TraditionalPreservationVinegar_NoneDone": "None done yet: the next in %1.",
   "IGUI_TraditionalPreservationVinegar_NoneDoneStopped": "None done yet, and none is sprouting now (too cold or too hot).",
-  "IGUI_TraditionalPreservationVinegar_SpreadHelp": "Each Steeped Grain is its own heap with its own clock: a new one can go down beside heaps already sprouting. Best at 12 to 20 C.",
+  "IGUI_TraditionalPreservationVinegar_SpreadHelp": "Each Steeped Grain is its own heap with its own clock: a new one can go down beside heaps already sprouting. Best at 12 to 20°C.",
   "IGUI_TraditionalPreservationVinegar_TakeAllHelp": "A heap taken off before it is done comes back as Steeped Grain that keeps how far it sprouted, and waits until it is spread again.",
   "IGUI_TraditionalPreservationVinegar_DropIdle": "Drop Steeped Grain here",
   "IGUI_TraditionalPreservationVinegar_DropSpread": "Spread %1 of %2 on the floor",

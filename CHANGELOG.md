@@ -1,5 +1,8 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.45
+- Temperatures in the game's text read with the degree sign ("12°C", was "12 C"), as TP Core 0.1.37's.
+
 ## 0.2.44
 - Malting Floor Info's drop square shows Steeped Grain.
 
