@@ -1,5 +1,14 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.48
+- **Starters on the slot path** (`art/starter_path_mock.png`): the Fermentation Vessel's yeast has a slot left of its
+  tank with an arrow in (Add Starter greyed, Repitch in amber while a batch is underpitched or lagging, used once
+  pitched); a full packet dragged onto it pitches, a click or right-click opens Pitch Yeast. The Pitch Yeast button
+  is gone. The Orléans cask's mother has a slot each side of the tank: in, Add Mother until one goes in, then the
+  mother with its layers; out, the next layer greyed (+1, next in n L), then a green Split that splits a layer into
+  an empty jar on a click. A Mother of Vinegar dragged onto the empty slot goes in; a click or right-click on either
+  slot opens the mother's menu. The mother button is gone.
+
 ## 0.2.47
 - **Malting Floor Info built to the approved mock** (`art/all_info_mock.png`): a band (Empty, Malting with sprouting
   and done counts, Waiting when none sprouts, Done, Stale, Rotten; worst first), the Station block (outline icon,

@@ -320,23 +320,23 @@ check("band: fermenting", band(view(0, 0, working)) == "Fermenting: a 10.0 L bat
 check("band: fermented wort ready", band(view(0, 8000)) == "Ready: 8.0 L of fermented wort to draw off")
 check("band: wort waits for its yeast, any amount", band(view(6000, 0)) == "Waiting: 6.0 L of wort, pitch yeast to start")
 
-local tank = VinegarUI.vesselHoldings(view(6000, 0, nil, false, 30))[1]
+local tank = VinegarUI.vesselHoldings(view(6000, 0, nil, false, 30))[2]
 check("one tank: Wort, its litres, souring in amber, the 16 L line", tank.name == "Wort" and tank.amount == "6.0 / 20 L"
     and tank.state == "Souring (30h)" and tank.stateColour == InfoWindow.BAND_WAITING[1]
     and tank.line.share == 0.8 and tank.line.text == "16 L", tank.state)
-tank = VinegarUI.vesselHoldings(view(6000, 0, nil, true))[1]
+tank = VinegarUI.vesselHoldings(view(6000, 0, nil, true))[2]
 check("soured wort says so in red", tank.state == "soured" and tank.stateColour == InfoWindow.BAND_AT_RISK[1])
-tank = VinegarUI.vesselHoldings(view(0, 0, { ml = 18000, progress = 0.25, hoursLeft = 180, rate = 1, foaming = true, foamedMl = 1000 }))[1]
+tank = VinegarUI.vesselHoldings(view(0, 0, { ml = 18000, progress = 0.25, hoursLeft = 180, rate = 1, foaming = true, foamedMl = 1000 }))[2]
 check("a batch: Fermenting, turning from the foot, bubbling, spilling while it foams over, its loss in red",
     tank.name == "Fermenting" and tank.amount == "18.0 / 20 L" and math.abs(tank.settled.share - 0.225) < 1e-9
     and math.abs(tank.share - 0.675) < 1e-9 and tank.working.speed == 1 and tank.working.spill
     and tank.state == "25%, 8d" and tank.under == "1.0 L lost to foam" and tank.underColour == InfoWindow.BAND_AT_RISK[1], tank.state)
-tank = VinegarUI.vesselHoldings(view(0, 0, { ml = 20000, progress = 0.04, hoursLeft = 400, rate = 1, underpitched = true }))[1]
+tank = VinegarUI.vesselHoldings(view(0, 0, { ml = 20000, progress = 0.04, hoursLeft = 400, rate = 1, underpitched = true }))[2]
 check("underpitched: half the bubbles, the state in amber", tank.working.speed == 0.5 and tank.stateColour == InfoWindow.BAND_WAITING[1])
-tank = VinegarUI.vesselHoldings(view(0, 0, { ml = 10000, progress = 0.5, rate = 0 }))[1]
+tank = VinegarUI.vesselHoldings(view(0, 0, { ml = 10000, progress = 0.5, rate = 0 }))[2]
 check("paused: still, the state in amber, no loss told", tank.working.speed == 0 and tank.under == nil
     and tank.state == "50%, " .. getText("IGUI_TraditionalPreservationCore_Paused"))
-tank = VinegarUI.vesselHoldings(view(0, 8000))[1]
+tank = VinegarUI.vesselHoldings(view(0, 8000))[2]
 check("fermented: keeps", tank.name == "Fermented" and tank.state == "keeps" and tank.amount == "8.0 / 20 L")
 local rows = VinegarUI.vesselRows(view(0, 0), true)
 check("station rows: the working rate, then the hose to the cask", rows[1][1] == "IGUI_TraditionalPreservationVinegar_RateLabel"
@@ -361,7 +361,7 @@ check("none on fermented wort: draw it off first", #judged.take == 0 and judged.
 judged = VinegarUI.wortJudge({ wortMl = 0, fermentedMl = 0 }, { bucket(V.SOUR_WORT, 10) })
 check("soured wort is refused", #judged.take == 0 and judged.lines[1] == "The vessel takes containers of wort.")
 local drop = {}
-check("the drop sits on the one tank", VinegarUI.vesselHoldings(view(6000, 0), drop)[1].drop == drop)
+check("the drop sits on the one tank", VinegarUI.vesselHoldings(view(6000, 0), drop)[2].drop == drop)
 -- Cask Info (art/cask_one_tank_mock.png): band, tank, rows, the drag.
 local function caskBand(caskModData, status)
     local word, text = VinegarUI.caskBand(caskModData, status)
@@ -376,13 +376,13 @@ check("cask band: crowded above the air line, its slower speed", caskBand({ ml =
 check("cask band: the mother at work with a starter", caskBand({ ml = 20000, strength = 0.5, mother = true }, warm)
     == "Souring: the mother at work, 133% speed", caskBand({ ml = 20000, strength = 0.5, mother = true }, warm))
 check("cask band: souring without", caskBand({ ml = 20000, strength = 0.1 }, warm) == "Souring: 20.0 L at work, 100% speed")
-local caskTank = VinegarUI.caskHoldings({ ml = 22000, strength = 0.62, mother = true, layers = 3 }, { rate = 1, hoursLeft = 216 })[1]
+local caskTank = VinegarUI.caskHoldings({ ml = 22000, strength = 0.62, mother = true, layers = 3 }, { rate = 1, hoursLeft = 216 })[2]
 check("cask tank: Souring, vinegar rising from the foot by its strength, the mother's layers, the air line",
     caskTank.name == "Souring" and caskTank.amount == "22.0 / 30 L" and math.abs(caskTank.settled.share - 22 / 30 * 0.62) < 1e-9
     and caskTank.layers == 3 and caskTank.line.text == "22.5 L" and caskTank.state == "62%, 9d" and not caskTank.stateColour, caskTank.state)
-caskTank = VinegarUI.caskHoldings({ ml = 27000, strength = 0.2 }, { rate = 1, hoursLeft = 500 })[1]
+caskTank = VinegarUI.caskHoldings({ ml = 27000, strength = 0.2 }, { rate = 1, hoursLeft = 500 })[2]
 check("crowded: the state in amber", caskTank.stateColour == InfoWindow.BAND_WAITING[1])
-caskTank = VinegarUI.caskHoldings({ ml = 22000, strength = 1, mother = true }, warm)[1]
+caskTank = VinegarUI.caskHoldings({ ml = 22000, strength = 1, mother = true }, warm)[2]
 check("full strength: Vinegar", caskTank.name == "Vinegar" and caskTank.state == "full strength" and caskTank.settled == nil)
 rows = VinegarUI.caskRows({ ml = 22000, strength = 0.62, mother = true, layers = 3, souredMl = 0 }, warm, true)
 check("cask rows: the rate, the mother's layers and the next, the hose to the vessel", getText(rows[2][1]) == "Mother"
@@ -395,20 +395,51 @@ judged = VinegarUI.caskJudge({ ml = 20000, strength = 0.9, mother = true }, { bu
 check("a strong pool keeps its starter: no warning", #judged.lines == 1)
 judged = VinegarUI.caskJudge({ ml = 30000, strength = 0.5 }, { bucket(V.FERMENTED, 10) })
 check("a full cask refuses", #judged.take == 0 and judged.lines[1] == "The cask is full.")
--- The mother's button: Add with none, Take at one layer, Split from two; greyed with the reason.
-local jar = { isRotten = function() return false end }
-local deadMother = { isRotten = function() return true end }
-local button = VinegarUI.motherButton({ ml = 0, strength = 0 }, nil, jar)
-check("no mother, a living one carried: Add Mother", button.mode == "add" and button.item == jar and not button.refusal)
-button = VinegarUI.motherButton({ ml = 0, strength = 0 }, nil, deadMother)
-check("only a dead one: greyed, it has died", button.mode == "add" and button.refusal == "IGUI_TraditionalPreservationVinegar_DeadMother")
-button = VinegarUI.motherButton({ ml = 0, strength = 0 }, nil, nil)
-check("none carried: greyed, you need one", button.refusal == "IGUI_TraditionalPreservationVinegar_NoMother")
-button = VinegarUI.motherButton({ ml = 1000, strength = 0.5, mother = true, layers = 1 }, jar, nil)
-check("one layer: Take Mother into the jar", button.mode == "take" and button.title == "ContextMenu_TraditionalPreservationVinegar_TakeMother"
-    and button.item == jar)
-button = VinegarUI.motherButton({ ml = 1000, strength = 0.5, mother = true, layers = 3 }, nil, nil)
-check("three layers: Split Mother, greyed with no jar", button.mode == "split" and button.refusal == "IGUI_TraditionalPreservationVinegar_NoJar")
+-- The starter slots (art/starter_path_mock.png): the vessel's yeast, the cask's mother in and out.
+local function item(fullType, uses, rotten)
+    return { getFullType = function() return fullType end, getCurrentUsesFloat = function() return uses or 1 end,
+        isRotten = function() return rotten or false end }
+end
+local actions = { drop = {}, click = function() end, menu = function() end, split = function() end }
+local holdings = VinegarUI.vesselHoldings(view(6000, 0), drop, actions)
+local slot = holdings[1]
+check("vessel: the yeast's slot left of the tank, Add Starter greyed, it takes the drag", #holdings == 2 and slot.kind == "slot"
+    and slot.look == "empty" and slot.name == "Add Starter" and slot.drop == actions.drop and slot.arrow == "")
+slot = VinegarUI.yeastSlot(view(0, 0, working), actions)
+check("a batch at work: used, nothing taken", slot.name == "used" and slot.drop == nil and slot.click == nil)
+local lagging = { ml = 18000, progress = 0.3, hoursLeft = 170, rate = 1, lagUntil = 130 }
+local lagView = view(0, 0, lagging)
+lagView.record.run.lagUntil = 130
+slot = VinegarUI.yeastSlot(lagView, actions)
+check("lagging: Repitch in amber, it takes the drag", slot.name == "Repitch" and slot.nameColour == InfoWindow.BAND_WAITING[1]
+    and slot.drop == actions.drop, slot.name)
+check("fermented wort in: used", VinegarUI.yeastSlot(view(0, 8000), actions).name == "used")
+local yeast = item(V.YEAST, 1)
+judged = VinegarUI.yeastJudge(view(6000, 0), { yeast, item(V.YEAST, 1) })
+check("a full packet pitches, one a batch", #judged.take == 1 and judged.take[1] == yeast and judged.lines[1] == "Pitch the yeast"
+    and judged.refused == "One packet a batch: the rest stay with you.")
+judged = VinegarUI.yeastJudge(view(6000, 0), { item(V.YEAST, 0.5) })
+check("a part packet is refused", #judged.take == 0 and judged.lines[1] == "Needs a full packet of yeast")
+local refusing = view(0, 0)
+refusing.refusal = "IGUI_TraditionalPreservationVinegar_NeedsWort"
+check("no wort: the pitch's refusal", #VinegarUI.yeastJudge(refusing, { yeast }).take == 0)
+holdings = VinegarUI.caskHoldings({ ml = 10000, strength = 0.3 }, warm, nil, actions)
+check("cask with no mother: Add Mother greyed left of the tank, no out slot", #holdings == 2 and holdings[1].look == "empty"
+    and holdings[1].name == "Add Mother" and holdings[1].drop == actions.drop and holdings[2].arrow == nil)
+holdings = VinegarUI.caskHoldings({ ml = 10000, strength = 0.3, mother = true, layers = 1, souredMl = 0 }, warm, nil, actions)
+check("one layer: the mother in, +1 greyed out with the litres to it", #holdings == 3 and holdings[1].look == "in"
+    and holdings[1].count == "1" and holdings[1].amount == "1 layer" and holdings[1].drop == nil
+    and holdings[3].look == "pending" and holdings[3].count == "+1" and holdings[3].name:find("^next in ") ~= nil
+    and holdings[3].click == nil and holdings[2].arrow == "", holdings[3].name)
+holdings = VinegarUI.caskHoldings({ ml = 10000, strength = 0.3, mother = true, layers = 3 }, warm, nil, actions)
+check("three layers: a green Split to click, the arrow green", holdings[1].amount == "3 layers" and holdings[3].look == "ready"
+    and holdings[3].name == "Split" and holdings[3].click == actions.split and holdings[2].arrowColour == holdings[3].nameColour)
+local mother = item(V.MOTHER_ITEM)
+judged = VinegarUI.motherJudge({ ml = 0, strength = 0 }, { item(V.MOTHER_ITEM, 1, true), mother })
+check("a living mother goes in, the dead one stays", #judged.take == 1 and judged.take[1] == mother and judged.lines[1] == "Add the mother")
+judged = VinegarUI.motherJudge({ ml = 0, strength = 0 }, { item(V.MOTHER_ITEM, 1, true) })
+check("only a dead one: it has died", #judged.take == 0 and judged.lines[1] == getText("IGUI_TraditionalPreservationVinegar_DeadMother"))
+check("a cask with a mother takes no other", #VinegarUI.motherJudge({ ml = 0, strength = 0, mother = true }, { mother }).take == 0)
 rows = VinegarUI.caskRows({ ml = 1000, strength = 0.5, mother = true, layers = 1, souredMl = 0 }, warm, false)
 check("one layer reads as one", rows[2][2]:find("^1 layer, next in ") ~= nil, rows[2][2])
 check("and no translator warnings", #H.textWarnings == 0)

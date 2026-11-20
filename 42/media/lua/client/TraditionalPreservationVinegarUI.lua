@@ -237,6 +237,9 @@ local KEY = "IGUI_TraditionalPreservationVinegar_"
 local STATION_ICON = "media/textures/TPStation_FermentationVessel.png"
 local AMBER, RED = InfoWindow.BAND_WAITING[1], InfoWindow.BAND_AT_RISK[1]
 local FOAM_SHOWN_ML = 50   -- wort lost to foam is told from this much
+local YEAST_ICON = "Item_Yeast"
+local DIM = { 0.47, 0.47, 0.47 }   -- a slot waiting for what it takes, and its arrow
+local READY_GREEN = { 0.59, 0.82, 0.51 }   -- what is there to take
 
 -- Whether the waiting wort has soured where the vessel stands, and the hours it keeps if not (nil: no wort, or it
 -- won't sour there).
@@ -291,7 +294,7 @@ end
 -- batch Fermenting (wort turning to fermented wort from the foot by the share done, bubbling by the working rate,
 -- still when it waits, the foam thinning as it nears done and running over while it foams over; the wort it has lost
 -- to foam under it), or Fermented wort (keeps). drop (the window's: containers of wort dragged on pour in) on it.
-function VinegarUI.vesselHoldings(view, drop)
+function VinegarUI.vesselHoldings(view, drop, actions)
     local record, status = view.record, view.status
     local tank = { kind = "tank", drop = drop,
         line = { share = V.HEADSPACE_ML / V.TANK_ML, text = say(KEY .. "VesselLine", string.format("%.0f", V.HEADSPACE_ML / 1000)) } }
@@ -323,7 +326,7 @@ function VinegarUI.vesselHoldings(view, drop)
             tank.state, tank.stateColour = say(KEY .. "VesselSouring", UI.shortDuration(view.soursIn)), AMBER
         end
     end
-    return { tank }
+    return { VinegarUI.yeastSlot(view, actions), tank }
 end
 
 -- Containers dragged onto the vessel, judged as Pour Wort would take them: wort alone, up to the room there is (the
@@ -358,6 +361,43 @@ function VinegarUI.pitchHelp(record)
     return say(KEY .. "PitchHelp", UI.litres(record.wortMl))
 end
 
+-- Pitch Yeast (or the repitch) as an option, greyed with the reason when it can't go now.
+local function addPitchOption(menu, playerObj, vessel, view)
+    local yeast, reason = pitchState(view, playerObj)
+    local pitch = menu:addOption(getText("ContextMenu_TraditionalPreservationVinegar_PitchYeast"), playerObj, onPitch, vessel, yeast)
+    pitch.iconTexture = getTexture(YEAST_ICON)
+    if reason then UI.disable(pitch, reason) else tooltipFor(pitch, VinegarUI.pitchHelp(view.record)) end
+end
+
+-- The yeast's slot left of the tank (art/starter_path_mock.png; user, session 69): Add Starter while the wort waits
+-- for it, Repitch in amber while a batch lags or is underpitched, "used" once pitched (the yeast stays in the batch).
+-- actions = { drop, click, menu } (the window's), on it while it takes yeast.
+function VinegarUI.yeastSlot(view, actions)
+    local record = view.record
+    local slot = { kind = "slot", arrow = "", icons = { YEAST_ICON }, look = "empty", arrowColour = DIM }
+    local repitch = record.run and V.needsRepitch(record.run, view.now)
+    if record.run and not repitch or not record.run and record.fermentedMl > 0 then
+        slot.name, slot.nameColour = getText(KEY .. "SlotUsed"), InfoWindow.NOTE_COLOUR
+        return slot
+    end
+    slot.name, slot.nameColour = getText(KEY .. (repitch and "SlotRepitch" or "SlotAddStarter")), repitch and AMBER or DIM
+    if actions then slot.drop, slot.click, slot.menu = actions.drop, actions.click, actions.menu end
+    return slot
+end
+
+-- Yeast dragged onto the slot: one full packet pitches (or repitches) the batch.
+function VinegarUI.yeastJudge(view, items)
+    local yeast, part = nil, false
+    for _, item in ipairs(items) do
+        if not yeast and V.isFullYeast(item) then yeast = item end
+        if item:getFullType() == V.YEAST then part = true end
+    end
+    if view.refusal then return { take = {}, lines = { getText(view.refusal) } } end
+    if not yeast then return { take = {}, lines = { getText(part and KEY .. "FullYeast" or KEY .. "SlotTakesYeast") } } end
+    return { take = { yeast }, lines = { getText(KEY .. (view.record.run and "SlotRepitchDrop" or "SlotPitchDrop")) },
+        refused = #items > 1 and getText(KEY .. "SlotOnePacket") or nil }
+end
+
 -- The Station block's own rows under Place and Season: the working rate, and the hose.
 function VinegarUI.vesselRows(view, hosed)
     return { { "IGUI_TraditionalPreservationVinegar_RateLabel", percent(V.alcoholicRate(view.placeC)) },
@@ -382,17 +422,19 @@ function VinegarUI.vesselNotes(word, status)
     return notes
 end
 
-local function yeastIcon()
-    local script = getScriptManager():FindItem(V.YEAST)
-    return script and script:getNormalTexture()
-end
-
 -- Draw Off opens a menu of the empty containers under the button, as the right-click's submenu.
 local function openDrawOff(window, button)
     local playerObj = window.playerObj
     local x, y = window:getAbsoluteX() + button.x, window:getAbsoluteY() + button.y + button.height
     local context = ISContextMenu.get(playerObj:getPlayerNum(), x, y)
     addPourRows(context, playerObj, window.station, findItems(playerObj, Container.isEmptyVessel), "vesselOut")
+end
+
+-- A menu at the mouse filled by fill(context): a slot's click and right click.
+local function menuAt(playerObj, fill)
+    local context = ISContextMenu.get(playerObj:getPlayerNum(), getMouseX(), getMouseY())
+    fill(context)
+    if #context.options == 0 then context:setVisible(false) end
 end
 
 local VesselWindow = InfoWindow:derive("TraditionalPreservationVinegarVesselWindow")
@@ -415,22 +457,21 @@ function VesselWindow:refresh()
     local playerObj, vessel = self.playerObj, self.station
     self.drop = self.drop or { judge = function(items) return VinegarUI.wortJudge(V.vesselOf(vessel), items) end,
         drop = function(take) onPour(playerObj, vessel, take, "vesselIn") end }
+    local window = self
+    local function fill(context) addPitchOption(context, playerObj, vessel, window.vesselView) end
+    self.yeastActions = self.yeastActions or { menu = fill, click = function() menuAt(playerObj, fill) end,
+        drop = { judge = function(items) return VinegarUI.yeastJudge(window.vesselView, items) end,
+            drop = function(take) if take[1] then onPitch(playerObj, vessel, take[1]) end end } }
 end
 
--- Pitch Yeast while it can start or repitch a batch (greyed with the reason), Draw Off once fermented wort is in.
+-- Draw Off once fermented wort is in; the yeast goes in by its slot.
 function VesselWindow:vesselButtons(y)
-    local view, record = self.vesselView, self.vesselView.record
-    local playerObj, vessel, window = self.playerObj, self.station, self
+    local view, window = self.vesselView, self
     local buttons = {}
-    if record.fermentedMl > 0 then
+    if view.record.fermentedMl > 0 then
         table.insert(buttons, { title = getText("ContextMenu_TraditionalPreservationVinegar_DrawOff"), icon = FERMENTED_ICON,
             enabled = (view.empties or 0) > 0, tooltip = (view.empties or 0) == 0 and getText(KEY .. "NoContainer") or nil,
             onClick = function(button) openDrawOff(window, button) end })
-    elseif not record.run or V.needsRepitch(record.run, view.now) then
-        local yeast, reason = pitchState(view, playerObj)
-        table.insert(buttons, { title = getText("ContextMenu_TraditionalPreservationVinegar_PitchYeast"), icon = yeastIcon(),
-            enabled = reason == nil, tooltip = reason or VinegarUI.pitchHelp(record),
-            onClick = function() if yeast then onPitch(playerObj, vessel, yeast) end end })
     end
     return self:buttonRow(y, buttons)
 end
@@ -443,7 +484,7 @@ function VesselWindow:render()
     local y = self:band(getText(word), text, look[1], look[2])
     y = self:stationBlock(y, STATION_ICON, view.place, view.placeC, VinegarUI.vesselRows(view, V.hoseLink(self.station)))
     y = self:section(y, "IGUI_TraditionalPreservationCore_SectionHolds")
-    y = self:holds(y, VinegarUI.vesselHoldings(view, self.drop), getText(KEY .. "VesselLore"))
+    y = self:holds(y, VinegarUI.vesselHoldings(view, self.drop, self.yeastActions), getText(KEY .. "VesselLore"))
     y = self:vesselButtons(y)
     self:drawNotes(y, VinegarUI.vesselNotes(word, view.status))
 end
@@ -487,12 +528,7 @@ local function addVesselMenu(context, playerObj, vessel)
         end
     end
 
-    if not record.run or V.needsRepitch(record.run, view.now) then
-        local yeast, reason = pitchState(view, playerObj)
-        local pitch = menu:addOption(getText("ContextMenu_TraditionalPreservationVinegar_PitchYeast"), playerObj, onPitch, vessel, yeast)
-        pitch.iconTexture = getTexture("Item_Yeast")
-        if reason then UI.disable(pitch, reason) else tooltipFor(pitch, VinegarUI.pitchHelp(record)) end
-    end
+    if not record.run or V.needsRepitch(record.run, view.now) then addPitchOption(menu, playerObj, vessel, view) end
     if record.wortMl > 0 then
         -- Only empty containers; the wort keeps its age in them.
         local empties = findItems(playerObj, Container.isEmptyVessel)
@@ -676,8 +712,51 @@ function VinegarUI.caskBand(caskModData, status)
     return KEY .. "CaskBandSouring", say(KEY .. "CaskBandSouringText", UI.litres(caskModData.ml), speed), InfoWindow.BAND_WORKING
 end
 
--- The pool as one tank, its mother's layers on top, the air line; drop (the window's) on it.
-function VinegarUI.caskHoldings(caskModData, status, drop)
+-- The mother's slots either side of the tank (art/starter_path_mock.png; user, session 69): in, Add Mother greyed
+-- until one goes in, then the mother with its layers; out, while there is a mother, the layer it grows next (greyed,
+-- "next in 4 L") until it can spare one, then a green Split. actions = { drop (on the empty in slot), menu (Take and
+-- Split, on both slots), split (the out slot's click) }, the window's. Returns the in slot and the out slot (or nil).
+function VinegarUI.motherSlots(caskModData, actions)
+    actions = actions or {}
+    local inSlot = { kind = "slot", arrow = "", icons = { MOTHER_ICON } }
+    if not caskModData.mother then
+        inSlot.look, inSlot.name, inSlot.nameColour, inSlot.arrowColour = "empty", getText(KEY .. "SlotAddMother"), DIM, DIM
+        inSlot.drop, inSlot.menu, inSlot.click = actions.drop, actions.menu, actions.click
+        return inSlot, nil
+    end
+    local layers = V.motherLayers(caskModData)
+    inSlot.look, inSlot.count, inSlot.name = "in", tostring(layers), getText(KEY .. "SlotMother")
+    inSlot.amount = say(KEY .. (layers == 1 and "SlotLayer" or "SlotLayers"), tostring(layers))
+    inSlot.menu, inSlot.click = actions.menu, actions.click
+    local outSlot = { kind = "slot", icons = { MOTHER_ICON }, menu = actions.menu }
+    if V.canSplitMother(caskModData) then
+        outSlot.look, outSlot.count, outSlot.name, outSlot.nameColour = "ready", "1", getText(KEY .. "SlotSplit"), READY_GREEN
+        outSlot.amount, outSlot.click = getText(KEY .. "SlotALayer"), actions.split
+    else
+        outSlot.look, outSlot.count, outSlot.nameColour = "pending", "+1", InfoWindow.NOTE_COLOUR
+        outSlot.name = say(KEY .. "SlotNextIn", UI.litres(V.nextLayerMl(caskModData)))
+    end
+    return inSlot, outSlot
+end
+
+-- A Mother of Vinegar dragged onto the empty in slot: the first living one goes in.
+function VinegarUI.motherJudge(caskModData, items)
+    if caskModData.mother then return { take = {}, lines = { getText(KEY .. "SlotHasMother") } } end
+    local living, dead = nil, false
+    for _, item in ipairs(items) do
+        if item:getFullType() == V.MOTHER_ITEM then
+            if not living and not item:isRotten() then living = item end
+            if item:isRotten() then dead = true end
+        end
+    end
+    if not living then return { take = {}, lines = { getText(dead and KEY .. "DeadMother" or KEY .. "SlotTakesMother") } } end
+    return { take = { living }, lines = { getText(KEY .. "SlotAddMotherDrop") },
+        refused = #items > 1 and getText(KEY .. "SlotOneMother") or nil }
+end
+
+-- The pool as one tank, its mother's layers on top, the air line, the mother's slots either side; drop (the
+-- window's) on the tank, actions (VinegarUI.motherSlots') on the slots.
+function VinegarUI.caskHoldings(caskModData, status, drop, actions)
     local share = caskModData.ml / V.CASK_ML
     local fermented = Container.fluidColour(V.FERMENTED) or { 0.82, 0.71, 0.55 }
     local tank = { kind = "tank", amount = say(KEY .. "VesselTankAmount", UI.litres(caskModData.ml), string.format("%.0f", V.CASK_ML / 1000)),
@@ -695,7 +774,10 @@ function VinegarUI.caskHoldings(caskModData, status, drop)
             if not status.hoursLeft or caskModData.ml > V.AIR_ML then tank.stateColour = AMBER end
         end
     end
-    return { tank }
+    local inSlot, outSlot = VinegarUI.motherSlots(caskModData, actions)
+    if not outSlot then return { inSlot, tank } end
+    tank.arrow, tank.arrowColour = "", outSlot.look == "ready" and READY_GREEN or DIM
+    return { inSlot, tank, outSlot }
 end
 
 -- The Station block's own rows under Place and Season: the working rate, the mother, the hose.
@@ -732,20 +814,6 @@ function VinegarUI.caskJudge(caskModData, items)
     return { take = take, lines = lines, refused = #take < #items and refused or nil, adds = poured / V.CASK_ML }
 end
 
--- The mother's button by its size (user, session 67): Add Mother with none (a living one carried), Take Mother at one
--- layer, Split Mother from two; the right-click keeps Take Mother at any size. jar is an empty jar carried, mother a
--- Mother of Vinegar carried (living or not). Returns { mode, title, help, item, refusal }.
-function VinegarUI.motherButton(caskModData, jar, mother)
-    if not caskModData.mother then
-        local living = mother and not mother:isRotten() and mother or nil
-        return { mode = "add", title = "ContextMenu_TraditionalPreservationVinegar_AddMother", help = KEY .. "AddMother",
-            item = living, refusal = not living and (mother and KEY .. "DeadMother" or KEY .. "NoMother") or nil }
-    end
-    local mode = V.canSplitMother(caskModData) and "split" or "take"
-    return { mode = mode, title = "ContextMenu_TraditionalPreservationVinegar_" .. (mode == "split" and "SplitMother" or "TakeMother"),
-        help = KEY .. (mode == "split" and "SplitMother" or "TakeMother"), item = jar, refusal = not jar and KEY .. "NoJar" or nil }
-end
-
 -- Bottle Vinegar opens the bottle menu under the button, as the right-click's submenu.
 local function openBottles(window, button)
     local playerObj = window.playerObj
@@ -769,15 +837,22 @@ end
 function CaskWindow:refresh()
     local cask = self.station
     local caskModData = V.caskModData(cask)
-    local mothers = findItems(self.playerObj, function(item) return item:getFullType() == V.MOTHER_ITEM end)
-    local living
-    for _, mother in ipairs(mothers) do if not mother:isRotten() then living = mother break end end
     self.caskView = { caskModData = caskModData, status = caskNow(cask, caskModData), hosed = V.hoseLink(cask) ~= nil,
-        bottles = V.bottlesLeft(caskModData) > 0 and #emptyBottles(self.playerObj) or 0,
-        mother = VinegarUI.motherButton(caskModData, findItems(self.playerObj, V.isEmptyJar)[1], living or mothers[1]) }
+        bottles = V.bottlesLeft(caskModData) > 0 and #emptyBottles(self.playerObj) or 0 }
     local playerObj = self.playerObj
     self.drop = self.drop or { judge = function(items) return VinegarUI.caskJudge(V.caskModData(cask), items) end,
         drop = function(take) onPour(playerObj, cask, take, "caskIn") end }
+    local function fill(context) addMotherMenu(context, playerObj, cask, V.caskModData(cask)) end
+    local function click() menuAt(playerObj, fill) end
+    -- Split goes straight on with a jar carried; without one its menu says why.
+    local function split()
+        local jar = findItems(playerObj, V.isEmptyJar)[1]
+        if jar and V.canSplitMother(V.caskModData(cask)) then return onMother(playerObj, cask, jar, "split") end
+        click()
+    end
+    self.motherActions = self.motherActions or { menu = fill, click = click, split = split,
+        drop = { judge = function(items) return VinegarUI.motherJudge(V.caskModData(cask), items) end,
+            drop = function(take) if take[1] then onMother(playerObj, cask, take[1], "add") end end } }
 end
 
 function CaskWindow:render()
@@ -788,7 +863,7 @@ function CaskWindow:render()
     local y = self:band(getText(word), text, look[1], look[2])
     y = self:stationBlock(y, CASK_STATION_ICON, status.place, status.temperature, VinegarUI.caskRows(caskModData, status, self.caskView.hosed))
     y = self:section(y, "IGUI_TraditionalPreservationCore_SectionHolds")
-    y = self:holds(y, VinegarUI.caskHoldings(caskModData, status, self.drop), getText(KEY .. "CaskLore"))
+    y = self:holds(y, VinegarUI.caskHoldings(caskModData, status, self.drop, self.motherActions), getText(KEY .. "CaskLore"))
     local buttons, window = {}, self
     local ready = V.bottlesLeft(caskModData)
     if ready > 0 then
@@ -796,10 +871,6 @@ function CaskWindow:render()
             enabled = self.caskView.bottles > 0, tooltip = self.caskView.bottles == 0 and getText(KEY .. "NoBottles") or nil,
             onClick = function(button) openBottles(window, button) end })
     end
-    local mother, playerObj, cask = self.caskView.mother, self.playerObj, self.station
-    table.insert(buttons, { title = getText(mother.title), icon = MOTHER_ICON, enabled = mother.refusal == nil,
-        tooltip = getText(mother.refusal or mother.help),
-        onClick = function() if mother.item then onMother(playerObj, cask, mother.item, mother.mode) end end })
     y = self:buttonRow(y, buttons)
     local notes = caskNotes(caskModData)
     table.insert(notes, getText(KEY .. "CaskNoteDrag"))
