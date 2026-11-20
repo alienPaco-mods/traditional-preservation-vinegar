@@ -1,6 +1,14 @@
 # Changelog: Traditional Preservation (Vinegar)
 
 ## 0.2.46
+- **Orléans Vinegar Cask Info built to the approved mock** (`art/cask_one_tank_mock.png`): a band (Empty, Paused,
+  Ready with bottles, Crowded above the air line, Souring with its speed), the Station block (outline icon, Place,
+  Season, Working Rate, Mother: layers and the next, Hose: "Vessel Connected"), the pool as one tank (Souring, vinegar
+  rising from the foot by strength; Vinegar at full strength) with the mother's layers on top and the 22.5 L air
+  line, Bottle Vinegar (n) as a button with the bottle menu, fermented wort dragged onto the tank pours in (the hint
+  warns when it would thin the starter below 25%), and one mother button by its size (`art/cask_mother_button_mock.png`:
+  Add Mother, Take Mother at one layer, Split Mother from two; the right-click keeps Take at any size). The bars,
+  Time Left and Bottles rows are gone. The Mother row reads "1 layer" in the singular.
 - **The Fermentation Vessel is one 20 L pool** (user, session 67, as the cask and the incubator): wort, a batch or
   fermented wort, one at a time; any amount pitches (no more whole buckets); wort on fermented wort is refused, draw
   it off first. **Headspace**: full speed at any level, but above the 16 L line a batch in its first half foams over,

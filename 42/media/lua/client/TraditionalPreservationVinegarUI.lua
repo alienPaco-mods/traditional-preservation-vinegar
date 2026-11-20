@@ -522,18 +522,14 @@ local function onBottle(playerObj, cask, bottles, count)
     end
 end
 
-local function addBottleMenu(context, playerObj, cask, caskModData)
-    local option = context:addOption(getText("ContextMenu_TraditionalPreservationVinegar_Bottle"))
-    option.iconTexture = getTexture(VINEGAR_ICON)
+-- The empty bottles carried or nearby that take vinegar.
+local function emptyBottles(playerObj)
     local types = V.bottleTypes()
-    local bottles = findItems(playerObj, function(item) return types[item:getFullType()] and V.isEmptyBottle(item) end)
-    if #bottles == 0 then
-        UI.disable(option, getText("IGUI_TraditionalPreservationVinegar_NoBottles"))
-        return
-    end
+    return findItems(playerObj, function(item) return types[item:getFullType()] and V.isEmptyBottle(item) end)
+end
 
-    local menu = context:getNew(context)
-    context:addSubMenu(option, menu)
+-- Any bottle, all, and by kind with several kinds (the submenu's, or Cask Info's Bottle Vinegar button's menu).
+local function addBottleRows(menu, playerObj, cask, caskModData, bottles)
     -- With one kind of bottle, its own icon shows what gets filled. With several, the rows below show each.
     local groups = V.groupBottles(bottles)
     local function setIcon(option)
@@ -548,6 +544,19 @@ local function addBottleMenu(context, playerObj, cask, caskModData)
         local groupOption = menu:addOption(group.name .. " (" .. #group.items .. ")", playerObj, onBottle, cask, group.items, 1)
         groupOption.itemForTexture = group.items[1]
     end
+end
+
+local function addBottleMenu(context, playerObj, cask, caskModData)
+    local option = context:addOption(getText("ContextMenu_TraditionalPreservationVinegar_Bottle"))
+    option.iconTexture = getTexture(VINEGAR_ICON)
+    local bottles = emptyBottles(playerObj)
+    if #bottles == 0 then
+        UI.disable(option, getText("IGUI_TraditionalPreservationVinegar_NoBottles"))
+        return
+    end
+    local menu = context:getNew(context)
+    context:addSubMenu(option, menu)
+    addBottleRows(menu, playerObj, cask, caskModData, bottles)
 end
 
 local function onMother(playerObj, cask, item, mode)
@@ -642,9 +651,108 @@ local function caskDetail(cask, caskModData)
     return table.concat(lines, " <LINE> ")
 end
 
--- Cask Info (TP Core's InfoWindow): the same facts as the status line and its hover, with bars, kept up
--- to date while open.
-local CASK_BAR_COLOURS = { contents = { 0.62, 0.42, 0.18 }, souring = { 0.55, 0.6, 0.25 } }
+-- Cask Info (TP Core's InfoWindow) on the settled look (art/cask_one_tank_mock.png): a band with the pool's state, the
+-- Station block (Place, Season, the working rate, the mother, the hose), the pool as one tank named by what it holds
+-- (Souring, the fermented wort turning to vinegar from the foot by its strength; Vinegar at full strength) with the
+-- mother floating on it, the 22.5 L air line and the guild's lore, Bottle Vinegar when ready, then notes. Fermented
+-- wort dragged onto the tank pours in. Kept up to date while open.
+local CASK_STATION_ICON = "media/textures/TPStation_OrleansVinegarCask.png"
+local VINEGAR_COLOUR = { 0.55, 0.33, 0.16 }   -- malt vinegar's brown: vanilla has no vinegar fluid
+
+-- The band, the worst first: empty; too cold to work; full strength; crowded above the air line; souring. Returns
+-- the word's key, the text and the colours.
+function VinegarUI.caskBand(caskModData, status)
+    local speed = percent(status.rate * V.caskSpeed(caskModData))
+    if caskModData.ml <= 0 then return KEY .. "CaskBandEmpty", getText(KEY .. "CaskBandEmptyText"), InfoWindow.BAND_IDLE end
+    if caskModData.strength >= 1 then
+        return KEY .. "CaskBandReady", say(KEY .. "CaskBandReadyText", UI.litres(caskModData.ml), tostring(V.bottlesLeft(caskModData))),
+            InfoWindow.BAND_WORKING
+    end
+    if not status.hoursLeft then return KEY .. "CaskBandPaused", getText(KEY .. "CaskBandPausedText"), InfoWindow.BAND_WAITING end
+    if caskModData.ml > V.AIR_ML then
+        return KEY .. "CaskBandCrowded", say(KEY .. "CaskBandCrowdedText", UI.litres(V.AIR_ML), speed), InfoWindow.BAND_WAITING
+    end
+    if V.hasStarter(caskModData) then return KEY .. "CaskBandSouring", say(KEY .. "CaskBandMotherText", speed), InfoWindow.BAND_WORKING end
+    return KEY .. "CaskBandSouring", say(KEY .. "CaskBandSouringText", UI.litres(caskModData.ml), speed), InfoWindow.BAND_WORKING
+end
+
+-- The pool as one tank, its mother's layers on top, the air line; drop (the window's) on it.
+function VinegarUI.caskHoldings(caskModData, status, drop)
+    local share = caskModData.ml / V.CASK_ML
+    local fermented = Container.fluidColour(V.FERMENTED) or { 0.82, 0.71, 0.55 }
+    local tank = { kind = "tank", amount = say(KEY .. "VesselTankAmount", UI.litres(caskModData.ml), string.format("%.0f", V.CASK_ML / 1000)),
+        layers = V.motherLayers(caskModData), drop = drop,
+        line = { share = V.AIR_ML / V.CASK_ML, text = say(KEY .. "VesselLine", UI.litres(V.AIR_ML)) } }
+    if caskModData.ml > 0 and caskModData.strength >= 1 then
+        tank.name, tank.share, tank.colour, tank.state = getText(KEY .. "CaskVinegar"), share, VINEGAR_COLOUR, getText(KEY .. "CaskFullStrength")
+    else
+        tank.name = getText(KEY .. "CaskSouring")
+        tank.share, tank.colour = share * (1 - caskModData.strength), fermented
+        tank.settled = { share = share * caskModData.strength, colour = VINEGAR_COLOUR }
+        if caskModData.ml > 0 then
+            tank.state = say(KEY .. "VesselBatchState", percent(caskModData.strength),
+                status.hoursLeft and UI.shortDuration(status.hoursLeft) or getText("IGUI_TraditionalPreservationCore_Paused"))
+            if not status.hoursLeft or caskModData.ml > V.AIR_ML then tank.stateColour = AMBER end
+        end
+    end
+    return { tank }
+end
+
+-- The Station block's own rows under Place and Season: the working rate, the mother, the hose.
+function VinegarUI.caskRows(caskModData, status, hosed)
+    local layers = V.motherLayers(caskModData)
+    local mother = caskModData.mother and say(KEY .. (layers == 1 and "CaskMotherLayer" or "CaskMotherLayers"), tostring(layers), UI.litres(V.nextLayerMl(caskModData)))
+        or getText(KEY .. "InfoMotherNone")
+    return { { KEY .. "RateLabel", percent(status.rate * V.caskSpeed(caskModData)) }, { KEY .. "InfoMother", mother },
+        { KEY .. "InfoHose", getText(hosed and KEY .. "InfoHoseVessel" or KEY .. "InfoNoHose") } }
+end
+
+-- Containers dragged onto the cask, judged as Pour Fermented Wort takes them: fermented wort alone, up to the room
+-- there is. The hint warns when the pour would thin a working starter below STARTER_STRENGTH.
+function VinegarUI.caskJudge(caskModData, items)
+    local room, poured, take, refused = V.caskRoom(caskModData), 0, {}, nil
+    for _, item in ipairs(items) do
+        local container = item.getFluidContainer and item:getFluidContainer()
+        local why
+        if not container or not V.holdsOnly(container, V.FERMENTED) then
+            why = getText(KEY .. "CaskDropTakes")
+        elseif poured >= room then
+            why = getText(KEY .. "CaskDropFull")
+        else
+            poured = poured + math.min(Container.ml(container), room - poured)
+            table.insert(take, item)
+        end
+        if why then refused = refused or why end
+    end
+    local lines = { #take > 0 and say(KEY .. "WortDropPour", UI.litres(poured), tostring(#take)) or refused or getText(KEY .. "CaskDropTakes") }
+    if #take > 0 and V.hasStarter(caskModData) then
+        local after = caskModData.strength * caskModData.ml / (caskModData.ml + poured)
+        if after < V.STARTER_STRENGTH then table.insert(lines, say(KEY .. "CaskDropThins", percent(V.STARTER_STRENGTH))) end
+    end
+    return { take = take, lines = lines, refused = #take < #items and refused or nil, adds = poured / V.CASK_ML }
+end
+
+-- The mother's button by its size (user, session 67): Add Mother with none (a living one carried), Take Mother at one
+-- layer, Split Mother from two; the right-click keeps Take Mother at any size. jar is an empty jar carried, mother a
+-- Mother of Vinegar carried (living or not). Returns { mode, title, help, item, refusal }.
+function VinegarUI.motherButton(caskModData, jar, mother)
+    if not caskModData.mother then
+        local living = mother and not mother:isRotten() and mother or nil
+        return { mode = "add", title = "ContextMenu_TraditionalPreservationVinegar_AddMother", help = KEY .. "AddMother",
+            item = living, refusal = not living and (mother and KEY .. "DeadMother" or KEY .. "NoMother") or nil }
+    end
+    local mode = V.canSplitMother(caskModData) and "split" or "take"
+    return { mode = mode, title = "ContextMenu_TraditionalPreservationVinegar_" .. (mode == "split" and "SplitMother" or "TakeMother"),
+        help = KEY .. (mode == "split" and "SplitMother" or "TakeMother"), item = jar, refusal = not jar and KEY .. "NoJar" or nil }
+end
+
+-- Bottle Vinegar opens the bottle menu under the button, as the right-click's submenu.
+local function openBottles(window, button)
+    local playerObj = window.playerObj
+    local x, y = window:getAbsoluteX() + button.x, window:getAbsoluteY() + button.y + button.height
+    local context = ISContextMenu.get(playerObj:getPlayerNum(), x, y)
+    addBottleRows(context, playerObj, window.station, V.caskModData(window.station), emptyBottles(playerObj))
+end
 
 local CaskWindow = InfoWindow:derive("TraditionalPreservationVinegarCaskWindow")
 
@@ -661,34 +769,41 @@ end
 function CaskWindow:refresh()
     local cask = self.station
     local caskModData = V.caskModData(cask)
-    self.caskView = { caskModData = caskModData, status = caskNow(cask, caskModData), hosed = V.hoseLink(cask) ~= nil }
+    local mothers = findItems(self.playerObj, function(item) return item:getFullType() == V.MOTHER_ITEM end)
+    local living
+    for _, mother in ipairs(mothers) do if not mother:isRotten() then living = mother break end end
+    self.caskView = { caskModData = caskModData, status = caskNow(cask, caskModData), hosed = V.hoseLink(cask) ~= nil,
+        bottles = V.bottlesLeft(caskModData) > 0 and #emptyBottles(self.playerObj) or 0,
+        mother = VinegarUI.motherButton(caskModData, findItems(self.playerObj, V.isEmptyJar)[1], living or mothers[1]) }
+    local playerObj = self.playerObj
+    self.drop = self.drop or { judge = function(items) return VinegarUI.caskJudge(V.caskModData(cask), items) end,
+        drop = function(take) onPour(playerObj, cask, take, "caskIn") end }
 end
 
 function CaskWindow:render()
     ISCollapsableWindow.render(self)
     if self.isCollapsed or not self.caskView then return end
     local caskModData, status = self.caskView.caskModData, self.caskView.status
-    local y = self:top()
-
-    y = self:bar(y, "IGUI_TraditionalPreservationVinegar_InfoContents", caskModData.ml / V.CASK_ML, CASK_BAR_COLOURS.contents,
-        say("IGUI_TraditionalPreservationVinegar_InfoLitres", UI.litres(caskModData.ml), UI.litres(V.CASK_ML)))
-    local soured = caskModData.strength >= 1 and getText("IGUI_TraditionalPreservationVinegar_InfoReady") or percent(caskModData.strength)
-    y = self:bar(y, "IGUI_TraditionalPreservationVinegar_InfoSouring", caskModData.ml > 0 and caskModData.strength or 0, CASK_BAR_COLOURS.souring,
-        caskModData.ml > 0 and soured or "-")
-    local left = "-"
-    if caskModData.ml > 0 and caskModData.strength < 1 then left = leftText(status.hoursLeft) end
-    y = self:row(y, "IGUI_TraditionalPreservationVinegar_InfoTimeLeft", left)
-    y = self:row(y, "IGUI_TraditionalPreservationVinegar_InfoBottles", tostring(V.bottlesLeft(caskModData)))
-    y = self:row(y, "IGUI_TraditionalPreservationVinegar_Temperature", UI.placeText(status.place, status.temperature))
-    y = self:row(y, "IGUI_TraditionalPreservationVinegar_RateLabel", percent(status.rate * V.caskSpeed(caskModData)))
-    local mother = caskModData.mother and say("IGUI_TraditionalPreservationVinegar_InfoMotherLayers", tostring(V.motherLayers(caskModData)), UI.litres(V.nextLayerMl(caskModData)))
-        or getText("IGUI_TraditionalPreservationVinegar_InfoMotherNone")
-    y = self:row(y, "IGUI_TraditionalPreservationVinegar_InfoMother", mother)
-    y = self:row(y, "IGUI_TraditionalPreservationVinegar_InfoHose",
-        getText(self.caskView.hosed and "IGUI_TraditionalPreservationVinegar_HoseToVessel" or "IGUI_TraditionalPreservationVinegar_InfoNoHose"))
-
+    local word, text, look = VinegarUI.caskBand(caskModData, status)
+    local y = self:band(getText(word), text, look[1], look[2])
+    y = self:stationBlock(y, CASK_STATION_ICON, status.place, status.temperature, VinegarUI.caskRows(caskModData, status, self.caskView.hosed))
+    y = self:section(y, "IGUI_TraditionalPreservationCore_SectionHolds")
+    y = self:holds(y, VinegarUI.caskHoldings(caskModData, status, self.drop), getText(KEY .. "CaskLore"))
+    local buttons, window = {}, self
+    local ready = V.bottlesLeft(caskModData)
+    if ready > 0 then
+        table.insert(buttons, { title = say(KEY .. "CaskBottleButton", tostring(ready)), icon = VINEGAR_ICON,
+            enabled = self.caskView.bottles > 0, tooltip = self.caskView.bottles == 0 and getText(KEY .. "NoBottles") or nil,
+            onClick = function(button) openBottles(window, button) end })
+    end
+    local mother, playerObj, cask = self.caskView.mother, self.playerObj, self.station
+    table.insert(buttons, { title = getText(mother.title), icon = MOTHER_ICON, enabled = mother.refusal == nil,
+        tooltip = getText(mother.refusal or mother.help),
+        onClick = function() if mother.item then onMother(playerObj, cask, mother.item, mother.mode) end end })
+    y = self:buttonRow(y, buttons)
     local notes = caskNotes(caskModData)
-    if caskModData.ml > 0 and caskModData.strength < 1 then table.insert(notes, getText("IGUI_TraditionalPreservationVinegar_InfoAssumes")) end
+    table.insert(notes, getText(KEY .. "CaskNoteDrag"))
+    if caskModData.ml > 0 and caskModData.strength < 1 then table.insert(notes, getText(KEY .. "InfoAssumes")) end
     self:drawNotes(y, notes)
 end
 
