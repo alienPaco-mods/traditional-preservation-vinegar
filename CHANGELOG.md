@@ -1,5 +1,10 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.49
+- **The finished cask's bottles stand on the floor** (ROADMAP NEXT 1; user picked B in `art/cask_bottles_mock.png`):
+  the three bottles of the finished overlay floated off the floor beside the cask (two past the floor's edge, one on
+  the cask's own footprint). They now stand in front of it, against its right-front foot. The mod icon follows.
+
 ## 0.2.48
 - **Starters on the slot path** (`art/starter_path_mock.png`): the Fermentation Vessel's yeast has a slot left of its
   tank with an arrow in (Add Starter greyed, Repitch in amber while a batch is underpitched or lagging, used once

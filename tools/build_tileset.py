@@ -319,7 +319,8 @@ def paint_cloth(layer):
 
 def paint_bottles(layer):
     draw = ImageDraw.Draw(layer)
-    for index, (bx, by) in enumerate(((98, 216), (108, 210), (88, 224))):
+    # On the floor in front of the cask, against its right-front foot (art/cask_bottles_mock.png B).
+    for index, (bx, by) in enumerate(((96, 236), (106, 230), (88, 243))):
         draw.ellipse(box(bx, by, 4.5, 2.5), fill=SHADOW)
         poly(draw, [(bx - 3.5, by), (bx + 3.5, by), (bx + 3.5, by - 13), (bx + 1.4, by - 17), (bx + 1.4, by - 22), (bx - 1.4, by - 22), (bx - 1.4, by - 17), (bx - 3.5, by - 13)], shade(GLASS, 0.9 + index * 0.05))
         line(draw, (bx - 2, by - 2), (bx - 2, by - 12), shade(GLASS, 1.4), 0.8)
