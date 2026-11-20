@@ -1,5 +1,25 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.46
+- **The Fermentation Vessel is one 20 L pool** (user, session 67, as the cask and the incubator): wort, a batch or
+  fermented wort, one at a time; any amount pitches (no more whole buckets); wort on fermented wort is refused, draw
+  it off first. **Headspace**: full speed at any level, but above the 16 L line a batch in its first half foams over,
+  losing up to half of what is above the line by the working rate (20 L at 20 C: about 2 L). **Top-ups on a young
+  batch**: more wort than is in, under 20% done, underpitches it (half speed); under 50%, a lag of a day a share added
+  (at most 2 days), the day's top-ups counted together; Pitch Yeast with a fresh packet sets it going again. `TPV.batch(litres, pct, "underpitched" |
+  "lag")`; the simulation's 20 L runs now lose their foam (golden updated).
+- **Fermentation Vessel Info built to the approved mock** (TP Core 0.1.43; then `art/vessel_one_pool_mock.png` for
+  the one pool: a single tank named Wort, Fermenting or Fermented, the 16 L line, foam running over and the wort lost,
+  Foaming over / Underpitched / Lagging bands, Draw Off as a button; what follows describes the two-tank step before): a band with its state (Soured first, then
+  Empty, Paused when too cold, Fermenting with the wort waiting, Ready, Waiting for yeast or for a batch's worth), the
+  Station block (outline icon, Place, Season, Working Rate, Hose reading "Cask Connected"), the Wort and Fermented
+  tanks in their fluids' colours with the yeast's arrow and alegar's lore, the batch as a Working bar (the time left
+  as "about 2 days"), Pitch Yeast with the yeast's icon. While a batch works the Fermented tank holds it as Fermenting
+  (`art/vessel_two_tanks_mock.png` E): turning from wort to fermented from the foot, bubbling by the working rate
+  under a foam cap, "74%, 3d" under it; no Working block. The Wort tank reads "Souring (2d)". Drag containers of
+  wort onto the Wort tank to pour them in, or onto the batch while one works to top it up (step c). The bars are gone; the long "if the
+  temperature holds" time string with them.
+
 ## 0.2.45
 - Temperatures in the game's text read with the degree sign ("12°C", was "12 C"), as TP Core 0.1.37's.
 

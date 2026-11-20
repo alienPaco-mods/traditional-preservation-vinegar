@@ -98,7 +98,7 @@ Crafting menu, Cooking, with a Ripped Sheet or Cheesecloth (kept). The bucket th
 
 Wort and Fermented Wort are real liquids, added by this mod, not vanilla ones. They sit in any vanilla container: buckets, bottles, pots, mugs. Both are drinkable: wort is sweet and filling, and fermented wort is a weak, flat, unhopped ale (4% alcohol) that leaves you a little less happy than a proper beer would. Neither mixes with any other liquid, so a container of wort stays pure.
 
-**Wort sours if it waits for the yeast** (sandbox **Wort sours**, on by default). Lactic bacteria from the grain get there first: wort left in a bucket, any container or the vessel's Wort tank becomes **Sour Wort** in 2 days at 20 C, 1 day at 30 C, about 5 days in a cool cellar, and never while frozen. Sour wort is still drinkable (a little unhappiness), but the vessel won't take it: pour it away. It ages by where it stands, as Dairy's milk does (TP Core's `FluidAgeing`), also while you're away; mixing old and new wort keeps the older age. Once a run has started the wort is safe, and fermented wort keeps.
+**Wort sours if it waits for the yeast** (sandbox **Wort sours**, on by default). Lactic bacteria from the grain get there first: wort left in a bucket, any container or waiting in the vessel becomes **Sour Wort** in 2 days at 20 C, 1 day at 30 C, about 5 days in a cool cellar, and never while frozen. Sour wort is still drinkable (a little unhappiness), but the vessel won't take it: pour it away. It ages by where it stands, as Dairy's milk does (TP Core's `FluidAgeing`), also while you're away; mixing old and new wort keeps the older age. Once a run has started the wort is safe, and fermented wort keeps.
 
 | Wort sours (days, `tools/season_report.lua`) | Outdoors | Indoors | Grid on (22 C) | Basement |
 |---|---|---|---|---|
@@ -111,25 +111,36 @@ Wort and Fermented Wort are real liquids, added by this mod, not vanilla ones. T
 
 ### 7. Fermentation Vessel
 
-Everything is in the vessel's right-click **Fermentation Vessel Info** submenu, and **Fermentation Vessel** (in the submenu, and at the bottom of the main menu) shows the Wort tank, the batch and the Fermented tank as bars, with the place, the working rate and a **Pitch Yeast** button.
+Everything is in the vessel's right-click **Fermentation Vessel Info** submenu, and **Fermentation Vessel** (in the submenu, and at the bottom of the main menu) opens on a band with its state, the worst first: *Soured*, *Empty*, *Foaming over* (red: wort is spilling), *Underpitched*, *Lagging* (with how long), *Paused* below freezing, *Fermenting*, *Ready*, *Waiting* for yeast. Then TP Core's Station block (the vessel's outline icon, Place, Season, Working Rate, Hose: *Cask Connected*), and its one pool as a tank named by what it holds, with a dashed line at **16 L** and alegar's lore beside it: **Wort** (*Souring (2d)* in amber, or *soured* in red), **Fermenting** (wort turning to fermented wort from the foot by the share done, bubbles rising by the working rate, half as fast underpitched, still while it lags or is paused, a foam cap that thins as it nears done and runs down the side while it foams over; *74%, 3d* under it, and *1.0 L lost to foam* in red once any is), or **Fermented** (*keeps*). Under the tank **Pitch Yeast** with the yeast's icon (to start a batch, or to repitch one underpitched or lagging), or **Draw Off** once fermented wort is in (a menu of your empty containers under the button). Containers of wort dragged onto the tank pour in, or top up the batch while one works (`TraditionalPreservationVinegarUI.wortJudge`, as Pour Wort takes them). Its band, tank, rows and notes are `TraditionalPreservationVinegarUI.vesselBand`, `vesselHoldings`, `vesselRows` and `vesselNotes`.
 
-1. **Pour Wort**: pick a container, or All. Only containers holding nothing but wort are offered. The Wort tank holds 20 L.
+The vessel is **one pool of 20 L**, as the cask and the incubator are: wort waiting, a batch fermenting, or fermented wort, one at a time.
+
+1. **Pour Wort**: pick a container, or All. Only containers holding nothing but wort are offered. Any amount up to 20 L. Not on fermented wort: draw that off first (the row is greyed and says so).
 2. **Pitch Yeast** with **one full packet of vanilla Yeast** on you. A part-used packet won't do, as the batch uses the whole packet.
 
-A batch takes whole buckets from the tank: **10 L** with one bucket's worth in, **20 L** with two. Anything over a whole bucket stays in the tank. It takes 10 days at the best temperature (18 to 25 C) and gives back 95%, so 9.5 or 19 L, as the lees stay behind. One packet either way, so two buckets is the efficient batch and one bucket the quick one.
+A batch takes all the wort in, any amount. It takes 10 days at the best temperature (18 to 25 C), however full, and gives back 95%, as the lees stay behind. One packet whatever the size.
+
+**Leave headspace.** Yeast needs no air to ferment, so a full vessel works at full speed, but a vigorous batch throws up a head of foam, the krausen. Above the **16 L line**, while the batch is in its first half, the foam climbs out and takes wort with it: up to half of what is above the line, by the working rate (a warm, lively batch loses it all, a cool one less). A brimming 20 L batch at 20 C comes out about 18 L before the lees, 17.1 L of fermented wort; 16 L loses nothing and gives 15.2 L. The window's band says *foaming over* while it happens.
 
 Pitch Yeast is greyed out, and says why, when:
-- a batch is already working,
-- there is less than 10 L of wort in the tank,
-- the tank's wort has soured (use **Pour Away the Wort**),
-- the Fermented tank still holds the last batch,
+- a batch is already working (and its yeast is fine: see repitching below),
+- there is no wort in,
+- the wort has soured (use **Pour Away the Wort**),
+- the vessel still holds the last batch's fermented wort,
 - you carry no full packet of yeast.
 
 **Top Up the Batch**: while a batch works, Pour Wort becomes Top Up the Batch, and the wort goes into the batch, up to 20 L. The batch slows by the new wort's share: 10 L into a 10 L batch half done makes 20 L a quarter done.
 
+**A young batch can't take a big top-up.** More wort than was in before the day's pours (top-ups within 24 hours count together, so ten small pours are one big one, while a little a day is a brewer's step feeding), poured on a batch under half done, is too much for its yeast (Top Up the Batch's hover says so before you pour):
+- under 20% done the batch is **underpitched**: it works at half speed until you pitch a fresh packet;
+- from 20% to 50% it **lags**: no work for a day for each share added (10 L on 8 L, a day and a quarter), at most 2 days, unless you pitch a fresh packet;
+- from 50% the yeast is established, and a top-up only slows it by its share.
+
+While underpitched or lagging, **Pitch Yeast** comes back for the running batch: a fresh packet sets it going at full speed at once.
+
 **Pour Away the Batch** (last in the submenu, while a batch works) asks yes or no first: the yeast is in it, so nothing comes back. Fermented wort is never poured away, only drawn off or pumped.
 
-Waiting wort in the tank sours as it does in a bucket; the Fermentation Vessel window's Wort bar says how long it keeps where the vessel stands ("sours in about 2 days"), or that it has soured. **Draw Off Wort** takes it back out into empty containers, keeping its age. **Pour Away the Wort** empties the tank onto the ground.
+Waiting wort sours as it does in a bucket; the Fermentation Vessel window says how long it keeps where the vessel stands (*Souring (2d)*), or that it has soured. **Draw Off Wort** takes it back out into empty containers, keeping its age. **Pour Away the Wort** empties it onto the ground.
 
 When the batch finishes, use **Draw Off Fermented Wort**. Only completely empty containers are offered, so nothing is ever topped up into a mixture. A vessel holding anything can't be picked up.
 
@@ -393,8 +404,8 @@ The real-world claims the design rests on, and the simplifications made for play
 
 ## Engineering notes
 
-- The vessel has no crafting window: the Wort tank, the batch and the Fermented tank are its record in its `movableData` (`tpvVessel`, `TraditionalPreservationVinegarVessel.lua`), stepped by the World. The batch's work is a FluidAgeing age on the alcoholic ledger, as the floor's heaps are on the malting one.
-- The Wort tank's age: the tank is not an item, so FluidAgeing can't keep a record on it. The record sits on the vessel's record under FluidAgeing's key (`V.ageTank`), the tank's wort is never renamed (the tank only takes wort), and the vessel checks the record instead (`V.isSour`). Wort drawn off takes the age with it.
+- The vessel has no crafting window: its one pool is its record in its `movableData` (`tpvVessel`, `TraditionalPreservationVinegarVessel.lua`; `wortMl`, `run` or `fermentedMl`, one in use at a time), stepped by the World. Foam: `V.HEADSPACE_ML`, `V.FOAM_LOSS` of `run.overMl` (above the line at the pitch or last top-up) over the first `V.VIGOROUS` of the work, by the working rate. A top-up on a young batch: `V.topUp` sets `run.underpitched` (`V.UNDERPITCH_RATE`) or `run.lagUntil` (`V.LAG_HOURS` a share added, `V.LAG_MAX_HOURS`), `V.pitch` repitches. The batch's work is a FluidAgeing age on the alcoholic ledger, as the floor's heaps are on the malting one.
+- The waiting wort's age: the vessel is not an item, so FluidAgeing can't keep a record on it. The record sits on the vessel's record under FluidAgeing's key (`V.ageTank`), the tank's wort is never renamed (the tank only takes wort), and the vessel checks the record instead (`V.isSour`). Wort drawn off takes the age with it.
 - The cask's pool, souring, mother and layers live in the cask's `movableData`, which vanilla copies onto the item when a station is picked up and back when it's placed. So the mother moves with the cask and can't be duplicated.
 - Weather is kept as running totals in global ModData, per stage and place, so stations catch up exactly when their area loads again.
 - Station sprites are layered by the mod rather than with `SpriteOverlayConfig`, which can only show one overlay for a first batch.

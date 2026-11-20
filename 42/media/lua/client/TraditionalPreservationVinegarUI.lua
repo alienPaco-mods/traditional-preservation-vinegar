@@ -38,10 +38,6 @@ local function carrying(playerObj, fluid)
     return findItems(playerObj, function(item) return V.holdsOnly(item:getFluidContainer(), fluid) end)
 end
 
-local function timeText(hours)
-    return UI.timeText(hours, "IGUI_TraditionalPreservationVinegar_Time")
-end
-
 -- A cask's pool, a vessel's tanks and its batch don't go with a station into a backpack.
 local function holdsLiquid(isoObject)
     if not isoObject then return false end
@@ -64,16 +60,8 @@ local function onPour(playerObj, station, items, mode)
     end
 end
 
--- One option per container holding the right liquid, plus "all" when there are several.
-local function addPourMenu(context, label, playerObj, station, items, mode, emptyText, icon)
-    local option = context:addOption(label)
-    option.iconTexture = getTexture(icon)
-    if #items == 0 then
-        UI.disable(option, emptyText)
-        return option
-    end
-    local menu = context:getNew(context)
-    context:addSubMenu(option, menu)
+-- A row per container, plus "all" when there are several (a submenu's, or the window's Draw Off button's menu).
+local function addPourRows(menu, playerObj, station, items, mode)
     if #items > 1 then
         menu:addOption(say("ContextMenu_TraditionalPreservationVinegar_AllContainers", tostring(#items)), playerObj, onPour, station, items, mode)
     end
@@ -86,6 +74,19 @@ local function addPourMenu(context, label, playerObj, station, items, mode, empt
         -- Drawn as the inventory draws it: a bucket shows the colour of what is in it.
         itemOption.itemForTexture = item
     end
+end
+
+-- One option per container holding the right liquid, plus "all" when there are several.
+local function addPourMenu(context, label, playerObj, station, items, mode, emptyText, icon)
+    local option = context:addOption(label)
+    option.iconTexture = getTexture(icon)
+    if #items == 0 then
+        UI.disable(option, emptyText)
+        return option
+    end
+    local menu = context:getNew(context)
+    context:addSubMenu(option, menu)
+    addPourRows(menu, playerObj, station, items, mode)
     return option
 end
 
@@ -199,15 +200,6 @@ local function vesselView(vessel)
         status = V.runStatus(record, placeC), refusal = V.pitchRefusal(record, now, wortPlace) }
 end
 
--- How long the waiting wort keeps where the vessel stands, or that it has soured; nil when neither applies.
-local function wortKeeps(view)
-    local fluidAge = V.peekWort(view.record, view.now, view.wortPlace)
-    if not fluidAge then return nil end
-    if V.isSour(fluidAge) then return getText("IGUI_TraditionalPreservationVinegar_InfoSoured") end
-    local hours = V.hoursToSour(fluidAge, Weather.placeTemperature(V.getLedger(), view.wortPlace))
-    return hours and say("IGUI_TraditionalPreservationVinegar_InfoSours", timeText(hours)) or nil
-end
-
 local function vesselStatus(view)
     local record = view.record
     if view.status then
@@ -235,9 +227,173 @@ local function pitchState(view, playerObj)
     return yeast, reason
 end
 
--- Vessel Info (TP Core's InfoWindow): the waiting wort, the batch and the fermented wort as bars, kept up to date
--- while open, with Pitch Yeast as a button.
-local VESSEL_BAR_COLOURS = { wort = { 0.75, 0.5, 0.2 }, batch = { 0.35, 0.7, 0.35 }, fermented = { 0.62, 0.42, 0.18 } }
+-- Vessel Info (TP Core's InfoWindow) on the settled look (art/vessel_one_pool_mock.png): a band with the vessel's
+-- state, the Station block (Place, Season, the working rate, the hose), its one pool as a tank named by what it holds
+-- (Wort, Fermenting, Fermented) with the 16 L line and alegar's lore, Pitch Yeast or Draw Off, then notes. Kept up to
+-- date while open.
+TraditionalPreservationVinegarUI = TraditionalPreservationVinegarUI or {}
+local VinegarUI = TraditionalPreservationVinegarUI
+local KEY = "IGUI_TraditionalPreservationVinegar_"
+local STATION_ICON = "media/textures/TPStation_FermentationVessel.png"
+local AMBER, RED = InfoWindow.BAND_WAITING[1], InfoWindow.BAND_AT_RISK[1]
+local FOAM_SHOWN_ML = 50   -- wort lost to foam is told from this much
+
+-- Whether the waiting wort has soured where the vessel stands, and the hours it keeps if not (nil: no wort, or it
+-- won't sour there).
+local function wortState(view)
+    local fluidAge = V.peekWort(view.record, view.now, view.wortPlace)
+    if not fluidAge then return false, nil end
+    if V.isSour(fluidAge) then return true, nil end
+    return false, V.hoursToSour(fluidAge, Weather.placeTemperature(V.getLedger(), view.wortPlace))
+end
+
+-- The band, the worst first: wort soured; empty; foaming over; underpitched; lagging; too cold to work; fermenting;
+-- fermented wort ready; wort waiting for its yeast. Returns the word's key, the text and the colours.
+function VinegarUI.vesselBand(view)
+    local record, status = view.record, view.status
+    if view.soured then
+        return KEY .. "VesselBandSoured", say(KEY .. "VesselBandSouredText", UI.litres(record.wortMl)), InfoWindow.BAND_AT_RISK
+    end
+    if not status and record.wortMl <= 0 and record.fermentedMl <= 0 then
+        return KEY .. "VesselBandEmpty", getText(KEY .. "VesselBandEmptyText"), InfoWindow.BAND_IDLE
+    end
+    if status then
+        if status.foaming and status.hoursLeft then
+            return KEY .. "VesselBandFoaming", say(KEY .. "VesselBandFoamingText", string.format("%.0f", V.HEADSPACE_ML / 1000)), InfoWindow.BAND_AT_RISK
+        end
+        if status.underpitched then return KEY .. "VesselBandUnderpitched", getText(KEY .. "VesselBandUnderpitchedText"), InfoWindow.BAND_WAITING end
+        if status.lagUntil and status.lagUntil > view.now then
+            return KEY .. "VesselBandLagging", say(KEY .. "VesselBandLaggingText", UI.shortDuration(status.lagUntil - view.now)), InfoWindow.BAND_WAITING
+        end
+        if not status.hoursLeft then
+            return KEY .. "VesselBandPaused", say(KEY .. "VesselBandPausedText", UI.litres(status.ml)), InfoWindow.BAND_WAITING
+        end
+        return KEY .. "VesselBandFermenting", say(KEY .. "VesselBandFermentingText", UI.litres(status.ml)), InfoWindow.BAND_WORKING
+    end
+    if record.fermentedMl > 0 then
+        return KEY .. "VesselBandReady", say(KEY .. "VesselBandReadyText", UI.litres(record.fermentedMl)), InfoWindow.BAND_WORKING
+    end
+    return KEY .. "VesselBandWaiting", say(KEY .. "VesselBandPitchText", UI.litres(record.wortMl)), InfoWindow.BAND_WAITING
+end
+
+-- The tank's amount, "6.0 / 20 L".
+local function tankAmount(ml)
+    return say(KEY .. "VesselTankAmount", UI.litres(ml), string.format("%.0f", V.TANK_ML / 1000))
+end
+
+-- The batch's state line: done and the time left (or paused).
+function VinegarUI.batchText(status)
+    return say(KEY .. "VesselBatchState", percent(status.progress),
+        status.hoursLeft and UI.shortDuration(status.hoursLeft) or getText("IGUI_TraditionalPreservationCore_Paused"))
+end
+
+-- The vessel's one pool as a tank, named by what it holds, with the 16 L line: waiting wort (souring, or soured), a
+-- batch Fermenting (wort turning to fermented wort from the foot by the share done, bubbling by the working rate,
+-- still when it waits, the foam thinning as it nears done and running over while it foams over; the wort it has lost
+-- to foam under it), or Fermented wort (keeps). drop (the window's: containers of wort dragged on pour in) on it.
+function VinegarUI.vesselHoldings(view, drop)
+    local record, status = view.record, view.status
+    local tank = { kind = "tank", drop = drop,
+        line = { share = V.HEADSPACE_ML / V.TANK_ML, text = say(KEY .. "VesselLine", string.format("%.0f", V.HEADSPACE_ML / 1000)) } }
+    local wortColour = Container.fluidColour(V.WORT) or { 0.95, 0.65, 0.4 }
+    local fermentedColour = Container.fluidColour(V.FERMENTED) or { 0.82, 0.71, 0.55 }
+    if status then
+        local share = status.ml / V.TANK_ML
+        local waits = not status.hoursLeft or status.underpitched or (status.lagUntil and status.lagUntil > view.now)
+        tank.name, tank.amount = getText(KEY .. "VesselFermenting"), tankAmount(status.ml)
+        tank.share, tank.colour = share * (1 - status.progress), wortColour
+        tank.settled = { share = share * status.progress, colour = fermentedColour }
+        local speed = status.hoursLeft and not (status.lagUntil and status.lagUntil > view.now) and status.rate or 0
+        if status.underpitched then speed = speed * V.UNDERPITCH_RATE end
+        tank.working = { speed = speed, foam = 1 - 0.7 * status.progress, spill = status.foaming and speed > 0 }
+        tank.state, tank.stateColour = VinegarUI.batchText(status), waits and AMBER or nil
+        if (status.foamedMl or 0) >= FOAM_SHOWN_ML then
+            tank.under, tank.underColour = say(KEY .. "VesselFoamLost", UI.litres(status.foamedMl)), RED
+        end
+    elseif record.fermentedMl > 0 then
+        tank.name, tank.amount = getText(KEY .. "TankFermented"), tankAmount(record.fermentedMl)
+        tank.share, tank.colour, tank.state = record.fermentedMl / V.TANK_ML, fermentedColour, getText(KEY .. "VesselKeeps")
+    else
+        tank.name, tank.amount = getText(KEY .. "TankWort"), tankAmount(record.wortMl)
+        tank.share = record.wortMl / V.TANK_ML
+        tank.colour = view.soured and Container.fluidColour(V.SOUR_WORT) or wortColour
+        if view.soured then
+            tank.state, tank.stateColour = getText(KEY .. "InfoSoured"), RED
+        elseif view.soursIn then
+            tank.state, tank.stateColour = say(KEY .. "VesselSouring", UI.shortDuration(view.soursIn)), AMBER
+        end
+    end
+    return { tank }
+end
+
+-- Containers dragged onto the vessel, judged as Pour Wort would take them: wort alone, up to the room there is (the
+-- batch's while one works, topping it up), none on fermented wort. Returns DropZone's judgement and adds, the share
+-- of the tank the pour would fill.
+function VinegarUI.wortJudge(record, items)
+    local room, poured, take, refused = V.wortRoom(record), 0, {}, nil
+    local refusal = V.pourRefusal(record)
+    for _, item in ipairs(items) do
+        local container = item.getFluidContainer and item:getFluidContainer()
+        local why
+        if not container or not V.holdsOnly(container, V.WORT) then
+            why = getText(KEY .. "WortDropTakes")
+        elseif refusal == "IGUI_TraditionalPreservationVinegar_DrawOffFirst" then
+            why = getText(refusal)
+        elseif poured >= room then
+            why = getText(KEY .. (record.run and "WortDropBatchFull" or "WortDropFull"))
+        else
+            poured = poured + math.min(Container.ml(container), room - poured)
+            table.insert(take, item)
+        end
+        if why then refused = refused or why end
+    end
+    local lines = { #take > 0 and say(KEY .. (record.run and "WortDropTopUp" or "WortDropPour"), UI.litres(poured), tostring(#take))
+        or refused or getText(KEY .. "WortDropTakes") }
+    return { take = take, lines = lines, refused = #take < #items and refused or nil, adds = poured / V.TANK_ML }
+end
+
+-- Pitch Yeast's help: the wort it starts, or the repitch that sets a struggling batch going again.
+function VinegarUI.pitchHelp(record)
+    if record.run then return getText(KEY .. "RepitchHelp") end
+    return say(KEY .. "PitchHelp", UI.litres(record.wortMl))
+end
+
+-- The Station block's own rows under Place and Season: the working rate, and the hose.
+function VinegarUI.vesselRows(view, hosed)
+    return { { "IGUI_TraditionalPreservationVinegar_RateLabel", percent(V.alcoholicRate(view.placeC)) },
+        { "IGUI_TraditionalPreservationVinegar_InfoHose", getText(hosed and KEY .. "InfoHoseCask" or KEY .. "InfoNoHose") } }
+end
+
+-- The notes under the window, by its state (the band's word key).
+function VinegarUI.vesselNotes(word, status)
+    local notes = {}
+    local byState = { VesselBandFoaming = "VesselNoteFoaming", VesselBandUnderpitched = "VesselNoteRepitch",
+        VesselBandLagging = "VesselNoteRepitch", VesselBandReady = "VesselNoteReady", VesselBandSoured = "VesselNoteSoured" }
+    local own = byState[string.gsub(word, "^" .. KEY, "")]
+    if own then table.insert(notes, getText(KEY .. own)) end
+    if status then
+        table.insert(notes, getText(KEY .. "VesselNoteTopUp"))
+        table.insert(notes, getText(KEY .. "VesselNoteDragBatch"))
+        table.insert(notes, getText(KEY .. "InfoAssumes"))
+    elseif word ~= KEY .. "VesselBandReady" then
+        table.insert(notes, getText(KEY .. "VesselNoteHeadspace"))
+        table.insert(notes, getText(KEY .. "VesselNoteDrag"))
+    end
+    return notes
+end
+
+local function yeastIcon()
+    local script = getScriptManager():FindItem(V.YEAST)
+    return script and script:getNormalTexture()
+end
+
+-- Draw Off opens a menu of the empty containers under the button, as the right-click's submenu.
+local function openDrawOff(window, button)
+    local playerObj = window.playerObj
+    local x, y = window:getAbsoluteX() + button.x, window:getAbsoluteY() + button.y + button.height
+    local context = ISContextMenu.get(playerObj:getPlayerNum(), x, y)
+    addPourRows(context, playerObj, window.station, findItems(playerObj, Container.isEmptyVessel), "vesselOut")
+end
 
 local VesselWindow = InfoWindow:derive("TraditionalPreservationVinegarVesselWindow")
 
@@ -252,43 +408,44 @@ function VesselWindow.open(playerObj, vessel)
 end
 
 function VesselWindow:refresh()
-    self.vesselView = vesselView(self.station)
+    local view = vesselView(self.station)
+    view.soured, view.soursIn = wortState(view)
+    if view.record.fermentedMl > 0 then view.empties = #findItems(self.playerObj, Container.isEmptyVessel) end
+    self.vesselView = view
+    local playerObj, vessel = self.playerObj, self.station
+    self.drop = self.drop or { judge = function(items) return VinegarUI.wortJudge(V.vesselOf(vessel), items) end,
+        drop = function(take) onPour(playerObj, vessel, take, "vesselIn") end }
+end
+
+-- Pitch Yeast while it can start or repitch a batch (greyed with the reason), Draw Off once fermented wort is in.
+function VesselWindow:vesselButtons(y)
+    local view, record = self.vesselView, self.vesselView.record
+    local playerObj, vessel, window = self.playerObj, self.station, self
+    local buttons = {}
+    if record.fermentedMl > 0 then
+        table.insert(buttons, { title = getText("ContextMenu_TraditionalPreservationVinegar_DrawOff"), icon = FERMENTED_ICON,
+            enabled = (view.empties or 0) > 0, tooltip = (view.empties or 0) == 0 and getText(KEY .. "NoContainer") or nil,
+            onClick = function(button) openDrawOff(window, button) end })
+    elseif not record.run or V.needsRepitch(record.run, view.now) then
+        local yeast, reason = pitchState(view, playerObj)
+        table.insert(buttons, { title = getText("ContextMenu_TraditionalPreservationVinegar_PitchYeast"), icon = yeastIcon(),
+            enabled = reason == nil, tooltip = reason or VinegarUI.pitchHelp(record),
+            onClick = function() if yeast then onPitch(playerObj, vessel, yeast) end end })
+    end
+    return self:buttonRow(y, buttons)
 end
 
 function VesselWindow:render()
     ISCollapsableWindow.render(self)
     if self.isCollapsed or not self.vesselView then return end
-    local view, record, status = self.vesselView, self.vesselView.record, self.vesselView.status
-    local playerObj, vessel = self.playerObj, self.station
-    local y = self:top()
-    y = self:row(y, "IGUI_TraditionalPreservationVinegar_InfoPlace", UI.placeText(view.place, view.placeC))
-    y = self:row(y, "IGUI_TraditionalPreservationVinegar_RateLabel", percent(V.alcoholicRate(view.placeC)))
-
-    local wortText = say("IGUI_TraditionalPreservationVinegar_InfoLitres", UI.litres(record.wortMl), UI.litres(V.TANK_ML))
-    local keeps = wortKeeps(view)
-    if keeps then wortText = wortText .. ", " .. keeps end
-    y = self:bar(y, "IGUI_TraditionalPreservationVinegar_TankWort", record.wortMl / V.TANK_ML, VESSEL_BAR_COLOURS.wort, wortText)
-
-    local batchText = "-"
-    if status then
-        batchText = say("IGUI_TraditionalPreservationVinegar_InfoBatch", UI.litres(status.ml), percent(status.progress),
-            status.hoursLeft and timeText(status.hoursLeft) or getText("IGUI_TraditionalPreservationCore_Paused"))
-    end
-    y = self:bar(y, "IGUI_TraditionalPreservationVinegar_InfoBatchLabel", status and status.progress or 0, VESSEL_BAR_COLOURS.batch, batchText)
-    y = self:bar(y, "IGUI_TraditionalPreservationVinegar_TankFermented", record.fermentedMl / V.TANK_ML, VESSEL_BAR_COLOURS.fermented,
-        say("IGUI_TraditionalPreservationVinegar_InfoLitres", UI.litres(record.fermentedMl), UI.litres(V.TANK_ML)))
-    y = self:row(y, "IGUI_TraditionalPreservationVinegar_InfoHose",
-        getText(V.hoseLink(vessel) and "IGUI_TraditionalPreservationVinegar_HoseToCask" or "IGUI_TraditionalPreservationVinegar_InfoNoHose"))
-
-    local yeast, reason = pitchState(view, playerObj)
-    y = self:buttonRow(y, {
-        { title = getText("ContextMenu_TraditionalPreservationVinegar_PitchYeast"), enabled = reason == nil,
-          tooltip = reason or say("IGUI_TraditionalPreservationVinegar_PitchHelp", UI.litres(V.batchMl(record.wortMl))),
-          onClick = function() if yeast then onPitch(playerObj, vessel, yeast) end end },
-    })
-    local notes = { getText("IGUI_TraditionalPreservationVinegar_NoteVessel") }
-    if status then table.insert(notes, getText("IGUI_TraditionalPreservationVinegar_InfoAssumes")) end
-    self:drawNotes(y, notes)
+    local view = self.vesselView
+    local word, text, look = VinegarUI.vesselBand(view)
+    local y = self:band(getText(word), text, look[1], look[2])
+    y = self:stationBlock(y, STATION_ICON, view.place, view.placeC, VinegarUI.vesselRows(view, V.hoseLink(self.station)))
+    y = self:section(y, "IGUI_TraditionalPreservationCore_SectionHolds")
+    y = self:holds(y, VinegarUI.vesselHoldings(view, self.drop), getText(KEY .. "VesselLore"))
+    y = self:vesselButtons(y)
+    self:drawNotes(y, VinegarUI.vesselNotes(word, view.status))
 end
 
 local function addVesselMenu(context, playerObj, vessel)
@@ -307,8 +464,13 @@ local function addVesselMenu(context, playerObj, vessel)
     infoOption.iconTexture = vesselIcon
     UI.topInfo(context, getText("IGUI_TraditionalPreservationVinegar_VesselInfo"), vesselIcon, playerObj, VesselWindow.open, vessel)
 
-    -- Wort goes into the batch while one works (Top Up the Batch), else into the tank.
-    if V.wortRoom(record) > 0 then
+    -- Wort goes into the batch while one works (Top Up the Batch), else into the vessel; on fermented wort it waits
+    -- until that is drawn off.
+    if V.pourRefusal(record) == "IGUI_TraditionalPreservationVinegar_DrawOffFirst" then
+        local pour = menu:addOption(getText("ContextMenu_TraditionalPreservationVinegar_PourWort"))
+        pour.iconTexture = getTexture(WORT_ICON)
+        UI.disable(pour, getText("IGUI_TraditionalPreservationVinegar_DrawOffFirst"))
+    elseif V.wortRoom(record) > 0 then
         local worts = carrying(playerObj, V.WORT)
         -- Someone carrying only sour wort is told why it won't go in.
         local none = "IGUI_TraditionalPreservationVinegar_NoWort"
@@ -318,15 +480,18 @@ local function addVesselMenu(context, playerObj, vessel)
         local label = record.run and "ContextMenu_TraditionalPreservationVinegar_TopUp" or "ContextMenu_TraditionalPreservationVinegar_PourWort"
         local pour = addPourMenu(menu, getText(label), playerObj, vessel, worts, "vesselIn", getText(none), WORT_ICON)
         if record.run and #worts > 0 then
-            tooltipFor(pour, say("IGUI_TraditionalPreservationVinegar_TopUpHelp", UI.litres(V.wortRoom(record))))
+            local help = say("IGUI_TraditionalPreservationVinegar_TopUpHelp", UI.litres(V.wortRoom(record)))
+            local risk = V.topUpRisk(record.run, math.min(V.wortRoom(record), Container.ml(worts[1]:getFluidContainer())), view.now)
+            if risk then help = help .. " <LINE> " .. getText("IGUI_TraditionalPreservationVinegar_TopUpRisk_" .. risk) end
+            tooltipFor(pour, help)
         end
     end
 
-    if not record.run then
+    if not record.run or V.needsRepitch(record.run, view.now) then
         local yeast, reason = pitchState(view, playerObj)
         local pitch = menu:addOption(getText("ContextMenu_TraditionalPreservationVinegar_PitchYeast"), playerObj, onPitch, vessel, yeast)
         pitch.iconTexture = getTexture("Item_Yeast")
-        if reason then UI.disable(pitch, reason) else tooltipFor(pitch, say("IGUI_TraditionalPreservationVinegar_PitchHelp", UI.litres(V.batchMl(record.wortMl)))) end
+        if reason then UI.disable(pitch, reason) else tooltipFor(pitch, VinegarUI.pitchHelp(record)) end
     end
     if record.wortMl > 0 then
         -- Only empty containers; the wort keeps its age in them.

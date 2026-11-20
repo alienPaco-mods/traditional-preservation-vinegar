@@ -70,7 +70,7 @@ function TPPourVinegarFluid:complete()
     elseif self.mode == "vesselIn" then
         local container = self.item:getFluidContainer()
         local fluidAge = FluidAgeing.sourceFluidAge(self.item, now)
-        local poured = V.pourWortIn(record, Container.ml(container), fluidAge, Weather.placeOf(self.station))
+        local poured = V.pourWortIn(record, Container.ml(container), fluidAge, Weather.placeOf(self.station), now)
         container:removeFluid(poured / 1000)
         FluidAgeing.clearIfEmpty(self.item)
     elseif self.mode == "wortOut" then

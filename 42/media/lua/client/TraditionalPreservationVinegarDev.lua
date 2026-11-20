@@ -31,9 +31,9 @@ function TPV.help()
     say("TPV.setCask(litres, pct)  set the nearest cask's pool, e.g. TPV.setCask(16, 100)")
     say("TPV.mother(layers)        give the nearest cask a mother with this many layers. TPV.mother(0) takes it away")
     say("TPV.vessel()              the nearest vessel: waiting wort and its age, the batch, fermented wort, hose")
-    say("TPV.wort(litres)          fill the nearest vessel's Wort tank")
-    say("TPV.batch(litres, pct)    set the nearest vessel's batch, e.g. TPV.batch(10, 50). TPV.batch(0) takes it away")
-    say("TPV.fermented(litres)     fill the nearest vessel's Fermented tank")
+    say("TPV.wort(litres)          fill the nearest vessel with wort (emptying it first)")
+    say("TPV.batch(litres, pct, y) set the nearest vessel's batch, e.g. TPV.batch(18, 10); y \"underpitched\" or \"lag\". TPV.batch(0) takes it away")
+    say("TPV.fermented(litres)     fill the nearest vessel with fermented wort (emptying it first)")
     say("TPV.ageWort(hours)        age the wort you carry and the nearest vessel's tank by hours at 20 C. TPV.ageWort(48) sours it")
     say("TPV.give(name, n)         spawn mod items. TPV.give() lists the names")
     say("TPV.kit(kind)             the things a test needs: \"build\" (all three stations), \"malt\", \"ferment\", \"cask\" or \"all\". TPV.kit() lists them")
@@ -171,32 +171,42 @@ function TPV.wort(litres)
     local vessel, record = nearVessel()
     if not vessel then return end
     V.pourAwayWort(record)
+    record.run, record.fermentedMl = nil, 0   -- one pool: the wort alone
     record.wortMl = ml(litres, V.TANK_ML)
     V.ageTank(record, record.wortMl, Weather.placeOf(vessel), getGameTime():getWorldAgeHours())
-    say(string.format("Wort tank set to %.1f L, fresh.", record.wortMl / 1000))
+    say(string.format("Vessel set to %.1f L of wort, fresh.", record.wortMl / 1000))
 end
 
 function TPV.fermented(litres)
     local vessel, record = nearVessel()
     if not vessel then return end
+    V.pourAwayWort(record)
+    record.run = nil
     record.fermentedMl = ml(litres, V.TANK_ML)
-    say(string.format("Fermented tank set to %.1f L.", record.fermentedMl / 1000))
+    say(string.format("Vessel set to %.1f L of fermented wort.", record.fermentedMl / 1000))
 end
 
--- A batch of this many litres this far on, as if pitched and worked; no yeast needed.
-function TPV.batch(litres, percent)
+-- A batch of this many litres this far on, as if pitched and worked; no yeast needed. yeast "underpitched" or "lag"
+-- sets it as a top-up too big for a young batch would (a lag of a day from now).
+function TPV.batch(litres, percent, yeast)
     local vessel, record, place = nearVessel()
     if not vessel then return end
-    local batchMl = ml(litres, V.VESSEL_MAX_ML)
+    local batchMl = ml(litres, V.TANK_ML)
     if batchMl <= 0 then
         V.pourAwayBatch(record)
         return say("Batch taken away.")
     end
     local now = getGameTime():getWorldAgeHours()
-    record.run = { ml = batchMl, work = FluidAgeing.newFluidAge(V.FERMENT_WORK, V.getLedger(), now, place) }
+    record.run = { ml = batchMl, overMl = math.max(batchMl - V.HEADSPACE_ML, 0),
+        work = FluidAgeing.newFluidAge(V.FERMENT_WORK, V.getLedger(), now, place) }
     record.run.work.age = V.ALCOHOLIC_HOURS * math.max(math.min((percent or 0) / 100, 1), 0)
+    V.pourAwayWort(record)
+    record.fermentedMl = 0
+    if yeast == "underpitched" then record.run.underpitched = true end
+    if yeast == "lag" then record.run.lagUntil = now + V.LAG_HOURS end
     if TraditionalPreservationVinegarWorld then TraditionalPreservationVinegarWorld.refresh(vessel) end
-    say(string.format("Batch set to %.1f L at %.0f%%.", batchMl / 1000, V.runProgress(record.run) * 100))
+    say(string.format("Batch set to %.1f L at %.0f%%%s.", batchMl / 1000, V.runProgress(record.run) * 100,
+        yeast and (", " .. yeast) or ""))
 end
 
 -- Adds hours at 20 C to every wort fluidAge you carry and to the nearest vessel's tank, then renames what has soured.

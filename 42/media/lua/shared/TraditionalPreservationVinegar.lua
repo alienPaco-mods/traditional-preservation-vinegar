@@ -65,7 +65,6 @@ V.WORT_SOUR_HOURS = 48
 V.WORT_SOURS = true
 -- A vessel run takes whole buckets of wort from its tank, one or two, and leaves 5% behind as lees.
 V.BUCKET_ML = 10000
-V.VESSEL_MAX_ML = 20000
 V.FERMENT_YIELD = 0.95
 
 -- The cask is one continuous pool, as in the Orleans method. It holds 30 L, but the culture needs
@@ -206,11 +205,6 @@ function V.onStrained(craftRecipeData, character)
         bucket:getModData()[FluidAgeing.KEY] = nil
         container:addFluid(V.WORT, math.min(V.BUCKET_ML / 1000, container:getCapacity()))
     end
-end
-
--- How much wort a run takes from a tank holding this many millilitres: whole buckets, at most two.
-function V.batchMl(tankMl)
-    return math.min(math.floor((tankMl + 1) / V.BUCKET_ML) * V.BUCKET_ML, V.VESSEL_MAX_ML)
 end
 
 -- What a run of this much wort gives back, after the lees.

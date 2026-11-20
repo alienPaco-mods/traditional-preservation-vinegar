@@ -185,7 +185,7 @@ check("the status row first, greyed", menu.options[1].name == "Fermentation Vess
 check("then its Info row, the station's full name, and the same at the bottom of the main menu",
     menu.options[2].name == "Fermentation Vessel Info" and context.options[2].name == "Fermentation Vessel Info")
 local pitch = named(menu, "Pitch Yeast")
-check("Pitch Yeast greyed with no wort in", pitch.isDisabled and pitch.toolTip.description == "Needs at least 10 L of wort in the tank")
+check("Pitch Yeast greyed with no wort in", pitch.isDisabled and pitch.toolTip.description == "Pour in wort first")
 check("every row has an icon", (function()
     for _, option in ipairs(menu.options) do if not option.iconTexture then return false end end
     return true
@@ -243,7 +243,8 @@ check("No leaves it be", #ui.queued == 0 and record.run ~= nil)
 xp = 0
 pass(V.ALCOHOLIC_HOURS)
 tick()
-check("a done batch goes into the Fermented tank", record.run == nil and record.fermentedMl == V.fermentedMl(20000))
+check("a done batch is fermented wort, less what foamed over (20 L topped up at a quarter: 1 L of the 4 above the line)",
+    record.run == nil and near(record.fermentedMl, V.fermentedMl(19000), 30), record.fermentedMl)
 check("the vessel shows it finished", cellar.sprites[1] == PREFIX .. V.VESSEL_FINISHED)
 check("and the Cooking XP comes once", xp == V.FERMENT_XP)
 tick()
@@ -256,8 +257,9 @@ context, menu = menuFor(cellar)
 check("no Pour Away row for fermented wort", named(menu, "Pour Away") == nil)
 choose(named(menu, "Draw Off Fermented Wort").subOption.options[1])
 runQueued()
+local fermentedBefore = V.fermentedMl(19000)
 check("Draw Off fills the container", empty:getFluidContainer().fluid == V.FERMENTED and near(empty:getFluidContainer().litres, 10)
-    and record.fermentedMl == V.fermentedMl(20000) - 10000)
+    and near(record.fermentedMl, fermentedBefore - 10000, 30))
 
 -- Waiting wort drawn back off keeps its age.
 record.fermentedMl = 0
@@ -292,6 +294,74 @@ check("an emptied vessel can be picked up again", canPickUp() ~= false)
 record.fermentedMl = 19000
 local caskModData = { ml = 0, strength = 0 }
 check("the pump takes from the Fermented tank", V.pumpToCask(caskModData, record, 10000) == 10000 and record.fermentedMl == 9000)
+
+-- Vessel Info's band and its one tank (art/vessel_one_pool_mock.png), from a view as the window builds it.
+local InfoWindow = require "TraditionalPreservationCore/InfoWindow"
+local VinegarUI = TraditionalPreservationVinegarUI
+local function view(wortMl, fermentedMl, status, soured, soursIn)
+    return { record = { wortMl = wortMl, fermentedMl = fermentedMl, run = status and { ml = status.ml } or nil },
+        status = status, soured = soured, soursIn = soursIn, placeC = 20, now = 100 }
+end
+local function band(v)
+    local word, text = VinegarUI.vesselBand(v)
+    return getText(word) .. ": " .. text
+end
+local working = { ml = 10000, progress = 0.3, hoursLeft = 170, rate = 1 }
+check("band: empty", band(view(0, 0)) == "Empty: pour in wort to start", band(view(0, 0)))
+check("band: soured wort", band(view(6000, 0, nil, true)) == "Soured: 6.0 L of wort soured: pour it away")
+check("band: foaming over comes before the rest", band(view(0, 0, { ml = 18000, progress = 0.2, hoursLeft = 190, rate = 1,
+    foaming = true, underpitched = true })) == "Foaming over: above the 16 L line: wort is spilling")
+check("band: underpitched", band(view(0, 0, { ml = 20000, progress = 0.04, hoursLeft = 400, rate = 1, underpitched = true }))
+    == "Underpitched: too much wort for its yeast: half speed")
+check("band: lagging, with the time left of it", band(view(0, 0, { ml = 18000, progress = 0.3, hoursLeft = 170, rate = 1,
+    lagUntil = 130 })) == "Lagging: its yeast is catching up: 30h")
+check("band: a batch too cold to work", band(view(0, 0, { ml = 10000, progress = 0.3 })) == "Paused: a 10.0 L batch, too cold to work")
+check("band: fermenting", band(view(0, 0, working)) == "Fermenting: a 10.0 L batch")
+check("band: fermented wort ready", band(view(0, 8000)) == "Ready: 8.0 L of fermented wort to draw off")
+check("band: wort waits for its yeast, any amount", band(view(6000, 0)) == "Waiting: 6.0 L of wort, pitch yeast to start")
+
+local tank = VinegarUI.vesselHoldings(view(6000, 0, nil, false, 30))[1]
+check("one tank: Wort, its litres, souring in amber, the 16 L line", tank.name == "Wort" and tank.amount == "6.0 / 20 L"
+    and tank.state == "Souring (30h)" and tank.stateColour == InfoWindow.BAND_WAITING[1]
+    and tank.line.share == 0.8 and tank.line.text == "16 L", tank.state)
+tank = VinegarUI.vesselHoldings(view(6000, 0, nil, true))[1]
+check("soured wort says so in red", tank.state == "soured" and tank.stateColour == InfoWindow.BAND_AT_RISK[1])
+tank = VinegarUI.vesselHoldings(view(0, 0, { ml = 18000, progress = 0.25, hoursLeft = 180, rate = 1, foaming = true, foamedMl = 1000 }))[1]
+check("a batch: Fermenting, turning from the foot, bubbling, spilling while it foams over, its loss in red",
+    tank.name == "Fermenting" and tank.amount == "18.0 / 20 L" and math.abs(tank.settled.share - 0.225) < 1e-9
+    and math.abs(tank.share - 0.675) < 1e-9 and tank.working.speed == 1 and tank.working.spill
+    and tank.state == "25%, 8d" and tank.under == "1.0 L lost to foam" and tank.underColour == InfoWindow.BAND_AT_RISK[1], tank.state)
+tank = VinegarUI.vesselHoldings(view(0, 0, { ml = 20000, progress = 0.04, hoursLeft = 400, rate = 1, underpitched = true }))[1]
+check("underpitched: half the bubbles, the state in amber", tank.working.speed == 0.5 and tank.stateColour == InfoWindow.BAND_WAITING[1])
+tank = VinegarUI.vesselHoldings(view(0, 0, { ml = 10000, progress = 0.5, rate = 0 }))[1]
+check("paused: still, the state in amber, no loss told", tank.working.speed == 0 and tank.under == nil
+    and tank.state == "50%, " .. getText("IGUI_TraditionalPreservationCore_Paused"))
+tank = VinegarUI.vesselHoldings(view(0, 8000))[1]
+check("fermented: keeps", tank.name == "Fermented" and tank.state == "keeps" and tank.amount == "8.0 / 20 L")
+local rows = VinegarUI.vesselRows(view(0, 0), true)
+check("station rows: the working rate, then the hose to the cask", rows[1][1] == "IGUI_TraditionalPreservationVinegar_RateLabel"
+    and getText(rows[2][1]) == "Hose" and rows[2][2] == "Cask Connected")
+check("the batch's state line: done and the time left", VinegarUI.batchText({ ml = 10000, progress = 0.45, hoursLeft = 52 }) == "45%, 2d")
+local notes = VinegarUI.vesselNotes("IGUI_TraditionalPreservationVinegar_VesselBandWaiting")
+check("notes before a batch: the headspace, the drag", notes[1]:find("^Fill to 16 L") ~= nil and notes[2]:find("^Drag containers of wort") ~= nil)
+notes = VinegarUI.vesselNotes("IGUI_TraditionalPreservationVinegar_VesselBandUnderpitched", {})
+check("notes while underpitched: repitch first", notes[1]:find("fresh packet", 1, true) ~= nil)
+
+-- Dragging onto the tank: wort pours in as Pour Wort would.
+local judged = VinegarUI.wortJudge({ wortMl = 6000, fermentedMl = 0 }, { bucket(V.WORT, 10), bucket(V.WORT, 10), bucket(V.FERMENTED, 10) })
+check("two buckets of wort into 6 L: 14 L to fill it (the second pours in part), fermented wort is refused",
+    #judged.take == 2 and judged.lines[1] == "Pour in 14.0 L (2)" and math.abs(judged.adds - 0.7) < 1e-9
+    and judged.refused == "The vessel takes containers of wort.", judged.lines[1] .. " / " .. tostring(judged.refused))
+judged = VinegarUI.wortJudge({ wortMl = 20000, fermentedMl = 0 }, { bucket(V.WORT, 10) })
+check("a full vessel refuses", #judged.take == 0 and judged.lines[1] == "The vessel is full.")
+judged = VinegarUI.wortJudge({ wortMl = 0, fermentedMl = 0, run = { ml = 10000 } }, { bucket(V.WORT, 10) })
+check("while a batch works the pour tops it up", #judged.take == 1 and judged.lines[1] == "Top up the batch with 10.0 L (1)")
+judged = VinegarUI.wortJudge({ wortMl = 0, fermentedMl = 8000 }, { bucket(V.WORT, 10) })
+check("none on fermented wort: draw it off first", #judged.take == 0 and judged.lines[1] == "Draw off the fermented wort first")
+judged = VinegarUI.wortJudge({ wortMl = 0, fermentedMl = 0 }, { bucket(V.SOUR_WORT, 10) })
+check("soured wort is refused", #judged.take == 0 and judged.lines[1] == "The vessel takes containers of wort.")
+local drop = {}
+check("the drop sits on the one tank", VinegarUI.vesselHoldings(view(6000, 0), drop)[1].drop == drop)
 check("and no translator warnings", #H.textWarnings == 0)
 
 H.done()

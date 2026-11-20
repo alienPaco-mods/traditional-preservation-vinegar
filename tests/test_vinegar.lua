@@ -79,15 +79,29 @@ local function runHours(temperature, count, record, place)
     return finished
 end
 
-local batch = newBatch(20, "Open")
-check("pitching takes the whole buckets", batch.run.ml == 20000 and batch.wortMl == 0)
+local batch = newBatch(16, "Open")
+check("pitching takes all the wort in", batch.run.ml == 16000 and batch.wortMl == 0)
 runHours(22, 120, batch, "Open")
 check("120 hours at the best temperature is half of a 10 day batch", math.abs(V.runProgress(batch.run) - 0.5) < 1e-6)
+check("16 L, at the foam's line: nothing foams over", batch.run.ml == 16000 and not batch.run.foamedMl)
 hours = hours + 200
 V.advance(V.getLedger(), hours, 22)
 local finished = V.advanceVessel(batch, hours, "Open", nil, "Open")
-check("hours spent unloaded count on return, and a done batch goes into the Fermented tank", finished
-    and batch.run == nil and batch.fermentedMl == V.fermentedMl(20000))
+check("hours spent unloaded count on return, and a done batch is fermented wort", finished
+    and batch.run == nil and batch.fermentedMl == V.fermentedMl(16000))
+local brimming = newBatch(20, "Open")
+runHours(22, 60, brimming, "Open")
+check("20 L foams over in its vigorous half: a quarter of the way through, half of its loss",
+    math.abs(brimming.run.ml - 19000) < 1 and V.foaming(brimming.run, 1), brimming.run.ml)
+runHours(22, 179, brimming, "Open")
+check("and at most half of what is above the line is lost, all of it by half way", math.abs(brimming.run.foamedMl - 2000) < 1
+    and math.abs(brimming.run.ml - 18000) < 1 and not V.foaming(brimming.run, 1), brimming.run.foamedMl)
+check("full speed all the same: no slower for being full", math.abs(V.runProgress(brimming.run) - 239 / 240) < 1e-6)
+runHours(22, 1, brimming, "Open")
+check("done: its 18 L, less the lees", brimming.run == nil and brimming.fermentedMl == V.fermentedMl(18000))
+local cool = newBatch(20, "Open")
+runHours(14, 240, cool, "Open")
+check("cooler, less vigorous: less foams over", cool.run.foamedMl < 2000 * 0.8, cool.run.foamedMl)
 check("a batch loses its lees", V.fermentedMl(20000) == math.floor(20000 * V.FERMENT_YIELD + 0.5))
 
 local oldLedger = { lastHour = hours, alcoholicOpen = 0, alcoholicSheltered = 0, aceticOpen = 0, aceticSheltered = 0, heat = 0 }
@@ -105,35 +119,90 @@ V.getLedger().seasonTemperature, V.getLedger().threeDayTemperature = 20, 20
 runHours(-5, 10, roofed, "Sheltered")
 check("a vessel in a shut room goes by the room's mean, not the frost", roofed.run.work.age > 10 * 0.5)
 
--- Pitching, topping up, drawing off
+-- Pitching, topping up, drawing off: one pool
 local vessel = { wortMl = 15000, fermentedMl = 0 }
 V.ageTank(vessel, vessel.wortMl, "Open", hours)
-check("a batch can be pitched on a bucket or more", V.pitchRefusal(vessel, hours, "Open") == nil)
+check("any amount of wort can be pitched", V.pitchRefusal(vessel, hours, "Open") == nil)
 V.pitch(vessel, hours, "Open")
-check("one bucket of 15 L goes in, the rest waits with its age", vessel.run.ml == 10000 and vessel.wortMl == 5000
-    and vessel.tpFluidAge ~= nil)
+check("all of it goes in, the wort's age with it", vessel.run.ml == 15000 and vessel.wortMl == 0 and vessel.tpFluidAge == nil)
 check("a running batch refuses another", V.pitchRefusal(vessel, hours, "Open") == "IGUI_TraditionalPreservationVinegar_InUse")
 vessel.run.work.age = V.ALCOHOLIC_HOURS / 2
-check("wort poured in while a batch works goes into it, up to 20 L", V.wortRoom(vessel) == 10000
-    and V.pourWortIn(vessel, 12000, nil, "Open") == 10000 and vessel.run.ml == 20000 and vessel.wortMl == 5000)
-check("and the batch's progress is shared out over the new volume", math.abs(V.runProgress(vessel.run) - 0.25) < 1e-9)
-check("a full batch takes no more", V.wortRoom(vessel) == 0 and V.pourWortIn(vessel, 1000, nil, "Open") == 0)
+check("wort poured in while a batch works goes into it, up to 20 L", V.wortRoom(vessel) == 5000
+    and V.pourWortIn(vessel, 12000, nil, "Open", hours) == 5000 and vessel.run.ml == 20000)
+check("and the batch's progress is shared out over the new volume", math.abs(V.runProgress(vessel.run) - 0.375) < 1e-9)
+check("an established batch takes a top-up without fuss", not vessel.run.underpitched and not vessel.run.lagUntil)
+check("a full batch takes no more", V.wortRoom(vessel) == 0 and V.pourWortIn(vessel, 1000, nil, "Open", hours) == 0
+    and V.pourRefusal(vessel) == "IGUI_TraditionalPreservationVinegar_VesselFull")
+
+-- Topping up a young batch with more than is in.
+local young = { wortMl = 5000, fermentedMl = 0 }
+V.pitch(young, hours, "Open")
+young.run.work.age = V.ALCOHOLIC_HOURS * 0.05
+check("the risk is told before: 15 L on 5 L at 5% underpitches", V.topUpRisk(young.run, 15000, hours) == "underpitched"
+    and V.topUpRisk(young.run, 5000, hours) == nil)
+V.pourWortIn(young, 15000, nil, "Open", hours)
+check("and does: half speed, Pitch Yeast offered again", young.run.underpitched and V.needsRepitch(young.run, hours)
+    and V.pitchRefusal(young, hours, "Open") == nil)
+local before = young.run.work.age
+runHours(22, 10, young, "Open")
+check("underpitched, ten hours do five", math.abs(young.run.work.age - before - 5) < 1e-6, young.run.work.age - before)
+check("its time left counts the half speed", math.abs(V.runStatus(young, 22).hoursLeft - (V.ALCOHOLIC_HOURS - young.run.work.age) * 2) < 1e-6)
+check("a fresh packet sets it going at full speed", V.pitch(young, hours, "Open") == young.run.ml and not young.run.underpitched
+    and V.pitchRefusal(young, hours, "Open") == "IGUI_TraditionalPreservationVinegar_InUse")
+local middling = { wortMl = 5000, fermentedMl = 0 }
+V.pitch(middling, hours, "Open")
+middling.run.work.age = V.ALCOHOLIC_HOURS * 0.3
+check("15 L on 5 L at 30% lags", V.topUpRisk(middling.run, 15000, hours) == "lag")
+V.pourWortIn(middling, 15000, nil, "Open", hours)
+check("a lag of a day a share added, at most two", middling.run.lagUntil == hours + V.LAG_MAX_HOURS and V.lagging(middling.run, hours))
+before = middling.run.work.age
+runHours(22, 48, middling, "Open")
+check("no work while it lags", math.abs(middling.run.work.age - before) < 1e-6 and not middling.run.lagUntil)
+runHours(22, 10, middling, "Open")
+check("then on at full speed", math.abs(middling.run.work.age - before - 10) < 1e-6)
+local lagged = { wortMl = 8000, fermentedMl = 0 }
+V.pitch(lagged, hours, "Open")
+lagged.run.work.age = V.ALCOHOLIC_HOURS * 0.25
+V.pourWortIn(lagged, 10000, nil, "Open", hours)
+check("10 L on 8 L: a day and a quarter", math.abs(lagged.run.lagUntil - hours - 30) < 1e-6)
+V.pitch(lagged, hours, "Open")
+check("a fresh packet ends the lag", not lagged.run.lagUntil)
+
+-- Small pours count together over a day; a little a day is step feeding.
+local stepped = { wortMl = 5000, fermentedMl = 0 }
+V.pitch(stepped, hours, "Open")
+stepped.run.work.age = V.ALCOHOLIC_HOURS * 0.1
+for _ = 1, 5 do V.pourWortIn(stepped, 1000, nil, "Open", hours) end
+check("five 1 L pours on 5 L: as one 5 L pour, no harm", not stepped.run.underpitched)
+V.pourWortIn(stepped, 1000, nil, "Open", hours)
+check("a sixth the same day makes 6 L on 5 L: underpitched", stepped.run.underpitched)
+local fed = { wortMl = 5000, fermentedMl = 0 }
+V.pitch(fed, hours, "Open")
+fed.run.work.age = V.ALCOHOLIC_HOURS * 0.1
+for day = 0, 5 do V.pourWortIn(fed, 2000, nil, "Open", hours + day * 25) end
+check("2 L a day for six days: step feeding, never too much at once", not fed.run.underpitched and not fed.run.lagUntil
+    and fed.run.ml == 17000)
+
+-- Drawing off, pouring away
+vessel = { wortMl = 5000, fermentedMl = 0 }
+V.ageTank(vessel, vessel.wortMl, "Open", hours)
 check("the waiting wort is drawn off as far as the container holds", V.drawOffWort(vessel, 3000, "Open", hours) == 3000
     and vessel.wortMl == 2000 and vessel.tpFluidAge ~= nil)
 check("and the last of it takes its age along", V.drawOffWort(vessel, 3000, "Open", hours) == 2000
     and vessel.wortMl == 0 and vessel.tpFluidAge == nil)
 vessel.fermentedMl = 1000
-V.pourAwayBatch(vessel)
-check("pouring the batch away leaves the fermented wort", vessel.run == nil and vessel.fermentedMl == 1000
-    and V.vesselHolds(vessel))
-check("an idle vessel takes wort in its tank, up to 20 L", V.pourWortIn(vessel, 25000, nil, "Open") == V.TANK_ML
-    and vessel.wortMl == V.TANK_ML)
-check("fermented wort must be drawn off before the next batch", V.pitchRefusal(vessel, hours, "Open")
-    == "IGUI_TraditionalPreservationVinegar_DrawOffFirst")
+check("wort can't go on fermented wort: draw it off first", V.wortRoom(vessel) == 0
+    and V.pourRefusal(vessel) == "IGUI_TraditionalPreservationVinegar_DrawOffFirst"
+    and V.pourWortIn(vessel, 5000, nil, "Open", hours) == 0
+    and V.pitchRefusal(vessel, hours, "Open") == "IGUI_TraditionalPreservationVinegar_DrawOffFirst")
 check("drawn off as far as there is", V.drawOff(vessel, 5000) == 1000 and vessel.fermentedMl == 0)
-V.pourAwayWort(vessel)
 check("an emptied vessel holds nothing and asks for wort", not V.vesselHolds(vessel)
     and V.pitchRefusal(vessel, hours, "Open") == "IGUI_TraditionalPreservationVinegar_NeedsWort")
+check("an idle vessel takes wort, up to 20 L", V.pourWortIn(vessel, 25000, nil, "Open", hours) == V.TANK_ML
+    and vessel.wortMl == V.TANK_ML)
+V.pitch(vessel, hours, "Open")
+V.pourAwayBatch(vessel)
+check("pouring the batch away empties it", vessel.run == nil and not V.vesselHolds(vessel))
 vessel.wortMl = 10000
 V.ageTank(vessel, vessel.wortMl, "Open", hours)
 vessel.tpFluidAge.age = V.WORT_SOUR_HOURS
@@ -201,10 +270,6 @@ strainForged.used, strainForged.created = { mash }, { plainOut, grain }
 V.onStrained(strainForged, "player")
 check("a forged bucket comes back forged, with the wort in it", forgedOut and forgedOut:getFullType() == "Base.BucketForged"
     and V.holdsOnly(forgedOut.fluid, V.WORT) and forgedOut.fluid.amount == 10 and plainOut.removed)
-check("a run takes one bucket of wort", V.batchMl(10000) == 10000 and V.batchMl(15000) == 10000)
-check("or two, and never more", V.batchMl(20000) == 20000 and V.batchMl(25000) == 20000)
-check("and nothing short of a bucket", V.batchMl(9000) == 0)
-check("a bucket's dregs still count as a bucket", V.batchMl(9999.5) == 10000)
 check("a run gives back 95%", V.fermentedMl(10000) == 9500 and V.fermentedMl(20000) == 19000)
 
 -- The cask: one continuous pool

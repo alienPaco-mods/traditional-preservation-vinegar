@@ -16,10 +16,10 @@ These console commands load only when the game runs in **debug mode** (launch op
 | `TPV.setCask(litres, percent)` | Sets the nearest cask's pool, e.g. `TPV.setCask(16, 100)` for a ready cask. |
 | `TPV.mother(layers)` | Gives the nearest cask a mother with that many layers. `TPV.mother(2)` lets you test Split Mother, and `TPV.mother(0)` removes it. |
 | `TPV.vessel()` | The nearest vessel: the waiting wort and its hours to souring, the batch (litres, progress, hours), the fermented wort and the hose. |
-| `TPV.wort(litres)` | Sets the nearest vessel's Wort tank to this much fresh wort (20 if you leave the litres out). |
-| `TPV.batch(litres, pct)` | Sets the nearest vessel's batch, as if pitched and worked this far: `TPV.batch(10, 50)` is 10 L half done. No yeast needed. `TPV.batch(0)` takes it away. |
-| `TPV.fermented(litres)` | Sets the nearest vessel's Fermented tank, to test drawing off and the hose. |
-| `TPV.ageWort(hours)` | Adds this many hours at 20 C to every wort you carry and to the nearest vessel's Wort tank. `TPV.ageWort(48)` (the default) sours it: carried wort turns to Sour Wort at once, and the vessel then refuses Pitch Yeast. |
+| `TPV.wort(litres)` | Empties the nearest vessel and fills it with this much fresh wort (20 if you leave the litres out). |
+| `TPV.batch(litres, pct, yeast)` | Empties the nearest vessel and sets its batch, as if pitched and worked this far: `TPV.batch(10, 50)` is 10 L half done. No yeast needed. `yeast` `"underpitched"` (half speed until repitched) or `"lag"` (a day's pause) as a big top-up on a young batch would leave it. `TPV.batch(18, 10)` is above the foam line in its vigorous half. `TPV.batch(0)` takes it away. |
+| `TPV.fermented(litres)` | Empties the nearest vessel and fills it with this much fermented wort, to test drawing off and the hose. |
+| `TPV.ageWort(hours)` | Adds this many hours at 20 C to every wort you carry and to the nearest vessel's waiting wort. `TPV.ageWort(48)` (the default) sours it: carried wort turns to Sour Wort at once, and the vessel then refuses Pitch Yeast. |
 | `TPV.kit(kind)` | The things a test needs: `"build"` (hammer, saw, planks, nails, twine, a jar and ripped sheets for all three stations), `"malt"` (24 barley seeds, a bucket of water, an empty bucket, ripped sheets), `"ferment"` (2 buckets of wort, 2 yeast and an empty bucket: pitch on one, top up with the other, draw off into the third), `"cask"` (hose, pliers, a Mother of Vinegar, an empty jar, 3 empty Crafted Bottles), or `"all"`. `TPV.kit()` lists them. |
 | `TPV.give(name, n)` | Spawns mod items such as `Malt` or `MotherOfVinegar`, or any full type such as `Base.Yeast` or `Base.RubberHose`. `TPV.give()` lists the names. |
 

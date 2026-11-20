@@ -1,5 +1,6 @@
--- Traditional Preservation (Vinegar): pitching a full packet of yeast into a Fermentation Vessel. The batch takes the
--- whole buckets of wort in the Wort tank (V.pitch), and the packet is used up.
+-- Traditional Preservation (Vinegar): pitching a full packet of yeast into a Fermentation Vessel. The batch takes all
+-- the wort in (V.pitch), or a running batch underpitched or lagging after a top-up takes a fresh packet and goes on at
+-- full speed; the packet is used up.
 require "TimedActions/ISBaseTimedAction"
 require "TraditionalPreservationVinegar"
 
@@ -33,10 +34,11 @@ function TPPitchVinegarYeast:complete()
     local now = getGameTime():getWorldAgeHours()
     local record, place = V.vesselNow(self.vessel, now)
     if V.pitchRefusal(record, now, Weather.placeOf(self.vessel)) then return true end
+    local repitch = record.run ~= nil
     local ml = V.pitch(record, now, place)
     if ml then
         Action.removeItem(self.item)
-        log("TPV", "vessel batch pitched: %.1f L of wort", ml / 1000)
+        log("TPV", repitch and "vessel batch repitched: %.1f L" or "vessel batch pitched: %.1f L of wort", ml / 1000)
     end
     if TraditionalPreservationVinegarWorld then TraditionalPreservationVinegarWorld.refresh(self.vessel) end
     return true
