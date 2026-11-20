@@ -60,3 +60,10 @@ option TraditionalPreservationVinegar.WortSours {
     page = TraditionalPreservationVinegar,
     translation = TraditionalPreservationVinegar_WortSours,
 }
+
+option TraditionalPreservationVinegar.FrostDamage {
+    type = boolean,
+    default = true,
+    page = TraditionalPreservationVinegar,
+    translation = TraditionalPreservationVinegar_FrostDamage,
+}

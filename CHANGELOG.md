@@ -1,5 +1,18 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.50
+- **Frost** (ROADMAP NEXT 1; user, session 76), on TP Core's Frost ledger by place, sandbox **Frost harms** (on).
+  Steeped Grain freezes at 0 C and, frozen through (6 h in all), its sprout is dead: a heap on the Malting Floor
+  becomes Spent Grain (state *dead*, band *Frozen*, Take Done takes it off, as old as it has been dead), a carried or
+  stored one is swapped for Spent Grain. A Mother of Vinegar in a jar freezes at -3 C, each frozen hour 1/48 of the
+  way to rotten. A cask's mother freezes at -3 C and loses a layer for every 6 h frozen, never the last; hours short
+  of a layer carry over. Worts, mashes, the vessel and the cask's vinegar keep only pausing; Green Malt and Malt are
+  safe. A basement, a fire, a powered fridge never freeze; cooked or burnt items are left to vanilla. Item modData
+  `tpvFrost`, cask `tpvMotherFrost`, a heap's `frost` and `deadAt`.
+- Console: `TPV.frost(hours)` (default 6) freezes the mothers in jars and Steeped Grain near you, the nearest cask's
+  mother and the nearest floor's sprouting heaps; `TPV.cask()` and `TPV.floor()` show the frozen hours.
+- Needs TP Core 0.1.52.
+
 ## 0.2.49
 - **The finished cask's bottles stand on the floor** (ROADMAP NEXT 1; user picked B in `art/cask_bottles_mock.png`):
   the three bottles of the finished overlay floated off the floor beside the cask (two past the floor's edge, one on

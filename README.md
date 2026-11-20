@@ -1,4 +1,4 @@
-# Traditional Preservation (Vinegar) — Build 42 prototype (v0.2.49)
+# Traditional Preservation (Vinegar) — Build 42 prototype (v0.2.50)
 
 **Status: experimental.** The whole chain, from steeped grain to bottled vinegar, has been played in the game with test timers. Temperature effects have only been checked offline so far (see the test plan). Back up your save before enabling.
 
@@ -76,7 +76,7 @@ Crafting menu, Cooking. 24 barley, wheat or rye seeds and 4 L of water from any 
 
 Right-click the floor, **Malting Floor > Spread Steeped Grain** (One or All). It holds 4 heaps, one a Steeped Grain, and each heap has its own clock: a new heap can go down beside heaps already sprouting, as real floor maltings laid out each steeping as its own "piece". A heap sprouts into **Green Malt** in 5 days at the best temperature (12 to 20 C).
 
-**Malting Floor Info** (in the floor's menu, and at the bottom of the main menu) has a band with the floor's state (Malting, Waiting, Done, Stale, Rotten, worst first), the place and working rate, the four heaps as cells, and lists every heap with a bar: how far on and the time left, or, once done, when the Green Malt goes stale. Hover a row for its progress, the place's temperature and the working rate. **Take Done** takes the Green Malt off (a button in the window too); **Take Everything Off** (Take All in the window) takes the rest too: a heap taken off part way comes back as Steeped Grain that keeps how far it sprouted, and carries on from there when spread again (off the floor it waits). Drag Steeped Grain onto the heaps' cells in the window to spread it. A floor with any heap on it can't be picked up.
+**Malting Floor Info** (in the floor's menu, and at the bottom of the main menu) has a band with the floor's state (Malting, Waiting, Done, Stale, Frozen, Rotten, worst first), the place and working rate, the four heaps as cells, and lists every heap with a bar: how far on and the time left, or, once done, when the Green Malt goes stale. Hover a row for its progress, the place's temperature and the working rate. **Take Done** takes the Green Malt off (a button in the window too); **Take Everything Off** (Take All in the window) takes the rest too: a heap taken off part way comes back as Steeped Grain that keeps how far it sprouted, and carries on from there when spread again (off the floor it waits), and keeps the frost it had. Drag Steeped Grain onto the heaps' cells in the window to spread it. A floor with any heap on it can't be picked up.
 
 ### 3. Kiln
 
@@ -208,7 +208,7 @@ A cask grows its own mother the first time its pool reaches 100%. It doesn't rep
 - **Take Mother**: lifts the whole mother into an empty jar (Empty Jar or Crafted Jar). The cask loses its speed.
 - **Split Mother**: once it has 2 layers or more, peels one off into an empty jar and leaves the rest in the cask. Use it to start a second cask. Before then it shows greyed out, and hovering it, or the Orléans Vinegar Cask window, says how much more vinegar the next layer needs.
 - **Add Mother**: lays a living mother from its jar into a cask that has none, and gives the jar back.
-- **In the jar** a mother is like food: fresh for about 30 days, dead at 40. A fridge slows it down, as it does for food. A dead mother can't be added.
+- **In the jar** a mother is like food: fresh for about 30 days, dead at 40. A fridge slows it down, as it does for food. Frost at -3 C and below brings death closer (1/48 of the way an hour), and in the cask it costs a layer every 6 hours, never the last (see Temperature and places). A dead mother can't be added.
 
 The mother only grows as fast as you make vinegar, so it can't be farmed. Splitting just lets a second cask start at full speed.
 
@@ -268,7 +268,14 @@ Time counts by the game clock, at any Day Length, and keeps counting while the a
 | Vessel | below 10 C | 10–18 C | 18–25 C | 25–30 C (85% or more) | above 30 C, 10% by 40 C |
 | Cask | below 10 C | 10–20 C | 20–30 C | | above 30 C, 25% by 40 C |
 
-**Frozen work waits.** The malting floor stops at 0 C and below, the vessel and the cask at -3 C and below (a brew freezes a little under water): nothing is killed, the batch picks up where it stopped when it thaws, and the window says *Paused here (frozen)*. Temperature sensitivity Off ignores it.
+**Frozen work waits.** The malting floor stops at 0 C and below, the vessel and the cask at -3 C and below (a brew freezes a little under water): the wort, the batch and the vinegar pick up where they stopped when it thaws, and the window says *Paused here (frozen)*. Temperature sensitivity Off ignores it.
+
+**Frost harms the living things** (sandbox **Frost harms**, on by default), counted on TP Core's frost ledger by place, so time away counts too:
+
+- **Steeped Grain** freezes at 0 C. Frozen through, **6 hours** in all, the sprout is dead and it is **Spent Grain**: a heap on the Malting Floor turns to Spent Grain (the band says *Frozen*, Take Done takes it off, as old as it has been dead), and a carried or stored one is swapped for Spent Grain. Steeped Grain taken off the floor and spread again keeps its frozen hours. Green Malt and Malt are safe.
+- **A Mother of Vinegar in a jar** freezes at -3 C: every hour frozen takes it 1/48 of the way to dead, so two days of frost kill it.
+- **The mother in a cask** freezes at -3 C too and loses a **layer for every 6 hours frozen**, never its last: it lives through. Hours short of a layer wait for the next frost.
+- A basement never freezes, nor a place by a lit fire or banked embers, nor a powered fridge. Cooked or burnt items keep vanilla's timers. Off, frost does no harm.
 
 The places are TP Core's, from the game's own flags:
 
@@ -349,6 +356,7 @@ Under Traditional Preservation (Vinegar):
 | Temperature sensitivity | Normal | Off, Forgiving, Normal or Harsh |
 | Brewing effort | Normal | How long the hands-on work takes, below |
 | Wort sours | On | Wort waiting for the yeast sours (2 days at 20 C); off, it keeps for ever |
+| Frost harms | On | Frost kills Steeped Grain's sprout (6 h at 0 C), brings a jar's mother nearer death and costs a cask's mother layers (-3 C); off, the cold only pauses |
 
 | Brewing effort | Light | Normal | Hard |
 |---|---|---|---|
@@ -407,6 +415,7 @@ The real-world claims the design rests on, and the simplifications made for play
 - The vessel has no crafting window: its one pool is its record in its `movableData` (`tpvVessel`, `TraditionalPreservationVinegarVessel.lua`; `wortMl`, `run` or `fermentedMl`, one in use at a time), stepped by the World. Foam: `V.HEADSPACE_ML`, `V.FOAM_LOSS` of `run.overMl` (above the line at the pitch or last top-up) over the first `V.VIGOROUS` of the work, by the working rate. A top-up on a young batch: `V.topUp` sets `run.underpitched` (`V.UNDERPITCH_RATE`) or `run.lagUntil` (`V.LAG_HOURS` a share added, `V.LAG_MAX_HOURS`), `V.pitch` repitches. The batch's work is a FluidAgeing age on the alcoholic ledger, as the floor's heaps are on the malting one.
 - The waiting wort's age: the vessel is not an item, so FluidAgeing can't keep a record on it. The record sits on the vessel's record under FluidAgeing's key (`V.ageTank`), the tank's wort is never renamed (the tank only takes wort), and the vessel checks the record instead (`V.isSour`). Wort drawn off takes the age with it.
 - The cask's pool, souring, mother and layers live in the cask's `movableData`, which vanilla copies onto the item when a station is picked up and back when it's placed. So the mother moves with the cask and can't be duplicated.
+- Frost (`TraditionalPreservationVinegarFrost.lua`, TP Core's `Frost`): freezing points `V.MOTHER_FROST` (`V.FREEZE_C`) and `V.GRAIN_FROST` (0 C). Item modData `tpvFrost` (a mother's or a Steeped Grain's frost record; `sproutDead` once frozen through), looked at through TP Core's `PlaceKeepingUI.watch` (carried every hour, containers as the inventory windows show them, an item as it moves); a dead Steeped Grain is swapped for Spent Grain on the next tick (`V.killSprout`), after any move. The cask's `movableData` `tpvMotherFrost` (the mother's record, caught up with its souring in `V.updateCask`, by the cask's fire notes; `layerHours` toward the next layer lost). A heap's `frost` (its record) and `deadAt` (the hour its sprout died) in the floor's `tpvFloor`. Cooked or burnt items are skipped (`V.frostPasses`).
 - Weather is kept as running totals in global ModData, per stage and place, so stations catch up exactly when their area loads again.
 - Station sprites are layered by the mod rather than with `SpriteOverlayConfig`, which can only show one overlay for a first batch.
 - The shared core (weather, places, station tracking, popups) is the required TP Core mod (id `TraditionalPreservationCore`), loaded as `require "TraditionalPreservationCore/Weather"`. Edit it there. The rate curves, heat damage, the cask, the hose and the old-save migrations stay in this mod's own files.
@@ -438,10 +447,11 @@ Still to check in the game:
 4. A full vessel and a running vessel refuse to be picked up, with the red line.
 5. Spent Grain eaten from a trough, and taken by the composter.
 6. Wort refuses to mix with another drink in a vanilla container.
-7. "(Basement)" and its temperature on a station below ground; "(By a fire)" at 28 C within 2 tiles of a lit fire indoors, "(By a fire, under a roof)" and "(By a fire, in the open)" outside; *Paused here (frozen)* on a vessel or cask at -3 C and below.
-8. A run with real timers and temperature on, in a cold month and a hot month, indoors, outdoors, in a basement and by a fire.
-9. The hose: attach; Pump to Cask from both stations, with 5 L, 10 L, the air line and all that fits each moving what it says; greyed options giving their reasons (empty vessel, short tank, no room, already at the air line); detach; and a destroyed station dropping the hose.
-10. The Orléans Vinegar Cask window: opens from the cask's submenu, fills its bars, counts down while souring, shows bottles once ready and the hose when joined, and closes past 6 squares or when the cask is picked up.
-11. Green Malt: fresh for 2 days and rotten after 5. Stale Green Malt still kilns into Malt; rotten Green Malt stays rotten on the fire, and the composter takes it.
-12. Wort that sours: `TPV.ageWort(48)` turns carried wort into Wort (Soured) and the tank's wort to soured; Craft refuses with the reason, Pour Wort is greyed with "Sour wort won't ferment", Pour Away the Wort empties the tank; the info block's "sours in about"; a cancelled run gives back wort with its age.
-13. `console.txt` shows no repeating Lua errors after an hour of play, including with the other Traditional Preservation mods on.
+7. Frost: a Steeped Grain dropped outside on a frosty night turns to Spent Grain after 6 hours below 0 C, a heap on an open floor shows *Frozen* and comes off as Spent Grain, a cask's mother outside loses a layer and keeps the last; `TPV.frost()` does all three at once.
+8. "(Basement)" and its temperature on a station below ground; "(By a fire)" at 28 C within 2 tiles of a lit fire indoors, "(By a fire, under a roof)" and "(By a fire, in the open)" outside; *Paused here (frozen)* on a vessel or cask at -3 C and below.
+9. A run with real timers and temperature on, in a cold month and a hot month, indoors, outdoors, in a basement and by a fire.
+10. The hose: attach; Pump to Cask from both stations, with 5 L, 10 L, the air line and all that fits each moving what it says; greyed options giving their reasons (empty vessel, short tank, no room, already at the air line); detach; and a destroyed station dropping the hose.
+11. The Orléans Vinegar Cask window: opens from the cask's submenu, fills its bars, counts down while souring, shows bottles once ready and the hose when joined, and closes past 6 squares or when the cask is picked up.
+12. Green Malt: fresh for 2 days and rotten after 5. Stale Green Malt still kilns into Malt; rotten Green Malt stays rotten on the fire, and the composter takes it.
+13. Wort that sours: `TPV.ageWort(48)` turns carried wort into Wort (Soured) and the tank's wort to soured; Craft refuses with the reason, Pour Wort is greyed with "Sour wort won't ferment", Pour Away the Wort empties the tank; the info block's "sours in about"; a cancelled run gives back wort with its age.
+14. `console.txt` shows no repeating Lua errors after an hour of play, including with the other Traditional Preservation mods on.

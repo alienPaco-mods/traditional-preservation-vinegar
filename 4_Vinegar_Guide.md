@@ -114,6 +114,7 @@ The pale skin that grows on the pool, and the heart of the cask.
 - **Split Mother** (2+ layers, empty jar): peel one layer off for a second cask. Until then it's greyed out, and hovering it says how long to go.
 - **Add Mother**: put a jarred mother into a cask without one. You get the jar back.
 - **A jarred mother is alive.** It's fresh for about 30 days and dead at 40. A fridge slows it.
+- **Keep it from the frost.** At -3 C and below a jarred mother loses nearly a day of life an hour (two days of frost kill it). In the cask it loses a layer for every 6 hours frozen, but never the last one: it lives through.
 - **It travels with the cask.** Pick up an empty cask and its mother comes along.
 
 ---
@@ -182,6 +183,8 @@ Every station runs on real temperature, **even while you're away**.
 | In the open (a campfire) | 7 to 16 days | 29 to 56 days | 77 to 105 days |
 
 > *Margin note:* a porch fire is the winter malting floor. The frost outside takes the fire down to the 12 to 20 C sprouting grain wants, where the kitchen hearth would cook it.
+
+**Frost.** Below freezing the work only waits, but living things suffer. Steeped Grain freezes at 0 C: 6 hours frozen and the sprout is dead, and it is Spent Grain, on the floor (the window says *Frozen*) or in your pack. Green Malt and Malt are safe. The mother freezes at -3 C (see section 6). A basement never freezes, nor anything by a lit fire.
 
 **A powered room** (22 C while the grid is on), any month: the vessel ferments in 10 days and a cask's first batch sours in 35, as by banked embers.
 
@@ -278,6 +281,7 @@ A sip scales down: half a litre of wort is 150 calories.
 | Temperature sensitivity | Normal | Off / Forgiving / Normal / Harsh |
 | Brewing effort | Normal | Light ×1 / **Normal ×1.5** / Hard ×2 on kilning, heating and craft times |
 | Wort sours | On | Wort waiting for the yeast sours (2 days at 20 C); off, it keeps for ever |
+| Frost harms | On | Frost kills Steeped Grain's sprout and harms the mother; off, the cold only pauses the work |
 
 ---
 
@@ -316,12 +320,13 @@ Each process laid out as the game's planting seasons: the months it works unheat
 | `TPV.age(hours)` | Gives every floor, vessel and cask this many hours of perfect weather. `TPV.age(120)` finishes a malting run, 240 a vessel run, 840 a cask from fresh. |
 | `TPV.fast(hours)` | Test timers: every floor, vessel and cask run takes this many hours, with temperature ignored. `TPV.fast()` turns them off again. |
 | `TPV.timers()` | The hours each stage takes right now, the brewing effort and the temperature sensitivity. |
-| `TPV.cask()` | The nearest cask (within 2 squares): litres, souring, bottles ready, mother, layers, litres to the next layer, starter bonus and hose. |
+| `TPV.cask()` | The nearest cask (within 2 squares): litres, souring, bottles ready, mother, layers, litres to the next layer, starter bonus, frozen hours and hose. |
 | `TPV.setCask(litres, percent)` | Sets the nearest cask's pool, e.g. `TPV.setCask(16, 100)` for a ready cask. |
 | `TPV.mother(layers)` | Gives the nearest cask a mother with that many layers. `TPV.mother(2)` lets you test Split Mother, and `TPV.mother(0)` removes it. |
 | `TPV.wort(litres)` | Empties the nearest vessel and fills it with fresh wort (20 if you leave the litres out). |
 | `TPV.fermented(litres)` | Empties the nearest vessel and fills it with fermented wort, to test drawing off and the hose. |
 | `TPV.ageWort(hours)` | Adds this many hours at 20 C to every wort you carry and to the nearest vessel's waiting wort. `TPV.ageWort(48)` (the default) sours it. |
+| `TPV.frost(hours)` | Freezes for hours (default 6) the jarred mothers and Steeped Grain near you, the nearest cask's mother and the nearest floor's heaps, as if the frost had lasted that long. |
 | `TPV.give(name, n)` | Spawns mod items such as `Malt` or `MotherOfVinegar`, or any full type such as `Base.Yeast` or `Base.RubberHose`. `TPV.give()` lists the names. |
 
 Debug mode also adds **[Debug] Fill with Wort** and **[Debug] Fill with Fermented Wort** to a container's right-click menu.

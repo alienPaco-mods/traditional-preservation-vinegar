@@ -20,7 +20,9 @@ local MALT_CELL = "media/textures/TPCell_Malt.png"                   -- the heap
 local CELL_COLOUR = { 0.72, 0.62, 0.38 }
 local GREEN_MALT_ICON, RETURNED_ICON = "media/textures/Item_GreenMalt.png", "media/ui/Entity/Icon_Returned_48x48.png"
 local COLOURS = { sprouting = { 0.35, 0.7, 0.35 }, done = { 0.35, 0.7, 0.35 }, stale = { 0.8, 0.6, 0.2 },
-    rotten = { 0.6, 0.3, 0.25 } }
+    rotten = { 0.6, 0.3, 0.25 }, dead = { 0.6, 0.3, 0.25 } }
+-- What a heap is, by its state: Steeped Grain while it sprouts, Spent Grain once frost killed it, else Green Malt.
+local ITEM_OF = { sprouting = "SteepedGrain", dead = "SpentGrain" }
 
 local function say(key, ...) return UI.say(KEY .. key, ...) end
 
@@ -33,11 +35,11 @@ local function floorNow(station)
 end
 
 local function iconOf(state)
-    return getTexture(state == "sprouting" and "media/textures/Item_SteepedGrain.png" or "media/textures/Item_GreenMalt.png")
+    return getTexture("media/textures/Item_" .. (ITEM_OF[state] or "GreenMalt") .. ".png")
 end
 
 local function nameOf(state)
-    return getItemNameFromFullType(state == "sprouting" and V.STEEPED or V.GREEN_MALT)
+    return getItemNameFromFullType("TraditionalPreservationVinegar." .. (ITEM_OF[state] or "GreenMalt"))
 end
 
 -- What the bar says.
@@ -147,10 +149,10 @@ function FloorUI.dropJudge(record, items)
     return { take = take, lines = lines, refused = #take < #items and refused or nil, cells = #take, pattern = MALT_CELL }
 end
 
--- The band (all_info_mock), the worst first: empty; a heap rotten; a heap stale; all done; none sprouting (too cold
+-- The band (all_info_mock), the worst first: empty; a heap rotten; a heap frozen through; a heap stale; all done; none sprouting (too cold
 -- or too hot); else malting. Returns the word's key, the finished text and the colours.
 function FloorUI.band(view)
-    local counts = { sprouting = 0, done = 0, stale = 0, rotten = 0 }
+    local counts = { sprouting = 0, dead = 0, done = 0, stale = 0, rotten = 0 }
     local waiting = 0
     for _, row in ipairs(view.rows) do
         counts[row.status.state] = counts[row.status.state] + 1
@@ -160,6 +162,9 @@ function FloorUI.band(view)
     if count == 0 then return KEY .. "FloorBandEmpty", say("FloorBandEmptyText"), InfoWindow.BAND_IDLE end
     if counts.rotten > 0 then
         return KEY .. "FloorBandRotten", say("FloorBandRottenText", tostring(counts.rotten), tostring(count)), InfoWindow.BAND_AT_RISK
+    end
+    if counts.dead > 0 then
+        return KEY .. "FloorBandFrozen", say("FloorBandFrozenText", tostring(counts.dead), tostring(count)), InfoWindow.BAND_AT_RISK
     end
     if counts.stale > 0 then
         return KEY .. "FloorBandStale", say("FloorBandStaleText", tostring(counts.stale), tostring(count)), InfoWindow.BAND_WAITING

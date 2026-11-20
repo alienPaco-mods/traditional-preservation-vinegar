@@ -20,5 +20,7 @@
   "Sandbox_TraditionalPreservationVinegar_BrewingEffort_option2": "Normal",
   "Sandbox_TraditionalPreservationVinegar_BrewingEffort_option3": "Hard",
   "Sandbox_TraditionalPreservationVinegar_WortSours": "Wort sours",
-  "Sandbox_TraditionalPreservationVinegar_WortSours_tooltip": "Wort waiting for the yeast sours: in 2 days at 20°C, 1 at 30°C, about 5 in a cool cellar, never while frozen. The vessel refuses sour wort. Fermented wort keeps."
+  "Sandbox_TraditionalPreservationVinegar_WortSours_tooltip": "Wort waiting for the yeast sours: in 2 days at 20°C, 1 at 30°C, about 5 in a cool cellar, never while frozen. The vessel refuses sour wort. Fermented wort keeps.",
+  "Sandbox_TraditionalPreservationVinegar_FrostDamage": "Frost harms",
+  "Sandbox_TraditionalPreservationVinegar_FrostDamage_tooltip": "A Mother of Vinegar freezes at -3°C: in a jar every hour frozen takes it 1/48 of the way to rotten, in a cask it loses a layer for every 6 hours frozen but never its last. Steeped Grain freezes at 0°C, and after 6 hours frozen the sprout is dead: Spent Grain, on the Malting Floor or carried. Green Malt, Malt, wort and vinegar only wait while frozen. A basement never freezes, nor a place by a lit fire or banked embers. Off, the cold does no harm."
 }

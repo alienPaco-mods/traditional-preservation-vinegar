@@ -7,6 +7,8 @@ local V = TraditionalPreservationVinegar
 local Fire = require "TraditionalPreservationCore/Fire"
 local Weather = require "TraditionalPreservationCore/Weather"
 local FluidAgeing = require "TraditionalPreservationCore/FluidAgeing"
+local Frost = require "TraditionalPreservationCore/Frost"
+local PlaceKeepingUI = require "TraditionalPreservationCore/PlaceKeepingUI"
 TPV = {}
 
 local PROCESSES = { "malting", "alcoholic", "acetic", "wort" }
@@ -35,6 +37,7 @@ function TPV.help()
     say("TPV.batch(litres, pct, y) set the nearest vessel's batch, e.g. TPV.batch(18, 10); y \"underpitched\" or \"lag\". TPV.batch(0) takes it away")
     say("TPV.fermented(litres)     fill the nearest vessel with fermented wort (emptying it first)")
     say("TPV.ageWort(hours)        age the wort you carry and the nearest vessel's tank by hours at 20 C. TPV.ageWort(48) sours it")
+    say("TPV.frost(hours)          freeze for hours (default 6) the mothers in jars and Steeped Grain near you, the nearest cask's mother and the nearest floor's heaps")
     say("TPV.give(name, n)         spawn mod items. TPV.give() lists the names")
     say("TPV.kit(kind)             the things a test needs: \"build\" (all three stations), \"malt\", \"ferment\", \"cask\" or \"all\". TPV.kit() lists them")
     say("Stations must be within " .. V.REACH .. " squares. Right-click a container in debug mode to fill it with wort.")
@@ -95,8 +98,9 @@ function TPV.floor()
     say(string.format("Floor at %d,%d,%d (%s): %d of %d heaps", floor:getX(), floor:getY(), floor:getZ(), tostring(place),
         #record.heaps, V.FLOOR_HEAPS))
     for _, heap in ipairs(record.heaps) do
-        say(string.format("  heap %d: %s, %.0f%% (%.1f of %.0f h), Green Malt %.1f days old", heap.id, V.heapState(heap, now),
-            V.heapProgress(heap) * 100, heap.work.age, V.MALTING_HOURS, V.heapAgeDays(heap, now)))
+        say(string.format("  heap %d: %s, %.0f%% (%.1f of %.0f h), Green Malt %.1f days old, frozen %.1f of %d h", heap.id,
+            V.heapState(heap, now), V.heapProgress(heap) * 100, heap.work.age, V.MALTING_HOURS, V.heapAgeDays(heap, now),
+            heap.frost and heap.frost.age or 0, Frost.THROUGH_HOURS))
     end
 end
 
@@ -108,8 +112,11 @@ function TPV.cask()
     say(string.format("Cask at %d,%d,%d (%s): %.2f L, %.1f%% soured, %d bottles ready",
         cask:getX(), cask:getY(), cask:getZ(), V.placeOf(cask), caskModData.ml / 1000, caskModData.strength * 100, V.bottlesLeft(caskModData)))
     if caskModData.mother then
-        say(string.format("Mother: %d layer(s), next in %.1f L, starter bonus %s", V.motherLayers(caskModData),
-            V.nextLayerMl(caskModData) / 1000, V.hasStarter(caskModData) and "on" or "off"))
+        local frost = caskModData[V.CASK_FROST_KEY]
+        say(string.format("Mother: %d layer(s), next in %.1f L, starter bonus %s, frozen %.1f h in all (%.1f of %d h to the next layer lost%s)",
+            V.motherLayers(caskModData), V.nextLayerMl(caskModData) / 1000, V.hasStarter(caskModData) and "on" or "off",
+            frost and frost.age or 0, frost and frost.layerHours or 0, Frost.THROUGH_HOURS,
+            Frost.freezingAt(V.MOTHER_FROST, frost and frost.place) and ", freezing here now" or ""))
     else
         say("No mother.")
     end
@@ -227,6 +234,53 @@ function TPV.ageWort(hours)
     local tank = vessel and V.vesselNow(vessel, now)[FluidAgeing.KEY]
     if tank then tank.age = tank.age + hours end
     say(string.format("Aged %d carried container(s)%s by %.0f hours at 20 C.", count, tank and " and the vessel's tank" or "", hours))
+end
+
+-- Hours of frost on the mothers in jars and Steeped Grain on you and near you, the nearest cask's mother and the
+-- nearest floor's sprouting heaps, as if they had frozen that long (the sandbox's Frost harms aside).
+function TPV.frost(hours)
+    hours = hours or Frost.THROUGH_HOURS
+    local now = getGameTime():getWorldAgeHours()
+    local jars, grains, dead = 0, 0, 0
+    for _, item in ipairs(PlaceKeepingUI.near({ [V.MOTHER_ITEM] = true, [V.STEEPED] = true })) do
+        if item:getFullType() == V.MOTHER_ITEM then
+            V.lookAtMother(item, now)
+            V.frostMother(item, hours)
+            jars = jars + 1
+        else
+            local wasDead = V.lookAtSteepedGrain(item, now)
+            local record = item:getModData()[V.FROST_KEY]
+            if not wasDead and record then
+                record.age = record.age + hours
+                V.frostSprout(record, hours)
+            end
+            grains = grains + 1
+            if V.sproutDead(item) and V.killSprout(item) then dead = dead + 1 end
+        end
+    end
+    local text = { string.format("%d mother(s) in jars, %d Steeped Grain (%d now Spent Grain)", jars, grains, dead) }
+    local cask = V.findNear(getPlayer(), V.isCask)
+    local caskModData = cask and V.caskModData(cask)
+    if caskModData and caskModData.mother then
+        V.updateCaskAt(caskModData, V.getLedger(), cask)
+        V.frostCaskMother(caskModData, hours)
+        table.insert(text, string.format("the cask's mother (%d layer(s) now)", V.motherLayers(caskModData)))
+    end
+    local floor = V.findNear(getPlayer(), V.isFloor)
+    if floor then
+        local record = V.floorNow(floor, now)
+        local heaps = 0
+        for _, heap in ipairs(record.heaps) do
+            if heap.frost and not V.heapDead(heap) and not V.heapDone(heap) then
+                heap.frost.age = heap.frost.age + hours
+                V.frostHeap(heap, hours, now)
+                heaps = heaps + 1
+            end
+        end
+        if TraditionalPreservationVinegarWorld then TraditionalPreservationVinegarWorld.refresh(floor) end
+        table.insert(text, string.format("%d sprouting heap(s) on the floor", heaps))
+    end
+    say(string.format("Froze for %s hours: %s.", tostring(hours), table.concat(text, ", ")))
 end
 
 function TPV.give(name, count)

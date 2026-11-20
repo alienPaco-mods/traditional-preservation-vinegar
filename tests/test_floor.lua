@@ -268,6 +268,14 @@ word, text, look = bandWord({ heapRow("done"), heapRow("stale") })
 check("a stale heap: stale, amber", word == "Stale" and look == InfoWindow.BAND_WAITING)
 word, _, look = bandWord({ heapRow("stale"), heapRow("rotten"), heapRow("sprouting", 5) })
 check("a rotten heap goes first: rotten, red", word == "Rotten" and look == InfoWindow.BAND_AT_RISK)
+word, text, look = bandWord({ heapRow("stale"), heapRow("dead"), heapRow("sprouting", 5) })
+check("a heap frozen through: frozen, red, before stale", word == "Frozen" and look == InfoWindow.BAND_AT_RISK
+    and text == "1 of 3 heaps frozen through: Spent Grain now")
+local deadHeap = { id = 9, work = { age = 30 }, deadAt = H.hours }
+local deadRow = FloorUI.heapRow(deadHeap, "Open", -5, H.hours)
+check("a dead heap's row: Spent Grain, saying why", deadRow.name == "SpentGrain"
+    and deadRow.icon == "media/textures/Item_SpentGrain.png" and deadRow.text == "Frozen through: the sprout is dead")
+check("and it comes off with Take Done", #FloorUI.view({ heaps = { deadHeap } }, "Open", H.hours).doneIds == 1)
 
 -- Taking off.
 given = {}

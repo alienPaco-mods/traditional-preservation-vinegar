@@ -11,6 +11,7 @@ local UI = require "TraditionalPreservationCore/UI"
 local InfoWindow = require "TraditionalPreservationCore/InfoWindow"
 local Weather = require "TraditionalPreservationCore/Weather"
 local Container = require "TraditionalPreservationCore/Container"
+local PlaceKeepingUI = require "TraditionalPreservationCore/PlaceKeepingUI"
 
 local V = TraditionalPreservationVinegar
 
@@ -930,3 +931,17 @@ local function onFillContextMenu(playerNum, context, worldobjects, test)
 end
 
 Events.OnFillWorldObjectContextMenu.Add(onFillContextMenu)
+
+-- Mothers in jars and Steeped Grain catch up on their frost whenever they are looked at or moved (TP Core's
+-- PlaceKeepingUI). A Steeped Grain whose sprout died becomes Spent Grain on the next tick, once any move is over.
+local deadSprouts = {}
+PlaceKeepingUI.watch({ keep = function(item) V.lookAtMother(item) end }, { [V.MOTHER_ITEM] = true })
+PlaceKeepingUI.watch({ keep = function(item)
+    if V.lookAtSteepedGrain(item) then table.insert(deadSprouts, item) end
+end }, { [V.STEEPED] = true })
+Events.OnTick.Add(function()
+    if #deadSprouts == 0 then return end
+    local items = deadSprouts
+    deadSprouts = {}
+    for _, item in ipairs(items) do V.killSprout(item) end
+end)

@@ -59,6 +59,7 @@ end
 local inventory = player:getInventory()
 function inventory:getAllEvalRecurse() return { size = function() return 0 end } end
 check("ageWort with nothing to age ages nothing", run("ageWort", 48):find("Aged 0 carried container(s) by 48", 1, true) ~= nil)
+check("frost with nothing near freezes nothing", run("frost"):find("Froze for 6 hours: 0 mother(s) in jars, 0 Steeped Grain", 1, true) ~= nil)
 check("weather shows wort's souring speed", run("weather"):find("wort", 1, true) ~= nil)
 
 check("give with no name lists the items", run("give"):find("Items: ", 1, true) ~= nil and #player.given == 0)

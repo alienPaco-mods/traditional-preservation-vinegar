@@ -5,15 +5,18 @@
 -- A heap's work is a FluidAgeing age on the malting ledger: hours at full speed at the floor's place (the malting curve;
 -- frozen it waits). At MALTING_HOURS it is Green Malt, which goes stale and rots on the floor as it does anywhere
 -- (vanilla's food age, counted from the hour it was done). A heap taken off part way comes back as Steeped Grain that
--- remembers its sprouting; off the floor it waits.
+-- remembers its sprouting; off the floor it waits. Frozen through, a sprouting heap's sprout is dead and it is Spent
+-- Grain (TraditionalPreservationVinegarFrost.lua), which ages as Green Malt does from the hour it died.
 TraditionalPreservationVinegar = TraditionalPreservationVinegar or {}
 local V = TraditionalPreservationVinegar
 local Fire = require "TraditionalPreservationCore/Fire"
 local FluidAgeing = require "TraditionalPreservationCore/FluidAgeing"
 local Station = require "TraditionalPreservationCore/Station"
+local Frost = require "TraditionalPreservationCore/Frost"
 
 -- Save key in the floor's movableData: never rename it once the mod is out. { heaps = { heap ... }, nextId }; a heap is
--- { id, work (a FluidAgeing age), doneAt (the world hour it was done), paid (its XP given) }.
+-- { id, work (a FluidAgeing age), doneAt (the world hour it was done), paid (its XP given), frost (its frost record,
+-- TP Core's Frost, while it sprouts), deadAt (the world hour frost killed its sprout) }.
 V.FLOOR_KEY = "tpvFloor"
 V.FLOOR_HEAPS = 4
 V.STEEPED = "TraditionalPreservationVinegar.SteepedGrain"
@@ -38,30 +41,45 @@ function V.heapDone(heap)
     return heap.doneAt ~= nil
 end
 
+function V.heapDead(heap)
+    return heap.deadAt ~= nil
+end
+
 function V.heapProgress(heap)
     if V.heapDone(heap) then return 1 end
     return math.min(heap.work.age / V.MALTING_HOURS, 1)
 end
 
--- Days the Green Malt has aged on the floor, as vanilla counts a food's age (the sandbox's Food Spoilage on it).
+-- Days the Green Malt (or the Spent Grain of a dead heap) has aged on the floor, as vanilla counts a food's age (the
+-- sandbox's Food Spoilage on it).
 function V.heapAgeDays(heap, now)
-    if not heap.doneAt then return 0 end
-    return math.max(now - heap.doneAt, 0) / 24 * FluidAgeing.foodRotSpeed()
+    local since = heap.doneAt or heap.deadAt
+    if not since then return 0 end
+    return math.max(now - since, 0) / 24 * FluidAgeing.foodRotSpeed()
 end
 
--- "sprouting", "done", "stale" or "rotten".
+-- "sprouting", "dead" (frozen through: Spent Grain), "done", "stale" or "rotten".
 function V.heapState(heap, now)
+    if V.heapDead(heap) then return "dead" end
     if not V.heapDone(heap) then return "sprouting" end
     local days = V.heapAgeDays(heap, now)
     if days >= V.GREEN_MALT_DAYS[2] then return "rotten" end
     return days >= V.GREEN_MALT_DAYS[1] and "stale" or "done"
 end
 
--- Brings one heap up to now at place. Done part way through a stretch, its Green Malt ages from that point of it.
+-- Brings one heap up to now at place. Done part way through a stretch, its Green Malt ages from that point of it. A
+-- sprouting heap's frost is brought up to now too (at the place and fire its work was seen at), and frozen through
+-- it is dead: no more work.
 function V.advanceHeap(heap, now, place, fire, station, ledger)
+    if V.heapDead(heap) then return end
     local workWas, hourWas = heap.work.age, heap.work.hour or now
     FluidAgeing.advance(heap.work, V.MALT_WORK, ledger, now, place)
     if station then FluidAgeing.noteFire(heap.work, fire, station, now) end
+    if not V.heapDone(heap) then
+        local hours = Frost.see(heap, "frost", V.GRAIN_FROST, now, heap.work)
+        if hours > 0 and V.frostHarms() then V.frostHeap(heap, hours, now) end
+        if V.heapDead(heap) then return end
+    end
     if V.heapDone(heap) or heap.work.age < V.MALTING_HOURS then return end
     local worked = heap.work.age - workWas
     local share = worked > 0 and (V.MALTING_HOURS - workWas) / worked or 1
@@ -90,12 +108,14 @@ function V.floorRoom(record)
     return V.FLOOR_HEAPS - #record.heaps
 end
 
--- Spreads a carried Steeped Grain on the floor, as far on as it had sprouted. Returns the heap, or nil when full.
+-- Spreads a carried Steeped Grain on the floor, as far on as it had sprouted and with the frost it had. Returns the
+-- heap, or nil when full (or the grain's sprout is dead).
 function V.putHeap(record, item, now, place)
-    if V.floorRoom(record) <= 0 or item:getFullType() ~= V.STEEPED then return nil end
+    if V.floorRoom(record) <= 0 or item:getFullType() ~= V.STEEPED or V.sproutDead(item) then return nil end
     local work = FluidAgeing.newFluidAge(V.MALT_WORK, V.getLedger(), now, place)
     work.age = item:getModData()[V.SPROUTED_KEY] or 0
-    local heap = { id = record.nextId, work = work }
+    local frost = item:getModData()[V.FROST_KEY]
+    local heap = { id = record.nextId, work = work, frost = frost and FluidAgeing.copy(frost) or nil }
     record.nextId = record.nextId + 1
     table.insert(record.heaps, heap)
     return heap
@@ -114,8 +134,14 @@ function V.takeHeap(record, id)
     end
 end
 
--- What a heap comes off as, a new item: Green Malt as old as it has been done, or Steeped Grain that keeps its sprouting.
+-- What a heap comes off as, a new item: Green Malt as old as it has been done, Spent Grain as old as it has been dead,
+-- or Steeped Grain that keeps its sprouting and its frost.
 function V.heapOutput(heap, now)
+    if V.heapDead(heap) then
+        local spent = instanceItem(V.SPENT_GRAIN)
+        spent:setAge(V.heapAgeDays(heap, now))
+        return spent
+    end
     if V.heapDone(heap) then
         local malt = instanceItem(V.GREEN_MALT)
         malt:setAge(V.heapAgeDays(heap, now))
@@ -123,6 +149,7 @@ function V.heapOutput(heap, now)
     end
     local grain = instanceItem(V.STEEPED)
     if heap.work.age > 0 then grain:getModData()[V.SPROUTED_KEY] = heap.work.age end
+    if heap.frost then grain:getModData()[V.FROST_KEY] = FluidAgeing.copy(heap.frost) end
     return grain
 end
 
@@ -132,6 +159,10 @@ function V.heapStatus(heap, placeC, now)
     local state = V.heapState(heap, now)
     local rate = V.maltingRate(placeC)
     local status = { state = state, progress = V.heapProgress(heap), rate = rate }
+    if state == "dead" then
+        status.ageDays = V.heapAgeDays(heap, now)
+        return status
+    end
     if state ~= "sprouting" then
         local speed = FluidAgeing.foodRotSpeed()
         status.ageDays = V.heapAgeDays(heap, now)

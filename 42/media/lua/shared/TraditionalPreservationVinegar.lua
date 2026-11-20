@@ -327,21 +327,23 @@ function V.sour(caskModData, rateHours)
 end
 
 -- Brings a cask up to date with the weather since it was last seen, at place (by a fire by the clock, until the
--- fuel noted in caskModData ran out).
-function V.updateCask(caskModData, ledger, place)
+-- fuel noted in caskModData ran out): its souring, and its mother's frost (V.caskFrost) up to now (default the
+-- game's hour).
+function V.updateCask(caskModData, ledger, place, now)
     if caskModData.marks then
         V.sour(caskModData, Fire.catchUp(caskModData, caskModData.marks, ledger, "acetic", place, V.aceticRate))
     else
         caskModData.marks = Weather.mark({}, ledger, "acetic")
     end
+    V.caskFrost(caskModData, now or getGameTime():getWorldAgeHours(), place)
 end
 
 -- Brings a cask up to date where it stands: a move first catches it up where it was (caskModData.place). Returns the
 -- place.
 function V.updateCaskAt(caskModData, ledger, cask)
     local now = getGameTime():getWorldAgeHours()
-    local place = Fire.notePlace(caskModData, cask, now, function(was) V.updateCask(was, ledger, was.place) end)
-    V.updateCask(caskModData, ledger, place)
+    local place = Fire.notePlace(caskModData, cask, now, function(was) V.updateCask(was, ledger, was.place, now) end)
+    V.updateCask(caskModData, ledger, place, now)
     return place
 end
 
@@ -626,5 +628,6 @@ end
 
 Events.OnInitGlobalModData.Add(V.applyRecipeTimes)
 
+require "TraditionalPreservationVinegarFrost"
 require "TraditionalPreservationVinegarFloor"
 require "TraditionalPreservationVinegarVessel"
