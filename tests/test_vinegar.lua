@@ -168,6 +168,19 @@ check("10 L on 8 L: a day and a quarter", math.abs(lagged.run.lagUntil - hours -
 V.pitch(lagged, hours, "Open")
 check("a fresh packet ends the lag", not lagged.run.lagUntil)
 
+-- The day's pours outweighing what is in now (a tiny batch topped up to the brim, then foamed down): the longest lag,
+-- never a negative or endless one.
+local foamed = { wortMl = 1000, fermentedMl = 0 }
+V.pitch(foamed, hours, "Open")
+V.pourWortIn(foamed, 19000, nil, "Open", hours)
+foamed.run.ml = foamed.run.ml - 2000   -- foam took 2 L of the 4 L above the line
+foamed.run.work.age = V.ALCOHOLIC_HOURS * 0.3
+local foamedRisk, foamedLag = V.topUpRisk(foamed.run, 1000, hours)
+check("pours outweighing what is in: the longest lag", foamedRisk == "lag" and foamedLag == V.LAG_MAX_HOURS, foamedLag)
+foamed.run.ml = 19000
+local _, evenLag = V.topUpRisk(foamed.run, 1000, hours)
+check("nothing before the pours: the longest lag, not an endless one", evenLag == V.LAG_MAX_HOURS, evenLag)
+
 -- Small pours count together over a day; a little a day is step feeding.
 local stepped = { wortMl = 5000, fermentedMl = 0 }
 V.pitch(stepped, hours, "Open")

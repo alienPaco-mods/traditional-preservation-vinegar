@@ -1,5 +1,10 @@
 # Changelog: Traditional Preservation (Vinegar)
 
+## 0.2.51
+- **A top-up after foaming lags as it should**: when the day's pours outweigh what is in the vessel now (a tiny batch
+  topped up near the brim, then foamed down below the pours), the lag had come out negative, so none. It takes the
+  longest lag (`V.LAG_MAX_HOURS`). Regression test in `test_vinegar.lua`.
+
 ## 0.2.50
 - **Frost** (ROADMAP NEXT 1; user, session 76), on TP Core's Frost ledger by place, sandbox **Frost harms** (on).
   Steeped Grain freezes at 0 C and, frozen through (6 h in all), its sprout is dead: a heap on the Malting Floor

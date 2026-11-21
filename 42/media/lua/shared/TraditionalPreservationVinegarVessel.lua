@@ -192,6 +192,9 @@ function V.topUpRisk(run, ml, now)
     local added = recent + ml
     if added <= before then return nil end
     if V.runProgress(run) < V.UNDERPITCH_PROGRESS then return "underpitched" end
+    -- The day's pours can outweigh what is in now once foam has taken some of it: nothing of the first batch is left
+    -- to count against, so the longest lag.
+    if before <= 0 then return "lag", V.LAG_MAX_HOURS end
     return "lag", math.min(V.LAG_HOURS * added / before, V.LAG_MAX_HOURS)
 end
 
